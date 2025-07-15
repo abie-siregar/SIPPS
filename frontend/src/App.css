@@ -1,6 +1,5 @@
-/* General body and root styling */
 body {
-  font-family: 'Inter', sans-serif; /* Using Inter font */
+  font-family: "Inter", sans-serif; /* Using Inter font */
   margin: 0;
   padding: 0;
   background-color: #f0f2f5; /* Light grey background */
@@ -26,7 +25,8 @@ body {
 }
 
 /* Headings */
-h1, h2 {
+h1,
+h2 {
   text-align: center;
   color: #2c3e50;
   margin-bottom: 25px;
@@ -36,7 +36,10 @@ h1, h2 {
 /* Form Styling */
 form {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Responsive grid for inputs */
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(200px, 1fr)
+  ); /* Responsive grid for inputs */
   gap: 15px; /* Space between form elements */
   padding: 20px;
   border: 1px solid #e0e0e0;
@@ -90,14 +93,15 @@ form button {
   color: white;
   font-size: 1rem;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.2s ease,
+    box-shadow 0.3s ease;
   font-weight: 600;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   margin-top: 10px; /* Space above buttons */
 }
 
 form button:hover {
-  background-color: #357ABD; /* Darker blue on hover */
+  background-color: #357abd; /* Darker blue on hover */
   transform: translateY(-2px); /* Slight lift effect */
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
@@ -107,7 +111,8 @@ form button:active {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-form button:last-of-type { /* Style for the "Cancel Edit" button if it's the last one */
+form button:last-of-type {
+  /* Style for the "Cancel Edit" button if it's the last one */
   background-color: #f44336; /* Red for cancel */
   margin-left: 10px;
 }
@@ -135,7 +140,7 @@ table th {
   padding: 15px;
   text-align: left;
   font-weight: 600;
-  border-bottom: 2px solid #357ABD; /* Darker blue border */
+  border-bottom: 2px solid #357abd; /* Darker blue border */
 }
 
 table td {
@@ -163,7 +168,8 @@ table td button {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
-table td button:first-of-type { /* Edit button */
+table td button:first-of-type {
+  /* Edit button */
   background-color: #28a745; /* Green */
   color: white;
 }
@@ -173,7 +179,8 @@ table td button:first-of-type:hover {
   transform: translateY(-1px);
 }
 
-table td button:last-of-type { /* Delete button */
+table td button:last-of-type {
+  /* Delete button */
   background-color: #dc3545; /* Red */
   color: white;
 }
@@ -215,7 +222,11 @@ p {
     white-space: nowrap; /* Prevent text wrapping in table cells */
   }
 
-  table thead, table tbody, table th, table td, table tr {
+  table thead,
+  table tbody,
+  table th,
+  table td,
+  table tr {
     display: block; /* Make table elements block-level for stacking */
   }
 
@@ -250,13 +261,31 @@ p {
   }
 
   /* Specific labels for responsive table cells */
-  table td:nth-of-type(1):before { content: "ID:"; }
-  table td:nth-of-type(2):before { content: "NISN:"; }
-  table td:nth-of-type(3):before { content: "Nama Depan:"; }
-  table td:nth-of-type(4):before { content: "Nama Belakang:"; }
-  table td:nth-of-type(5):before { content: "Jenis Kelamin:"; }
-  table td:nth-of-type(6):before { content: "Tempat Lahir:"; }
-  table td:nth-of-type(7):before { content: "Tanggal Lahir:"; }
-  table td:nth-of-type(8):before { content: "Alamat:"; }
-  table td:nth-of-type(9):before { content: "Aksi:"; }
+  table td:nth-of-type(1):before {
+    content: "ID:";
+  }
+  table td:nth-of-type(2):before {
+    content: "NISN:";
+  }
+  table td:nth-of-type(3):before {
+    content: "Nama Depan:";
+  }
+  table td:nth-of-type(4):before {
+    content: "Nama Belakang:";
+  }
+  table td:nth-of-type(5):before {
+    content: "Jenis Kelamin:";
+  }
+  table td:nth-of-type(6):before {
+    content: "Tempat Lahir:";
+  }
+  table td:nth-of-type(7):before {
+    content: "Tanggal Lahir:";
+  }
+  table td:nth-of-type(8):before {
+    content: "Alamat:";
+  }
+  table td:nth-of-type(9):before {
+    content: "Aksi:";
+  }
 }
