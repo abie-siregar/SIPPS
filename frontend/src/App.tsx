@@ -18,7 +18,7 @@ import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import Login from "./pages/AuthPages/Login";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
-import DataPoints from "./pages/PointsManagement/DataPoints";
+import DataPoints from "./pages/ManajemenData/PoinPelanggaran";
 
 export default function App() {
   return (
@@ -48,7 +48,7 @@ export default function App() {
             {/* <Route path="/form-elements" element={<FormElements />} /> */}
 
             {/* Data Points */}
-            <Route path="data-points" element={<DataPoints />} />
+            <Route path="poin-pelanggaran" element={<DataPoints />} />
 
             {/* Tables */}
             <Route path="/basic-tables" element={<BasicTables />} />
