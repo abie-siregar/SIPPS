@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
-const pool = require("../db"); // sesuaikan dengan koneksi PostgreSQL kamu
+const pool = require("../db");
 const jwt = require("jsonwebtoken");
 
 // POST /api/auth/login
@@ -28,7 +28,7 @@ router.post("/login", async (req, res) => {
 
     const token = jwt.sign(
       { userId: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET || "supersecret",
+      process.env.JWT_SECRET_KEY,
       { expiresIn: "1h" }
     );
 

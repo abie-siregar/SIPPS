@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 
 const authRoutes = require("./routes/auth");
+const pelanggaranRoutes = require("./routes/pelanggaran");
 
 const app = express();
 
@@ -12,6 +13,7 @@ app.use(express.json());
 const port = process.env.PORT || 5000;
 
 app.use("/api/auth", authRoutes);
+app.use("/api/pelanggaran", pelanggaranRoutes);
 
 app.get("/", (req, res) => {
   res.send("API SIPPS Running...");
