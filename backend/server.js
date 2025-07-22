@@ -100,5 +100,5 @@ app.post('/siswa', async (req, res) => {
     //Start Server
 
     app.listen(port, () => {
-        console.log('Server is Running on port ${port}');
+        console.log(`Server is Running on port ${port}`);
     });
