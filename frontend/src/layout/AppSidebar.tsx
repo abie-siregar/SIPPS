@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
 
-// Assume these icons are imported from an icon library
 import {
   BoxCubeIcon,
   CalenderIcon,
@@ -40,10 +39,15 @@ const navItems: NavItem[] = [
     name: "User Profile",
     path: "/profile",
   },
+  // {
+  //   name: "Forms",
+  //   icon: <ListIcon />,
+  //   subItems: [{ name: "Form Elements", path: "/form-elements", pro: false }],
+  // },
   {
-    name: "Forms",
-    icon: <ListIcon />,
-    subItems: [{ name: "Form Elements", path: "/form-elements", pro: false }],
+    name: "Data Management",
+    icon: <TableIcon />,
+    subItems: [{ name: "Data Points", path: "/data-points", pro: false }],
   },
   {
     name: "Tables",

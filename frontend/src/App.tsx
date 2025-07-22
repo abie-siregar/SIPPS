@@ -12,13 +12,13 @@ import LineChart from "./pages/Charts/LineChart";
 import BarChart from "./pages/Charts/BarChart";
 import Calendar from "./pages/Calendar";
 import BasicTables from "./pages/Tables/BasicTables";
-import FormElements from "./pages/Forms/FormElements";
 import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import Login from "./pages/AuthPages/Login";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import DataPoints from "./pages/PointsManagement/DataPoints";
 
 export default function App() {
   return (
@@ -45,7 +45,10 @@ export default function App() {
             <Route path="/blank" element={<Blank />} />
 
             {/* Forms */}
-            <Route path="/form-elements" element={<FormElements />} />
+            {/* <Route path="/form-elements" element={<FormElements />} /> */}
+
+            {/* Data Points */}
+            <Route path="data-points" element={<DataPoints />} />
 
             {/* Tables */}
             <Route path="/basic-tables" element={<BasicTables />} />
