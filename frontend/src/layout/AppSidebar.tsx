@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
 
-// Assume these icons are imported from an icon library
 import {
   BoxCubeIcon,
   CalenderIcon,
@@ -16,7 +15,6 @@ import {
   UserCircleIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
-import SidebarWidget from "./SidebarWidget";
 
 type NavItem = {
   name: string;
@@ -41,10 +39,15 @@ const navItems: NavItem[] = [
     name: "User Profile",
     path: "/profile",
   },
+  // {
+  //   name: "Forms",
+  //   icon: <ListIcon />,
+  //   subItems: [{ name: "Form Elements", path: "/form-elements", pro: false }],
+  // },
   {
-    name: "Forms",
-    icon: <ListIcon />,
-    subItems: [{ name: "Form Elements", path: "/form-elements", pro: false }],
+    name: "Poin Pelanggaran",
+    icon: <TableIcon />,
+    subItems: [{ name: "Data Points", path: "/poin-pelanggaran", pro: false }],
   },
   {
     name: "Tables",
@@ -86,7 +89,7 @@ const othersItems: NavItem[] = [
     icon: <PlugInIcon />,
     name: "Authentication",
     subItems: [
-      { name: "Sign In", path: "/signin", pro: false },
+      { name: "Login", path: "/login", pro: false },
       { name: "Sign Up", path: "/signup", pro: false },
     ],
   },
@@ -368,7 +371,6 @@ const AppSidebar: React.FC = () => {
             </div>
           </div>
         </nav>
-        {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null}
       </div>
     </aside>
   );

@@ -3,8 +3,24 @@ import UserMetaCard from "../components/UserProfile/UserMetaCard";
 import UserInfoCard from "../components/UserProfile/UserInfoCard";
 import UserAddressCard from "../components/UserProfile/UserAddressCard";
 import PageMeta from "../components/common/PageMeta";
+import { useEffect, useState } from "react";
+import axios from "../api/axios.ts";
 
 export default function UserProfiles() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await axios.get("/profile");
+        setUser(res.data.user);
+      } catch (err) {
+        console.error("Gagal ambil data profile:", err);
+      }
+    };
+
+    fetchProfile();
+  }, []);
   return (
     <>
       <PageMeta
@@ -17,7 +33,7 @@ export default function UserProfiles() {
           Profile
         </h3>
         <div className="space-y-6">
-          <UserMetaCard />
+          {user && <UserMetaCard user={user} />}
           <UserInfoCard />
           <UserAddressCard />
         </div>
