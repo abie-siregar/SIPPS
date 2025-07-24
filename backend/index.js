@@ -7,7 +7,14 @@ const pelanggaranRoutes = require("./routes/pelanggaran");
 
 const app = express();
 
-app.use(cors());
+const corsOptions = {
+  origin: "http://localhost:5173", // Hanya izinkan dari origin ini
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE", // Metode HTTP yang diizinkan
+  credentials: true, // Izinkan pengiriman cookies atau authorization headers
+  optionsSuccessStatus: 204, // Untuk preflight requests
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 const port = process.env.PORT || 5000;
