@@ -9,16 +9,17 @@ const authRoutes = require("./routes/auth");
 const pelanggaranRoutes = require("./routes/pelanggaran");
 
 // Initialize for Rombel
-const GetListRombel = require("./routes/Rombel/GetListRombel");
-const EditRombel = require("./routes/Rombel/EditRombel");
+const getListRombel = require("./routes/Rombel/GetListRombel");
+const getRombel = require("./routes/Rombel/GetRombel");
+const updateRombel = require("./routes/Rombel/UpdateRombel");
 
 const app = express();
 
 const corsOptions = {
-  origin: "http://localhost:5173", // Hanya izinkan dari origin ini
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE", // Metode HTTP yang diizinkan
-  credentials: true, // Izinkan pengiriman cookies atau authorization headers
-  optionsSuccessStatus: 204, // Untuk preflight requests
+  origin: "http://localhost:5173",
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  credentials: true,
+  optionsSuccessStatus: 204,
 };
 
 app.use(cors(corsOptions));
@@ -30,8 +31,9 @@ app.use("/api/auth", authRoutes);
 app.use("/api/pelanggaran", pelanggaranRoutes);
 
 // API for Rombel
-app.use("/api/rombel", GetListRombel);
-// app.use("/api/rombel/edit");
+app.use("/api/rombel", getListRombel);
+app.use("/api/rombel", getRombel);
+app.use("/api/rombel", updateRombel);
 
 app.get("/", (req, res) => {
   res.send("API SIPPS Running...");
