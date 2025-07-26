@@ -4,6 +4,7 @@ const cors = require("cors");
 
 const authRoutes = require("./routes/auth");
 const pelanggaranRoutes = require("./routes/pelanggaran");
+const rombelRoutes = require("./routes/rombel");
 
 const app = express();
 
@@ -21,6 +22,7 @@ const port = process.env.PORT || 5000;
 
 app.use("/api/auth", authRoutes);
 app.use("/api/pelanggaran", pelanggaranRoutes);
+app.use("/api/rombel", rombelRoutes);
 
 app.get("/", (req, res) => {
   res.send("API SIPPS Running...");

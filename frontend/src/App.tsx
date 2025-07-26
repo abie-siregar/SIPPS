@@ -18,7 +18,9 @@ import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import Login from "./pages/AuthPages/Login";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
-import DataPoints from "./pages/ManajemenData/PoinPelanggaran";
+import DataPoints from "./pages/ManajemenData/DataPoinPelanggaran";
+import AdminLogin from "./pages/AuthPages/AdminLogin";
+import DataRombel from "./pages/ManajemenData/DataRombel";
 
 export default function App() {
   return (
@@ -47,8 +49,11 @@ export default function App() {
             {/* Forms */}
             {/* <Route path="/form-elements" element={<FormElements />} /> */}
 
-            {/* Data Points */}
-            <Route path="poin-pelanggaran" element={<DataPoints />} />
+            {/* Data Point */}
+            <Route path="/data-poin-pelanggaran" element={<DataPoints />} />
+
+            {/* Data Rombel */}
+            <Route path="/data-rombel" element={<DataRombel />} />
 
             {/* Tables */}
             <Route path="/basic-tables" element={<BasicTables />} />
@@ -68,6 +73,8 @@ export default function App() {
 
           {/* Auth Layout */}
           <Route path="/login" element={<Login />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
+
           {/* <Route path="/signup" element={<SignUp />} /> */}
 
           {/* Fallback Route */}

@@ -45,9 +45,21 @@ const navItems: NavItem[] = [
   //   subItems: [{ name: "Form Elements", path: "/form-elements", pro: false }],
   // },
   {
-    name: "Poin Pelanggaran",
+    name: "Manajemen Data",
     icon: <TableIcon />,
-    subItems: [{ name: "Data Points", path: "/poin-pelanggaran", pro: false }],
+    subItems: [
+      {
+        name: "Data Poin Pelanggaran",
+        path: "/data-poin-pelanggaran",
+        pro: false,
+      },
+      { name: "Data Rombel", path: "/data-rombel", pro: false },
+    ],
+  },
+  {
+    name: "Pelanggaran Siswa",
+    icon: <TableIcon />,
+    path: "/basic-tables",
   },
   {
     name: "Tables",

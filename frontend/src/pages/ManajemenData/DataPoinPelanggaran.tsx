@@ -78,9 +78,9 @@ const PoinPelanggaran = () => {
         title="Data Pelanggaran | Dashboard SMKN 1 Batam"
         description="Halaman menampilkan tabel data pelanggaran siswa"
       />
-      <PageBreadcrumb pageTitle="Data Pelanggaran" />
+      <PageBreadcrumb pageTitle="Data Poin Pelanggaran" />
       <div className="space-y-6">
-        <ComponentCard title="Tabel Pelanggaran Siswa">
+        <ComponentCard title="Tabel Poin Pelanggaran">
           {/* Search & Filter */}
           <div className="flex flex-col md:flex-row gap-3 mb-6 items-start md:items-center justify-between">
             <input
