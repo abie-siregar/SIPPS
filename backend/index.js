@@ -2,9 +2,15 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 
+// Initialize for Auth
 const authRoutes = require("./routes/auth");
+
+// Initialize for Pelanggaran
 const pelanggaranRoutes = require("./routes/pelanggaran");
-const rombelRoutes = require("./routes/rombel");
+
+// Initialize for Rombel
+const GetListRombel = require("./routes/Rombel/GetListRombel");
+const EditRombel = require("./routes/Rombel/EditRombel");
 
 const app = express();
 
@@ -22,7 +28,10 @@ const port = process.env.PORT || 5000;
 
 app.use("/api/auth", authRoutes);
 app.use("/api/pelanggaran", pelanggaranRoutes);
-app.use("/api/rombel", rombelRoutes);
+
+// API for Rombel
+app.use("/api/rombel", GetListRombel);
+// app.use("/api/rombel/edit");
 
 app.get("/", (req, res) => {
   res.send("API SIPPS Running...");

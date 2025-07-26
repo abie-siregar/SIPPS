@@ -3,6 +3,8 @@ import axios from "../../api/axios";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import ComponentCard from "../../components/common/ComponentCard";
 import PageMeta from "../../components/common/PageMeta";
+import Button from "../../components/ui/button/Button";
+import { PencilIcon } from "../../icons";
 
 interface Rombel {
   id: number;
@@ -99,6 +101,16 @@ const DataRombel = () => {
     fetchData();
   }, [filterTingkat, filterJurusan, searchTerm]);
 
+  const handleEdit = (row: Rombel) => {
+    console.log("Edit data:", row);
+  };
+
+  //   const handleDelete = (id: number) => {
+  //     if (confirm("Yakin ingin menghapus data ini?")) {
+  //       console.log("Hapus data dengan ID:", id);
+  //     }
+  //   };
+
   return (
     <>
       <PageMeta
@@ -170,6 +182,9 @@ const DataRombel = () => {
                       <th className="px-5 py-3 text-theme-xs dark:text-gray-400">
                         Jurusan
                       </th>
+                      <th className="px-5 py-3 text-theme-xs dark:text-gray-400">
+                        Aksi
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
@@ -198,6 +213,22 @@ const DataRombel = () => {
                         </td>
                         <td className="px-5 py-4 text-gray-700 dark:text-white/90">
                           {row.jurusan}
+                        </td>
+                        <td className="px-5 py-4 text-center text-gray-700 dark:text-white/90 space-x-2">
+                          <Button
+                            size="sm"
+                            variant="primary"
+                            startIcon={<PencilIcon className="size-4" />}
+                            onClick={() => handleEdit(row)}
+                          >
+                            Edit
+                          </Button>
+                          {/* <button
+                            onClick={() => handleDelete(row.id)}
+                            className="text-red-500 hover:text-red-700 text-sm"
+                          >
+                            Hapus
+                          </button> */}
                         </td>
                       </tr>
                     ))}

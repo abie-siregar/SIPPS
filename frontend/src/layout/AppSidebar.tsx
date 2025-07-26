@@ -54,6 +54,7 @@ const navItems: NavItem[] = [
         pro: false,
       },
       { name: "Data Rombel", path: "/data-rombel", pro: false },
+      { name: "Data User", path: "/data-user", pro: false },
     ],
   },
   {

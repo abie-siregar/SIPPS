@@ -41,6 +41,10 @@ export default function App() {
               }
             />
 
+            {/* Auth Layout */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/admin-login" element={<AdminLogin />} />
+
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />
             <Route path="/calendar" element={<Calendar />} />
@@ -54,6 +58,9 @@ export default function App() {
 
             {/* Data Rombel */}
             <Route path="/data-rombel" element={<DataRombel />} />
+
+            {/* Data User */}
+            <Route path="/data-user" element={<DataRombel />} />
 
             {/* Tables */}
             <Route path="/basic-tables" element={<BasicTables />} />
@@ -70,10 +77,6 @@ export default function App() {
             <Route path="/line-chart" element={<LineChart />} />
             <Route path="/bar-chart" element={<BarChart />} />
           </Route>
-
-          {/* Auth Layout */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/admin-login" element={<AdminLogin />} />
 
           {/* <Route path="/signup" element={<SignUp />} /> */}
 
