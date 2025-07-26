@@ -82,27 +82,12 @@ const DataRombel = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/rombel", {
-        params: {
-          search: searchTerm,
-          // Kirim sebagai array, axios akan handle sebagai multiple query ?jurusan=...&jurusan=...
-          ...(filterTingkat.length > 0 && { tingkat: filterTingkat }),
-          ...(filterJurusan.length > 0 && { jurusan: filterJurusan }),
-        },
-        paramsSerializer: (params) => {
-          const query = new URLSearchParams();
-          Object.keys(params).forEach((key) => {
-            const value = params[key];
-            if (Array.isArray(value)) {
-              value.forEach((v) => query.append(key, v));
-            } else {
-              query.append(key, value);
-            }
-          });
-          return query.toString();
-        },
+      const res = await axios.post("/rombel", {
+        search: searchTerm,
+        tingkat: filterTingkat,
+        jurusan: filterJurusan,
       });
-      setData(res.data);
+      setData(res.data.data);
     } catch (error) {
       console.error("Gagal mengambil data:", error);
     } finally {

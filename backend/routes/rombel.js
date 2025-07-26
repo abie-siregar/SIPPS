@@ -33,7 +33,10 @@ router.post("/", async (req, res) => {
     query += " ORDER BY id ASC";
 
     const result = await pool.query(query, values);
-    res.json(result.rows);
+    res.json({
+      total: result.rowCount,
+      data: result.rows,
+    });
   } catch (error) {
     console.error("Gagal mengambil data rombel:", error);
     res.status(500).json({ error: "Internal Server Error" });
