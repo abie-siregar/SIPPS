@@ -19,6 +19,7 @@ import Home from "./pages/Dashboard/Home";
 import Login from "./pages/AuthPages/Login";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import DataPoints from "./pages/ManajemenData/PoinPelanggaran";
+import PTK from "./pages/ManajemenData/PTK";
 
 export default function App() {
   return (
@@ -49,6 +50,7 @@ export default function App() {
 
             {/* Data Points */}
             <Route path="poin-pelanggaran" element={<DataPoints />} />
+            <Route path="ptk" element={<PTK />} />
 
             {/* Tables */}
             <Route path="/basic-tables" element={<BasicTables />} />

@@ -1,16 +1,16 @@
 const express = require("express");
 const router = express.Router();
-const pool = require("../db");
-const authencticateToken = require("../middleware/authMiddleware");
+const pool = require("../../database/connection");
+const authencticateToken = require("../../middleware/authMiddleware");
 
 router.get("/", authencticateToken, async (req, res) => {
   try {
     const result = await pool.query(
-      "SELECT * FROM pelanggaran ORDER BY id ASC"
+      "SELECT nama, nuptk, jenis_ptk, tugas_tambahan, hp, email FROM ptk ORDER BY id ASC"
     );
     res.json(result.rows);
   } catch (error) {
-    console.error("Error fetching pelanggaran : ", error.message);
+    console.error("Error fetching ptk : ", error.message);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });

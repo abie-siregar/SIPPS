@@ -45,9 +45,14 @@ const navItems: NavItem[] = [
   //   subItems: [{ name: "Form Elements", path: "/form-elements", pro: false }],
   // },
   {
-    name: "Poin Pelanggaran",
+    name: "Manajemen Data",
     icon: <TableIcon />,
-    subItems: [{ name: "Data Points", path: "/poin-pelanggaran", pro: false }],
+    subItems: [
+      { name: "Data Poin Pelanggaran", path: "/poin-pelanggaran", pro: false },
+      { name: "Data PTK", path: "/PTK", pro: false },
+      { name: "Data Siswa", path: "/poin-pelanggaran", pro: false },
+      { name: "Data Rombongan Belajar", path: "/poin-pelanggaran", pro: false },
+    ],
   },
   {
     name: "Tables",
@@ -298,7 +303,7 @@ const AppSidebar: React.FC = () => {
         }
         ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
         lg:translate-x-0`}
-      onMouseEnter={() => !isExpanded && setIsHovered(true)}
+      onMouseEnter={() => !isExpanded && setIsHovered(false)} //Matikan Hover sidebar
       onMouseLeave={() => setIsHovered(false)}
     >
       <div

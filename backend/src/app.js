@@ -4,6 +4,7 @@ const cors = require("cors");
 
 const authRoutes = require("./routes/auth");
 const pelanggaranRoutes = require("./routes/pelanggaran");
+const ptkRoutes = require("../src/controller/ptk/GetPtk");
 
 const app = express();
 
@@ -14,6 +15,7 @@ const port = process.env.PORT || 5000;
 
 app.use("/api/auth", authRoutes);
 app.use("/api/pelanggaran", pelanggaranRoutes);
+app.use("/api/ptk", ptkRoutes);
 
 app.get("/", (req, res) => {
   res.send("API SIPPS Running...");
@@ -22,6 +24,3 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
-
-// const siswaRoutes = require("./routes/siswa");
-// app.use("/api/siswa", siswaRoutes);
