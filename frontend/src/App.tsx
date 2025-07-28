@@ -20,7 +20,8 @@ import Login from "./pages/AuthPages/Login";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import DataPoints from "./pages/ManajemenData/DataPoinPelanggaran";
 import AdminLogin from "./pages/AuthPages/AdminLogin";
-import DataRombel from "./pages/ManajemenData/DataRombel";
+import DataRombel from "./pages/ManajemenData/Rombel/DataRombel";
+import EditDataRombel from "./pages/ManajemenData/Rombel/EditDataRombel";
 
 export default function App() {
   return (
@@ -41,10 +42,6 @@ export default function App() {
               }
             />
 
-            {/* Auth Layout */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/admin-login" element={<AdminLogin />} />
-
             {/* Others Page */}
             <Route path="/profile" element={<UserProfiles />} />
             <Route path="/calendar" element={<Calendar />} />
@@ -58,6 +55,10 @@ export default function App() {
 
             {/* Data Rombel */}
             <Route path="/data-rombel" element={<DataRombel />} />
+            <Route
+              path="/dashboard/rombel/edit/:id"
+              element={<EditDataRombel />}
+            />
 
             {/* Data User */}
             <Route path="/data-user" element={<DataRombel />} />
@@ -79,6 +80,9 @@ export default function App() {
           </Route>
 
           {/* <Route path="/signup" element={<SignUp />} /> */}
+          {/* Auth Layout */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
 
           {/* Fallback Route */}
           <Route path="*" element={<NotFound />} />
