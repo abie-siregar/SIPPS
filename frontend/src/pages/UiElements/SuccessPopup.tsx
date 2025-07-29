@@ -3,7 +3,7 @@ import { useEffect } from "react";
 interface SuccessPopupProps {
   message: string;
   show: boolean;
-  duration?: number; // dalam milidetik, default 1500
+  duration?: number;
   onClose: () => void;
 }
 

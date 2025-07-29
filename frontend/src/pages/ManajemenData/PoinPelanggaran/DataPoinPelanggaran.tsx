@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import axios from "../../api/axios";
-import PageBreadcrumb from "../../components/common/PageBreadCrumb";
-import ComponentCard from "../../components/common/ComponentCard";
-import PageMeta from "../../components/common/PageMeta";
+import { useNavigate } from "react-router-dom";
+import axios from "../../../api/axios";
+import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
+import ComponentCard from "../../../components/common/ComponentCard";
+import PageMeta from "../../../components/common/PageMeta";
 
 interface Pelanggaran {
   id: number;
@@ -21,6 +22,7 @@ const PoinPelanggaran = () => {
     direction: "asc" | "desc";
   } | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPelanggaran = async () => {
@@ -81,25 +83,36 @@ const PoinPelanggaran = () => {
       <PageBreadcrumb pageTitle="Data Poin Pelanggaran" />
       <div className="space-y-6">
         <ComponentCard title="Tabel Poin Pelanggaran">
-          {/* Search & Filter */}
+          {/* Tombol Tambah + Filter & Search */}
           <div className="flex flex-col md:flex-row gap-3 mb-6 items-start md:items-center justify-between">
-            <input
-              type="text"
-              placeholder="Cari jenis pelanggaran..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full md:w-1/2 px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-white/[0.03] dark:border-white/[0.05] dark:text-white/90"
-            />
-            <select
-              value={filterJenis}
-              onChange={(e) => setFilterJenis(e.target.value)}
-              className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-white/[0.03] dark:border-white/[0.05] dark:text-white/90"
-            >
-              <option value="Semua">Semua Jenis</option>
-              <option value="Kelakuan">Kelakuan</option>
-              <option value="Kerajinan">Kerajinan</option>
-              <option value="Kerapian">Kerapian</option>
-            </select>
+            <div className="flex gap-2">
+              <button
+                onClick={() => navigate("/data-poin-pelanggaran/tambah")}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg"
+              >
+                + Tambah
+              </button>
+            </div>
+
+            <div className="flex flex-col md:flex-row gap-3 items-start md:items-center">
+              <input
+                type="text"
+                placeholder="Cari jenis pelanggaran..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full md:w-64 px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-white/[0.03] dark:border-white/[0.05] dark:text-white/90"
+              />
+              <select
+                value={filterJenis}
+                onChange={(e) => setFilterJenis(e.target.value)}
+                className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-white/[0.03] dark:border-white/[0.05] dark:text-white/90"
+              >
+                <option value="Semua">Semua Jenis</option>
+                <option value="Kelakuan">Kelakuan</option>
+                <option value="Kerajinan">Kerajinan</option>
+                <option value="Kerapian">Kerapian</option>
+              </select>
+            </div>
           </div>
 
           {/* Table */}
@@ -147,6 +160,9 @@ const PoinPelanggaran = () => {
                             : "↓"
                           : ""}
                       </th>
+                      <th className="px-5 py-3 text-theme-xs dark:text-gray-400 text-center">
+                        Aksi
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
@@ -166,6 +182,16 @@ const PoinPelanggaran = () => {
                         </td>
                         <td className="px-5 py-4 text-center text-gray-700 dark:text-white/90">
                           {row.jenis}
+                        </td>
+                        <td className="px-5 py-4 text-center">
+                          <button
+                            onClick={() =>
+                              navigate(`/data-poin-pelanggaran/edit/${row.id}`)
+                            }
+                            className="px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white text-xs rounded-md"
+                          >
+                            ✎ Edit
+                          </button>
                         </td>
                       </tr>
                     ))}

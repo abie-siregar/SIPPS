@@ -1,5 +1,9 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router";
-// import SignUp from "./pages/AuthPages/SignUp";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import NotFound from "./pages/OtherPage/NotFound";
 import UserProfiles from "./pages/UserProfiles";
 import Videos from "./pages/UiElements/Videos";
@@ -17,77 +21,86 @@ import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import Login from "./pages/AuthPages/Login";
-import ProtectedRoute from "./components/auth/ProtectedRoute";
-import DataPoints from "./pages/ManajemenData/DataPoinPelanggaran";
 import AdminLogin from "./pages/AuthPages/AdminLogin";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+
+import DataPoinPelanggarn from "./pages/ManajemenData/PoinPelanggaran/DataPoinPelanggaran";
 import DataRombel from "./pages/ManajemenData/Rombel/DataRombel";
 import EditDataRombel from "./pages/ManajemenData/Rombel/EditDataRombel";
+import TambahPelanggaran from "./pages/ManajemenData/PoinPelanggaran/TambahDataPoinPelanggaran";
+import EditDataPoinPelanggaran from "./pages/ManajemenData/PoinPelanggaran/EditPoinPoinPelanggaran";
 
 export default function App() {
   return (
-    <>
-      <Router>
-        <ScrollToTop />
-        <Routes>
-          {/* Dashboard Layout */}
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route element={<AppLayout />}>
-            <Route
-              index
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Home />
-                </ProtectedRoute>
-              }
-            />
+    <Router>
+      <ScrollToTop />
+      <Routes>
+        {/* Default route */}
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-            {/* Others Page */}
-            <Route path="/profile" element={<UserProfiles />} />
-            <Route path="/calendar" element={<Calendar />} />
-            <Route path="/blank" element={<Blank />} />
+        {/* Auth routes (tanpa layout) */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/admin-login" element={<AdminLogin />} />
 
-            {/* Forms */}
-            {/* <Route path="/form-elements" element={<FormElements />} /> */}
+        {/* Routes yang memakai AppLayout */}
+        <Route element={<AppLayout />}>
+          {/* Dashboard (dengan proteksi login) */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            }
+          />
 
-            {/* Data Point */}
-            <Route path="/data-poin-pelanggaran" element={<DataPoints />} />
+          {/* Manajemen Data */}
 
-            {/* Data Rombel */}
-            <Route path="/data-rombel" element={<DataRombel />} />
-            <Route
-              path="/dashboard/rombel/edit/:id"
-              element={<EditDataRombel />}
-            />
+          {/* Data Poin Pelanggaran */}
+          <Route
+            path="/data-poin-pelanggaran"
+            element={<DataPoinPelanggarn />}
+          />
+          <Route
+            path="/data-poin-pelanggaran/tambah"
+            element={<TambahPelanggaran />}
+          />
+          <Route
+            path="/data-poin-pelanggaran/edit/:id"
+            element={<EditDataPoinPelanggaran />}
+          />
 
-            {/* Data User */}
-            <Route path="/data-user" element={<DataRombel />} />
+          <Route path="/data-rombel" element={<DataRombel />} />
+          <Route
+            path="/dashboard/rombel/edit/:id"
+            element={<EditDataRombel />}
+          />
+          <Route path="/data-user" element={<DataRombel />} />
 
-            {/* Tables */}
-            <Route path="/basic-tables" element={<BasicTables />} />
+          {/* Others */}
+          <Route path="/profile" element={<UserProfiles />} />
+          <Route path="/calendar" element={<Calendar />} />
+          <Route path="/blank" element={<Blank />} />
 
-            {/* Ui Elements */}
-            <Route path="/alerts" element={<Alerts />} />
-            <Route path="/avatars" element={<Avatars />} />
-            <Route path="/badge" element={<Badges />} />
-            <Route path="/buttons" element={<Buttons />} />
-            <Route path="/images" element={<Images />} />
-            <Route path="/videos" element={<Videos />} />
+          {/* Tables */}
+          <Route path="/basic-tables" element={<BasicTables />} />
 
-            {/* Charts */}
-            <Route path="/line-chart" element={<LineChart />} />
-            <Route path="/bar-chart" element={<BarChart />} />
-          </Route>
+          {/* UI Elements */}
+          <Route path="/alerts" element={<Alerts />} />
+          <Route path="/avatars" element={<Avatars />} />
+          <Route path="/badge" element={<Badges />} />
+          <Route path="/buttons" element={<Buttons />} />
+          <Route path="/images" element={<Images />} />
+          <Route path="/videos" element={<Videos />} />
 
-          {/* <Route path="/signup" element={<SignUp />} /> */}
-          {/* Auth Layout */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/admin-login" element={<AdminLogin />} />
+          {/* Charts */}
+          <Route path="/line-chart" element={<LineChart />} />
+          <Route path="/bar-chart" element={<BarChart />} />
+        </Route>
 
-          {/* Fallback Route */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Router>
-    </>
+        {/* Fallback */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Router>
   );
 }

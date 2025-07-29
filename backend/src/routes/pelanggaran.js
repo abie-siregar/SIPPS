@@ -1,18 +1,18 @@
+// routes/poinPelanggaranRoutes.js
 const express = require("express");
 const router = express.Router();
-const pool = require("../database/connection");
-const authencticateToken = require("../middleware/authMiddleware");
+const authenticateToken = require("../middleware/authMiddleware");
 
-router.get("/", authencticateToken, async (req, res) => {
-  try {
-    const result = await pool.query(
-      "SELECT * FROM pelanggaran ORDER BY id ASC"
-    );
-    res.json(result.rows);
-  } catch (error) {
-    console.error("Error fetching pelanggaran : ", error.message);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
+// Import controller functions
+const createPoinPelanggaran = require("../controllers/pelanggaran/createPoinPelanggaran");
+const getListPoinPelanggaran = require("../controllers/pelanggaran/getListPoinPelanggaran");
+const getPoinPelanggaran = require("../controllers/pelanggaran/getPoinPelanggaran");
+const updatePoinPelanggaran = require("../controllers/pelanggaran/updatePoinPelanggaran");
+
+// Route for Poin Pelanggaran
+router.post("/", authenticateToken, createPoinPelanggaran);
+router.get("/", authenticateToken, getListPoinPelanggaran);
+router.get("/:id", authenticateToken, getPoinPelanggaran);
+router.put("/:id", authenticateToken, updatePoinPelanggaran);
 
 module.exports = router;
