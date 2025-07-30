@@ -20,6 +20,7 @@ import Login from "./pages/AuthPages/Login";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import DataPoints from "./pages/ManajemenData/PoinPelanggaran";
 import PTK from "./pages/ManajemenData/PTK";
+import PD from "./pages/ManajemenData/SISWA";
 
 export default function App() {
   return (
@@ -48,9 +49,10 @@ export default function App() {
             {/* Forms */}
             {/* <Route path="/form-elements" element={<FormElements />} /> */}
 
-            {/* Data Points */}
+            {/* Manajemen Data */}
             <Route path="poin-pelanggaran" element={<DataPoints />} />
             <Route path="ptk" element={<PTK />} />
+            <Route path="siswa" element={<PD />} />
 
             {/* Tables */}
             <Route path="/basic-tables" element={<BasicTables />} />

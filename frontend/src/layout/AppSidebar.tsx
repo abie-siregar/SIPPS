@@ -7,7 +7,7 @@ import {
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
-  ListIcon,
+  // ListIcon,
   PageIcon,
   PieChartIcon,
   PlugInIcon,
@@ -34,11 +34,7 @@ const navItems: NavItem[] = [
     name: "Calendar",
     path: "/calendar",
   },
-  {
-    icon: <UserCircleIcon />,
-    name: "User Profile",
-    path: "/profile",
-  },
+
   // {
   //   name: "Forms",
   //   icon: <ListIcon />,
@@ -50,7 +46,7 @@ const navItems: NavItem[] = [
     subItems: [
       { name: "Data Poin Pelanggaran", path: "/poin-pelanggaran", pro: false },
       { name: "Data PTK", path: "/PTK", pro: false },
-      { name: "Data Siswa", path: "/poin-pelanggaran", pro: false },
+      { name: "Data Siswa", path: "/siswa", pro: false },
       { name: "Data Rombongan Belajar", path: "/poin-pelanggaran", pro: false },
     ],
   },
@@ -66,6 +62,11 @@ const navItems: NavItem[] = [
       { name: "Blank Page", path: "/blank", pro: false },
       { name: "404 Error", path: "/error-404", pro: false },
     ],
+  },
+  {
+    icon: <UserCircleIcon />,
+    name: "User Profile",
+    path: "/profile",
   },
 ];
 
@@ -303,7 +304,7 @@ const AppSidebar: React.FC = () => {
         }
         ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
         lg:translate-x-0`}
-      onMouseEnter={() => !isExpanded && setIsHovered(false)} //Matikan Hover sidebar
+      onMouseEnter={() => !isExpanded && setIsHovered(false)} //Matikan Hover sidebar ubah setIsHovered(false) menjadi setIsHovered(true) untuk menghidupkan
       onMouseLeave={() => setIsHovered(false)}
     >
       <div

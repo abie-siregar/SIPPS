@@ -5,6 +5,7 @@ const cors = require("cors");
 const authRoutes = require("./routes/auth");
 const pelanggaranRoutes = require("./routes/pelanggaran");
 const ptkRoutes = require("../src/controller/ptk/GetPtk");
+const siswaRoutes = require("../src/controller/pesertadidik/GetPesertaDidik");
 
 const app = express();
 
@@ -16,6 +17,7 @@ const port = process.env.PORT || 5000;
 app.use("/api/auth", authRoutes);
 app.use("/api/pelanggaran", pelanggaranRoutes);
 app.use("/api/ptk", ptkRoutes);
+app.use("/api/siswa", siswaRoutes);
 
 app.get("/", (req, res) => {
   res.send("API SIPPS Running...");

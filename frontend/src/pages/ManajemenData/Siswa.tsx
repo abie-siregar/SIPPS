@@ -4,31 +4,33 @@ import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import ComponentCard from "../../components/common/ComponentCard";
 import PageMeta from "../../components/common/PageMeta";
 
-interface PTK {
+interface Siswa {
   id: number;
   nama: string;
   alamat: string;
-  jenis_ptk: string;
-  tugas_tambahan: string;
+  nipd: string;
+  nisn: number;
+  jk: string;
   hp: number;
   email: string;
+  rombel: string;
 }
 
-const PTK = () => {
-  const [data, setData] = useState<PTK[]>([]);
-  const [filteredData, setFilteredData] = useState<PTK[]>([]);
+const PD = () => {
+  const [data, setData] = useState<Siswa[]>([]);
+  const [filteredData, setFilteredData] = useState<Siswa[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterTugas, setFilterTugas] = useState("Semua");
+  const [filterRombel, setFilterRombel] = useState("Semua");
   const [sortConfig, setSortConfig] = useState<{
-    key: keyof PTK;
+    key: keyof Siswa;
     direction: "asc" | "desc";
   } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchPTK = async () => {
+    const fetchSiswa = async () => {
       try {
-        const res = await axios.get("/ptk");
+        const res = await axios.get("/siswa");
         setData(res.data);
         setFilteredData(res.data);
       } catch (error) {
@@ -38,14 +40,14 @@ const PTK = () => {
       }
     };
 
-    fetchPTK();
+    fetchSiswa();
   }, []);
 
   useEffect(() => {
     let result = [...data];
 
-    if (filterTugas !== "Semua") {
-      result = result.filter((item) => item.tugas_tambahan === filterTugas);
+    if (filterRombel !== "Semua") {
+      result = result.filter((item) => item.rombel === filterRombel);
     }
 
     if (searchTerm) {
@@ -65,9 +67,9 @@ const PTK = () => {
     }
 
     setFilteredData(result);
-  }, [searchTerm, filterTugas, sortConfig, data]);
+  }, [searchTerm, filterRombel, sortConfig, data]);
 
-  const requestSort = (key: keyof PTK) => {
+  const requestSort = (key: keyof Siswa) => {
     let direction: "asc" | "desc" = "asc";
     if (sortConfig?.key === key && sortConfig.direction === "asc") {
       direction = "desc";
@@ -78,18 +80,18 @@ const PTK = () => {
   return (
     <>
       <PageMeta
-        title="Data Pendidik dan Tenaga Kependidikan | Dashboard SMKN 1 Batam"
-        description="Halaman menampilkan tabel data Pendidik dan Tenaga Kependidikan"
+        title="Data Peserta Didik | Dashboard SMKN 1 Batam"
+        description="Halaman menampilkan tabel data Peserta Didik"
       />
-      <PageBreadcrumb pageTitle="Data Pendidik dan Tenaga Kependidikan" />
+      <PageBreadcrumb pageTitle="Data Peserta Didik" />
       <div className="space-y-6">
-        <ComponentCard title="Tabel Data Pendidik dan Tenaga Kependidikan">
+        <ComponentCard title="Tabel Data Peserta Didik">
           {/* Search & Filter */}
           {/* Awal Baris Kode Search */}
           <div className="flex flex-col md:flex-row gap-3 mb-6 items-start md:items-center justify-between">
             <input
               type="text"
-              placeholder="Cari PTK"
+              placeholder="Cari Siswa berdasarkan Nama"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full md:w-1/4 px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-white/[0.03] dark:border-white/[0.05] dark:text-white/90"
@@ -97,15 +99,11 @@ const PTK = () => {
             {/* Akhir Baris Kode Search */}
             {/* Awal Baris Kode Filter */}
             <select
-              value={filterTugas}
-              onChange={(e) => setFilterTugas(e.target.value)}
+              value={filterRombel}
+              onChange={(e) => setFilterRombel(e.target.value)}
               className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-white/[0.03] dark:border-white/[0.05] dark:text-white/90"
             >
-              <option value="Semua">Semua PTK</option>
-              <option value="Wakil Kepala Sekolah">Wakil Kepala Sekolah</option>
-              <option value="Wali Kelas">Wali Kelas</option>
-              <option value="Guru BK">Guru BK</option>
-              <option value="Koordinator P5">Koordinator P5</option>
+              <option value="Semua">Semua Rombel</option>
             </select>
             {/* Akhir Baris Kode Filter */}
           </div>
@@ -140,16 +138,24 @@ const PTK = () => {
                           : ""}
                       </th>
                       <th className="px-5 py-3 text-theme-xs dark:text-gray-400">
-                        Jenis PTK{" "}
-                        {sortConfig?.key === "jenis_ptk"
+                        NIPD{" "}
+                        {sortConfig?.key === "nipd"
                           ? sortConfig.direction === "asc"
                             ? "↑"
                             : "↓"
                           : ""}
                       </th>
                       <th className="px-5 py-3 text-theme-xs dark:text-gray-400">
-                        Tugas Tambahan{" "}
-                        {sortConfig?.key === "tugas_tambahan"
+                        NISN{" "}
+                        {sortConfig?.key === "nisn"
+                          ? sortConfig.direction === "asc"
+                            ? "↑"
+                            : "↓"
+                          : ""}
+                      </th>
+                      <th className="px-5 py-3 text-theme-xs dark:text-gray-400">
+                        Jenis Kelamin{" "}
+                        {sortConfig?.key === "jk"
                           ? sortConfig.direction === "asc"
                             ? "↑"
                             : "↓"
@@ -160,6 +166,14 @@ const PTK = () => {
                       </th>
                       <th className="px-5 py-3 text-theme-xs dark:text-gray-400">
                         E-Mail
+                      </th>
+                      <th className="px-5 py-3 text-theme-xs dark:text-gray-400">
+                        Rombongan Belajar{" "}
+                        {sortConfig?.key === "rombel"
+                          ? sortConfig.direction === "asc"
+                            ? "↑"
+                            : "↓"
+                          : ""}
                       </th>
                     </tr>
                   </thead>
@@ -177,16 +191,22 @@ const PTK = () => {
                         </td>
 
                         <td className="px-5 py-4 text-gray-700 dark:text-white/90">
-                          {row.jenis_ptk}
+                          {row.nipd}
                         </td>
                         <td className="px-5 py-4 text-gray-700 dark:text-white/90">
-                          {row.tugas_tambahan}
+                          {row.nisn}
+                        </td>
+                        <td className="px-5 py-4 text-center text-gray-700 dark:text-white/90">
+                          {row.jk}
                         </td>
                         <td className="px-5 py-4 text-center text-gray-700 dark:text-white/90">
                           {row.hp}
                         </td>
                         <td className="px-5 py-4 text-gray-700 dark:text-white/90">
                           {row.email}
+                        </td>
+                        <td className="px-5 py-4 text-gray-700 dark:text-white/90">
+                          {row.rombel}
                         </td>
                       </tr>
                     ))}
@@ -202,4 +222,4 @@ const PTK = () => {
   );
 };
 
-export default PTK;
+export default PD;
