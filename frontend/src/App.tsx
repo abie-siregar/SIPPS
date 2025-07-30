@@ -71,10 +71,7 @@ export default function App() {
           />
 
           <Route path="/data-rombel" element={<DataRombel />} />
-          <Route
-            path="/dashboard/rombel/edit/:id"
-            element={<EditDataRombel />}
-          />
+          <Route path="/data-rombel/edit/:id" element={<EditDataRombel />} />
           <Route path="/data-user" element={<DataRombel />} />
 
           {/* Others */}

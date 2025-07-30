@@ -94,6 +94,23 @@ const PoinPelanggaran = () => {
   const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
+  const generatePageNumbers = () => {
+    const pages = [];
+    const maxVisible = 5;
+    let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+    let end = Math.min(totalPages, start + maxVisible - 1);
+
+    if (end - start < maxVisible - 1) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+
+    return pages;
+  };
+
   return (
     <>
       <PageMeta
@@ -225,39 +242,40 @@ const PoinPelanggaran = () => {
                 </table>
               </div>
 
-              {/* Pagination */}
-              <div className="flex justify-center mt-4 gap-2 text-sm">
-                <button
-                  disabled={currentPage === 1}
-                  onClick={() => setCurrentPage((prev) => prev - 1)}
-                  className="px-3 py-1 rounded border text-gray-700 hover:bg-gray-200 disabled:opacity-50"
-                >
-                  ← Prev
-                </button>
-
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                  (page) => (
+              {/* Pagination numerik */}
+              <div className="flex justify-between items-center mt-4 px-2 flex-wrap gap-3">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Halaman {currentPage} dari {totalPages}
+                </p>
+                <div className="flex gap-2 flex-wrap">
+                  <button
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((prev) => prev - 1)}
+                    className="px-3 py-1 border rounded text-sm dark:border-white/20 disabled:opacity-50"
+                  >
+                    ←
+                  </button>
+                  {generatePageNumbers().map((page) => (
                     <button
                       key={page}
                       onClick={() => setCurrentPage(page)}
-                      className={`px-3 py-1 rounded border ${
-                        page === currentPage
-                          ? "bg-blue-600 text-white"
-                          : "text-gray-700 hover:bg-gray-100"
+                      className={`px-3 py-1 border rounded text-sm ${
+                        currentPage === page
+                          ? "bg-blue-600 text-white border-blue-600"
+                          : "text-gray-700 dark:text-white dark:border-white/20"
                       }`}
                     >
                       {page}
                     </button>
-                  )
-                )}
-
-                <button
-                  disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage((prev) => prev + 1)}
-                  className="px-3 py-1 rounded border text-gray-700 hover:bg-gray-200 disabled:opacity-50"
-                >
-                  Next →
-                </button>
+                  ))}
+                  <button
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage((prev) => prev + 1)}
+                    className="px-3 py-1 border rounded text-sm dark:border-white/20 disabled:opacity-50"
+                  >
+                    →
+                  </button>
+                </div>
               </div>
             </div>
           )}
