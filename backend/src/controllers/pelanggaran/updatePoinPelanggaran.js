@@ -2,26 +2,31 @@ const pool = require("../../database/connection");
 
 const updatebobotPelanggaran = async (req, res) => {
   const { id } = req.params;
-  const { jenis_pelanggaran, bobot, jenis } = req.body;
+  const { jenis_pelanggaran, bobot, jenis, is_active } = req.body;
 
   if (isNaN(id)) {
     return res.status(400).json({ error: "ID Harus berupa angka" });
   }
 
-  if (!jenis_pelanggaran || typeof bobot !== "number" || !jenis) {
+  if (
+    !jenis_pelanggaran ||
+    typeof bobot !== "number" ||
+    !jenis ||
+    typeof is_active !== "boolean"
+  ) {
     return res.status(400).json({
       error:
-        "Jenis Pelanggaran, Bobot, atau Jenis Pelanggaran harus diisi dengan benar",
+        "Jenis Pelanggaran, Bobot, Jenis Pelanggaran, atau Active harus diisi dengan benar",
     });
   }
 
   try {
     const result = await pool.query(
       `UPDATE pelanggaran
-            SET jenis_pelanggaran = $1, bobot = $2, jenis = $3
-            WHERE id = $4
+            SET jenis_pelanggaran = $1, bobot = $2, jenis = $3, is_active = $4
+            WHERE id = $5
             RETURNING *`,
-      [jenis_pelanggaran, bobot, jenis, id]
+      [jenis_pelanggaran, bobot, jenis, is_active, id]
     );
 
     if (result.rows.length === 0) {

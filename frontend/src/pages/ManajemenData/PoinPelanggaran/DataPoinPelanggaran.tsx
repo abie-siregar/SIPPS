@@ -4,12 +4,15 @@ import axios from "../../../api/axios";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import ComponentCard from "../../../components/common/ComponentCard";
 import PageMeta from "../../../components/common/PageMeta";
+import Button from "../../../components/ui/button/Button";
+import { PencilIcon } from "../../../icons";
 
 interface Pelanggaran {
   id: number;
   jenis_pelanggaran: string;
   bobot: number;
   jenis: string;
+  is_active: boolean;
 }
 
 const PoinPelanggaran = () => {
@@ -22,14 +25,22 @@ const PoinPelanggaran = () => {
     direction: "asc" | "desc";
   } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   const navigate = useNavigate();
+
+  const handleEdit = (row: Pelanggaran) => {
+    navigate(`/data-poin-pelanggaran/edit/${row.id}`);
+  };
 
   useEffect(() => {
     const fetchPelanggaran = async () => {
       try {
         const res = await axios.get("/pelanggaran");
-        setData(res.data);
-        setFilteredData(res.data);
+        console.log("DATA DARI API :", res.data);
+        setData(res.data.data);
+        setFilteredData(res.data.data);
       } catch (error) {
         console.error("Gagal mengambil data:", error);
       } finally {
@@ -66,6 +77,10 @@ const PoinPelanggaran = () => {
     setFilteredData(result);
   }, [searchTerm, filterJenis, sortConfig, data]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterJenis]);
+
   const requestSort = (key: keyof Pelanggaran) => {
     let direction: "asc" | "desc" = "asc";
     if (sortConfig?.key === key && sortConfig.direction === "asc") {
@@ -73,6 +88,11 @@ const PoinPelanggaran = () => {
     }
     setSortConfig({ key, direction });
   };
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
   return (
     <>
@@ -161,18 +181,21 @@ const PoinPelanggaran = () => {
                           : ""}
                       </th>
                       <th className="px-5 py-3 text-theme-xs dark:text-gray-400 text-center">
+                        Aktif
+                      </th>
+                      <th className="px-5 py-3 text-theme-xs dark:text-gray-400 text-center">
                         Aksi
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-                    {filteredData.map((row, index) => (
+                    {currentItems.map((row, index) => (
                       <tr
                         key={row.id}
                         className="hover:bg-gray-50 dark:hover:bg-white/[0.03]"
                       >
                         <td className="px-5 py-4 text-center text-gray-700 dark:text-white/90">
-                          {index + 1}
+                          {(currentPage - 1) * itemsPerPage + index + 1}
                         </td>
                         <td className="px-5 py-4 text-gray-700 dark:text-white/90">
                           {row.jenis_pelanggaran}
@@ -183,20 +206,58 @@ const PoinPelanggaran = () => {
                         <td className="px-5 py-4 text-center text-gray-700 dark:text-white/90">
                           {row.jenis}
                         </td>
+                        <td className="px-5 py-4 text-center text-gray-700 dark:text-white/90">
+                          {row.is_active ? "Aktif" : "Tidak Aktif"}
+                        </td>
                         <td className="px-5 py-4 text-center">
-                          <button
-                            onClick={() =>
-                              navigate(`/data-poin-pelanggaran/edit/${row.id}`)
-                            }
-                            className="px-3 py-1 bg-yellow-500 hover:bg-yellow-600 text-white text-xs rounded-md"
+                          <Button
+                            size="sm"
+                            variant="primary"
+                            startIcon={<PencilIcon className="size-4" />}
+                            onClick={() => handleEdit(row)}
                           >
-                            ✎ Edit
-                          </button>
+                            Edit
+                          </Button>
                         </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
+              </div>
+
+              {/* Pagination */}
+              <div className="flex justify-center mt-4 gap-2 text-sm">
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage((prev) => prev - 1)}
+                  className="px-3 py-1 rounded border text-gray-700 hover:bg-gray-200 disabled:opacity-50"
+                >
+                  ← Prev
+                </button>
+
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-3 py-1 rounded border ${
+                        page === currentPage
+                          ? "bg-blue-600 text-white"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  )
+                )}
+
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage((prev) => prev + 1)}
+                  className="px-3 py-1 rounded border text-gray-700 hover:bg-gray-200 disabled:opacity-50"
+                >
+                  Next →
+                </button>
               </div>
             </div>
           )}

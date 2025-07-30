@@ -5,7 +5,10 @@ const getListPoinPelanggaran = async (req, res) => {
     const result = await pool.query(
       "SELECT * FROM pelanggaran ORDER BY id ASC"
     );
-    res.json(result.rows);
+    res.json({
+      total: result.rowCount,
+      data: result.rows,
+    });
   } catch (error) {
     console.error("Error fetching pelanggaran:", error.message);
     res.status(500).json({ error: "Internal Server Error" });

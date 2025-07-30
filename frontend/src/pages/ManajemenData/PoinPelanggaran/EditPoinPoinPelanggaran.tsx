@@ -11,6 +11,7 @@ const EditDataPoinPelanggaran = () => {
   const [jenisPelanggaran, setJenisPelanggaran] = useState("");
   const [bobot, setBobot] = useState<number | "">("");
   const [jenis, setJenis] = useState("Kelakuan");
+  const [isActive, setIsActive] = useState<boolean>(true);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -23,6 +24,7 @@ const EditDataPoinPelanggaran = () => {
         setJenisPelanggaran(data.jenis_pelanggaran);
         setBobot(data.bobot);
         setJenis(data.jenis);
+        setIsActive(data.is_active);
       } catch (err) {
         setError("Gagal memuat data pelanggaran.");
         console.error(err);
@@ -49,12 +51,13 @@ const EditDataPoinPelanggaran = () => {
         jenis_pelanggaran: jenisPelanggaran,
         bobot: Number(bobot),
         jenis,
+        is_active: isActive,
       });
 
       navigate("/data-poin-pelanggaran");
-    } catch (err) {
+    } catch (error) {
       setError("Gagal mengupdate data.");
-      console.error(err);
+      console.error(error);
     }
   };
 
@@ -114,6 +117,21 @@ const EditDataPoinPelanggaran = () => {
                   <option value="Kerapian">Kerapian</option>
                 </select>
               </div>
+
+              <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+                <span>Status:</span>
+                <div className="relative">
+                  <input
+                    type="checkbox"
+                    checked={isActive}
+                    onChange={(e) => setIsActive(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-300 peer-checked:bg-green-500 rounded-full transition-all"></div>
+                  <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-all peer-checked:translate-x-full"></div>
+                </div>
+                <span>{isActive ? "Aktif" : "Tidak Aktif"}</span>
+              </label>
 
               <div className="flex justify-end gap-2">
                 <button
