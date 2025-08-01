@@ -3,6 +3,7 @@ import axios from "../../api/axios";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import ComponentCard from "../../components/common/ComponentCard";
 import PageMeta from "../../components/common/PageMeta";
+import Pagination from "../../components/ui/button/Pagination";
 
 interface Siswa {
   id: number;
@@ -26,6 +27,23 @@ const PD = () => {
     direction: "asc" | "desc";
   } | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // --- State dan logika untuk Pagination ---
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 50; // Jumlah item per halaman
+
+  // Menghitung total halaman berdasarkan data yang sudah difilter
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+
+  // Mengambil data untuk halaman saat ini
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentItems = filteredData.slice(startIndex, endIndex);
+
+  // Fungsi untuk mengubah halaman
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   useEffect(() => {
     const fetchSiswa = async () => {
@@ -67,6 +85,7 @@ const PD = () => {
     }
 
     setFilteredData(result);
+    setCurrentPage(1); //penambahan
   }, [searchTerm, filterRombel, sortConfig, data]);
 
   const requestSort = (key: keyof Siswa) => {
@@ -178,13 +197,14 @@ const PD = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-                    {filteredData.map((row, index) => (
+                    {currentItems.map((row, index) => (
                       <tr
                         key={row.id}
                         className="hover:bg-gray-50 dark:hover:bg-white/[0.03]"
                       >
                         <td className="px-5 py-4 text-center text-gray-700 dark:text-white/90">
-                          {index + 1}
+                          {/* Menambahkan startIndex + */}
+                          {startIndex + index + 1}
                         </td>
                         <td className="px-5 py-4 text-gray-700 dark:text-white/90">
                           {row.nama}
@@ -205,7 +225,7 @@ const PD = () => {
                         <td className="px-5 py-4 text-gray-700 dark:text-white/90">
                           {row.email}
                         </td>
-                        <td className="px-5 py-4 text-gray-700 dark:text-white/90">
+                        <td className="px-5 py-4 text-center text-gray-700 dark:text-white/90">
                           {row.rombel}
                         </td>
                       </tr>
@@ -218,6 +238,11 @@ const PD = () => {
           {/* Akhir Baris Kode Table */}
         </ComponentCard>
       </div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+      />
     </>
   );
 };
