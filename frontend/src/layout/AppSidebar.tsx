@@ -7,11 +7,7 @@ import {
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
-<<<<<<< HEAD
-  ListIcon,
-=======
   // ListIcon,
->>>>>>> dev-abi
   PageIcon,
   PieChartIcon,
   PlugInIcon,
@@ -38,15 +34,12 @@ const navItems: NavItem[] = [
     name: "Calendar",
     path: "/calendar",
   },
-<<<<<<< HEAD
   {
     icon: <UserCircleIcon />,
     name: "User Profile",
     path: "/profile",
   },
-=======
 
->>>>>>> dev-abi
   // {
   //   name: "Forms",
   //   icon: <ListIcon />,
@@ -56,7 +49,6 @@ const navItems: NavItem[] = [
     name: "Manajemen Data",
     icon: <TableIcon />,
     subItems: [
-<<<<<<< HEAD
       {
         name: "Data Poin Pelanggaran",
         path: "/data-poin-pelanggaran",
@@ -64,6 +56,9 @@ const navItems: NavItem[] = [
       },
       { name: "Data Rombel", path: "/data-rombel", pro: false },
       { name: "Data User", path: "/data-user", pro: false },
+      { name: "Data PTK", path: "/PTK", pro: false },
+      { name: "Data Siswa", path: "/siswa", pro: false },
+      { name: "Data Rombongan Belajar", path: "/poin-pelanggaran", pro: false },
     ],
   },
   {
@@ -72,15 +67,6 @@ const navItems: NavItem[] = [
     path: "/basic-tables",
   },
   {
-=======
-      { name: "Data Poin Pelanggaran", path: "/poin-pelanggaran", pro: false },
-      { name: "Data PTK", path: "/PTK", pro: false },
-      { name: "Data Siswa", path: "/siswa", pro: false },
-      { name: "Data Rombongan Belajar", path: "/poin-pelanggaran", pro: false },
-    ],
-  },
-  {
->>>>>>> dev-abi
     name: "Tables",
     icon: <TableIcon />,
     subItems: [{ name: "Basic Tables", path: "/basic-tables", pro: false }],
@@ -93,14 +79,6 @@ const navItems: NavItem[] = [
       { name: "404 Error", path: "/error-404", pro: false },
     ],
   },
-<<<<<<< HEAD
-=======
-  {
-    icon: <UserCircleIcon />,
-    name: "User Profile",
-    path: "/profile",
-  },
->>>>>>> dev-abi
 ];
 
 const othersItems: NavItem[] = [
@@ -337,11 +315,7 @@ const AppSidebar: React.FC = () => {
         }
         ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
         lg:translate-x-0`}
-<<<<<<< HEAD
       onMouseEnter={() => !isExpanded && setIsHovered(true)}
-=======
-      onMouseEnter={() => !isExpanded && setIsHovered(false)} //Matikan Hover sidebar ubah setIsHovered(false) menjadi setIsHovered(true) untuk menghidupkan
->>>>>>> dev-abi
       onMouseLeave={() => setIsHovered(false)}
     >
       <div

@@ -5,7 +5,6 @@ import {
   Navigate,
 } from "react-router-dom";
 import NotFound from "./pages/OtherPage/NotFound";
-// import UserProfiles from "./pages/UserProfiles";
 import Videos from "./pages/UiElements/Videos";
 import Images from "./pages/UiElements/Images";
 import Alerts from "./pages/UiElements/Alerts";
@@ -80,7 +79,6 @@ export default function App() {
           <Route path="siswa" element={<PD />} />
 
           {/* Others */}
-          <Route path="/profile" element={<UserProfiles />} />
           <Route path="/calendar" element={<Calendar />} />
           <Route path="/blank" element={<Blank />} />
 
