@@ -5,7 +5,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import NotFound from "./pages/OtherPage/NotFound";
-import UserProfiles from "./pages/UserProfiles";
+// import UserProfiles from "./pages/UserProfiles";
 import Videos from "./pages/UiElements/Videos";
 import Images from "./pages/UiElements/Images";
 import Alerts from "./pages/UiElements/Alerts";
@@ -24,11 +24,13 @@ import Login from "./pages/AuthPages/Login";
 import AdminLogin from "./pages/AuthPages/AdminLogin";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
-import DataPoinPelanggarn from "./pages/ManajemenData/PoinPelanggaran/DataPoinPelanggaran";
+import DataPoinPelanggaran from "./pages/ManajemenData/PoinPelanggaran/DataPoinPelanggaran";
 import DataRombel from "./pages/ManajemenData/Rombel/DataRombel";
 import EditDataRombel from "./pages/ManajemenData/Rombel/EditDataRombel";
 import TambahPelanggaran from "./pages/ManajemenData/PoinPelanggaran/TambahDataPoinPelanggaran";
 import EditDataPoinPelanggaran from "./pages/ManajemenData/PoinPelanggaran/EditPoinPoinPelanggaran";
+import PTK from "./pages/ManajemenData/PTK";
+import PD from "./pages/ManajemenData/Siswa";
 
 export default function App() {
   return (
@@ -59,7 +61,7 @@ export default function App() {
           {/* Data Poin Pelanggaran */}
           <Route
             path="/data-poin-pelanggaran"
-            element={<DataPoinPelanggarn />}
+            element={<DataPoinPelanggaran />}
           />
           <Route
             path="/data-poin-pelanggaran/tambah"
@@ -73,6 +75,9 @@ export default function App() {
           <Route path="/data-rombel" element={<DataRombel />} />
           <Route path="/data-rombel/edit/:id" element={<EditDataRombel />} />
           <Route path="/data-user" element={<DataRombel />} />
+
+          <Route path="ptk" element={<PTK />} />
+          <Route path="siswa" element={<PD />} />
 
           {/* Others */}
           <Route path="/profile" element={<UserProfiles />} />

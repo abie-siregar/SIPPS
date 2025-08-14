@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { Navigate } from "react-router-dom";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -7,6 +8,13 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   return <>{children}</>;
+=======
+import { Navigate } from "react-router";
+
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const token = localStorage.getItem("token");
+  return token ? <>{children}</> : <Navigate to="/login" />;
+>>>>>>> dev-abi
 };
 
 export default ProtectedRoute;

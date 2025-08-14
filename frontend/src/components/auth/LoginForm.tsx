@@ -46,6 +46,7 @@ export default function LoginForm() {
 
   return (
     <div className="flex flex-col flex-1">
+<<<<<<< HEAD
       <div className="w-full max-w-md pt-10 mx-auto">
         <Link
           to="/"
@@ -55,6 +56,8 @@ export default function LoginForm() {
           Back to dashboard
         </Link>
       </div>
+=======
+>>>>>>> dev-abi
       <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
         <div>
           <div className="mb-5 sm:mb-8">
@@ -122,7 +125,11 @@ export default function LoginForm() {
                 </Link>
               </div>
               <div>
+<<<<<<< HEAD
                 <Button className="w-full" size="sm" type="submit">
+=======
+                <Button className="w-full" size="sm">
+>>>>>>> dev-abi
                   Login
                 </Button>
               </div>

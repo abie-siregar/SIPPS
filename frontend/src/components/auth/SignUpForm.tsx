@@ -47,6 +47,7 @@ export default function SignUpForm() {
 
   return (
     <div className="flex flex-col flex-1 w-full overflow-y-auto lg:w-1/2 no-scrollbar">
+<<<<<<< HEAD
       <div className="w-full max-w-md mx-auto mb-5 sm:pt-10">
         <Link
           to="/"
@@ -57,6 +58,8 @@ export default function SignUpForm() {
         </Link>
       </div>
 
+=======
+>>>>>>> dev-abi
       <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
         <div className="mb-5 sm:mb-8">
           <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
