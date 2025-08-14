@@ -1,14 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
 
-// Assume these icons are imported from an icon library
 import {
   BoxCubeIcon,
   CalenderIcon,
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
-  ListIcon,
+  // ListIcon,
   PageIcon,
   PieChartIcon,
   PlugInIcon,
@@ -16,7 +15,6 @@ import {
   UserCircleIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
-import SidebarWidget from "./SidebarWidget";
 
 type NavItem = {
   name: string;
@@ -36,15 +34,21 @@ const navItems: NavItem[] = [
     name: "Calendar",
     path: "/calendar",
   },
+
+  // {
+  //   name: "Forms",
+  //   icon: <ListIcon />,
+  //   subItems: [{ name: "Form Elements", path: "/form-elements", pro: false }],
+  // },
   {
-    icon: <UserCircleIcon />,
-    name: "User Profile",
-    path: "/profile",
-  },
-  {
-    name: "Forms",
-    icon: <ListIcon />,
-    subItems: [{ name: "Form Elements", path: "/form-elements", pro: false }],
+    name: "Manajemen Data",
+    icon: <TableIcon />,
+    subItems: [
+      { name: "Data Poin Pelanggaran", path: "/poin-pelanggaran", pro: false },
+      { name: "Data PTK", path: "/PTK", pro: false },
+      { name: "Data Siswa", path: "/siswa", pro: false },
+      { name: "Data Rombongan Belajar", path: "/poin-pelanggaran", pro: false },
+    ],
   },
   {
     name: "Tables",
@@ -58,6 +62,11 @@ const navItems: NavItem[] = [
       { name: "Blank Page", path: "/blank", pro: false },
       { name: "404 Error", path: "/error-404", pro: false },
     ],
+  },
+  {
+    icon: <UserCircleIcon />,
+    name: "User Profile",
+    path: "/profile",
   },
 ];
 
@@ -86,7 +95,7 @@ const othersItems: NavItem[] = [
     icon: <PlugInIcon />,
     name: "Authentication",
     subItems: [
-      { name: "Sign In", path: "/signin", pro: false },
+      { name: "Login", path: "/login", pro: false },
       { name: "Sign Up", path: "/signup", pro: false },
     ],
   },
@@ -295,7 +304,7 @@ const AppSidebar: React.FC = () => {
         }
         ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
         lg:translate-x-0`}
-      onMouseEnter={() => !isExpanded && setIsHovered(true)}
+      onMouseEnter={() => !isExpanded && setIsHovered(false)} //Matikan Hover sidebar ubah setIsHovered(false) menjadi setIsHovered(true) untuk menghidupkan
       onMouseLeave={() => setIsHovered(false)}
     >
       <div
@@ -368,7 +377,6 @@ const AppSidebar: React.FC = () => {
             </div>
           </div>
         </nav>
-        {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null}
       </div>
     </aside>
   );
