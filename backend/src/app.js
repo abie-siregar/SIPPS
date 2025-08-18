@@ -19,14 +19,14 @@ app.use(express.json());
 
 // Import Routes
 const authRoutes = require("./routes/auth");
-const pelanggaranRoutes = require("./routes/pelanggaran");
+const poinPelanggaranRoutes = require("./routes/poinPelanggaran");
 const ptkRoutes = require("../src/controller/ptk/GetPtk");
 const siswaRoutes = require("../src/controller/pesertadidik/GetPesertaDidik");
 const rombelRoutes = require("./routes/rombel");
 
 // Register Routes
 app.use("/api/auth", authRoutes);
-app.use("/api/pelanggaran", pelanggaranRoutes);
+app.use("/api/poin-pelanggaran", poinPelanggaranRoutes);
 app.use("/api/rombel", rombelRoutes);
 app.use("/api/ptk", ptkRoutes);
 app.use("/api/siswa", siswaRoutes);

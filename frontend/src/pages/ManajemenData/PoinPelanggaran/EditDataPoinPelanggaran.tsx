@@ -4,26 +4,27 @@ import axios from "../../../api/axios";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import ComponentCard from "../../../components/common/ComponentCard";
 import PageMeta from "../../../components/common/PageMeta";
+import SuccessPopup from "../../UiElements/SuccessPopup";
 
 const EditDataPoinPelanggaran = () => {
   const navigate = useNavigate();
-  const { id } = useParams();
-  const [jenisPelanggaran, setJenisPelanggaran] = useState("");
+  const { id_poin } = useParams();
+  const [jenisPenilaian, setjenisPenilaian] = useState("");
   const [bobot, setBobot] = useState<number | "">("");
-  const [jenis, setJenis] = useState("Kelakuan");
+  const [jenisPelanggaran, setJenisPelanggaran] = useState("Kelakuan");
   const [isActive, setIsActive] = useState<boolean>(true);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [showPopup, setShowPopup] = useState(false);
 
-  // Ambil data lama berdasarkan ID
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get(`/pelanggaran/${id}`);
+        const res = await axios.get(`/poin-pelanggaran/${id_poin}`);
         const data = res.data;
-        setJenisPelanggaran(data.jenis_pelanggaran);
+        setjenisPenilaian(data.jenis_penilaian);
         setBobot(data.bobot);
-        setJenis(data.jenis);
+        setJenisPelanggaran(data.jenis_pelanggaran);
         setIsActive(data.is_active);
       } catch (err) {
         setError("Gagal memuat data pelanggaran.");
@@ -34,27 +35,38 @@ const EditDataPoinPelanggaran = () => {
     };
 
     fetchData();
-  }, [id]);
+  }, [id_poin]);
 
-  // Submit edit data
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    if (!jenisPelanggaran || bobot === "" || isNaN(Number(bobot)) || !jenis) {
+    if (
+      !jenisPenilaian ||
+      bobot === "" ||
+      isNaN(Number(bobot)) ||
+      !jenisPelanggaran
+    ) {
       setError("Semua field wajib diisi dan bobot harus berupa angka.");
       return;
     }
 
     try {
-      await axios.put(`/pelanggaran/${id}`, {
-        jenis_pelanggaran: jenisPelanggaran,
+      const res = await axios.put(`/poin-pelanggaran/${id_poin}`, {
+        jenis_penilaian: jenisPenilaian,
         bobot: Number(bobot),
-        jenis,
+        jenis_pelanggaran: jenisPelanggaran,
         is_active: isActive,
       });
 
-      navigate("/data-poin-pelanggaran");
+      if (res.status === 200) {
+        setShowPopup(true);
+        setTimeout(() => {
+          navigate("/data-poin-pelanggaran");
+        }, 1500);
+      } else {
+        console.log("Update Gagal");
+      }
     } catch (error) {
       setError("Gagal mengupdate data.");
       console.error(error);
@@ -80,11 +92,11 @@ const EditDataPoinPelanggaran = () => {
 
               <div>
                 <label className="block text-sm mb-1 font-medium text-gray-700 dark:text-white/90">
-                  Jenis Pelanggaran
+                  Jenis Penilaian
                 </label>
                 <textarea
-                  value={jenisPelanggaran}
-                  onChange={(e) => setJenisPelanggaran(e.target.value)}
+                  value={jenisPenilaian}
+                  onChange={(e) => setjenisPenilaian(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg dark:bg-white/[0.03] dark:border-white/[0.1] dark:text-white/90"
                   required
                 />
@@ -108,8 +120,8 @@ const EditDataPoinPelanggaran = () => {
                   Jenis
                 </label>
                 <select
-                  value={jenis}
-                  onChange={(e) => setJenis(e.target.value)}
+                  value={jenisPelanggaran}
+                  onChange={(e) => setJenisPelanggaran(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg dark:bg-white/[0.03] dark:border-white/[0.1] dark:text-white/90"
                 >
                   <option value="Kelakuan">Kelakuan</option>
@@ -152,6 +164,12 @@ const EditDataPoinPelanggaran = () => {
           )}
         </ComponentCard>
       </div>
+
+      <SuccessPopup
+        message="Data Berhasil Diperbarui"
+        show={showPopup}
+        onClose={() => setShowPopup(false)}
+      />
     </>
   );
 };

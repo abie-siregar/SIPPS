@@ -113,7 +113,7 @@ export default function LoginForm() {
                 </Link>
               </div>
               <div>
-                <Button className="w-full" size="sm">
+                <Button className="w-full" size="sm" type="submit">
                   Login
                 </Button>
               </div>

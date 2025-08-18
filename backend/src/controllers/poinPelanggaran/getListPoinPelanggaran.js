@@ -3,7 +3,7 @@ const pool = require("../../database/connection");
 const getListPoinPelanggaran = async (req, res) => {
   try {
     const result = await pool.query(
-      "SELECT * FROM pelanggaran ORDER BY id ASC"
+      "SELECT * FROM poin_pelanggaran ORDER BY id_poin ASC"
     );
     res.json({
       total: result.rowCount,

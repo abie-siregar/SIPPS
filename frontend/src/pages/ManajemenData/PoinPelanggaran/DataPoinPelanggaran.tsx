@@ -8,10 +8,10 @@ import Button from "../../../components/ui/button/Button";
 import { PencilIcon } from "../../../icons";
 
 interface Pelanggaran {
-  id: number;
-  jenis_pelanggaran: string;
+  id_poin: number;
+  jenis_penilaian: string;
   bobot: number;
-  jenis: string;
+  jenis_pelanggaran: string;
   is_active: boolean;
 }
 
@@ -19,7 +19,7 @@ const PoinPelanggaran = () => {
   const [data, setData] = useState<Pelanggaran[]>([]);
   const [filteredData, setFilteredData] = useState<Pelanggaran[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterJenis, setFilterJenis] = useState("Semua");
+  const [filterJenisPelanggaran, setFilterJenisPelanggaran] = useState("Semua");
   const [sortConfig, setSortConfig] = useState<{
     key: keyof Pelanggaran;
     direction: "asc" | "desc";
@@ -31,13 +31,13 @@ const PoinPelanggaran = () => {
   const navigate = useNavigate();
 
   const handleEdit = (row: Pelanggaran) => {
-    navigate(`/data-poin-pelanggaran/edit/${row.id}`);
+    navigate(`/data-poin-pelanggaran/edit/${row.id_poin}`);
   };
 
   useEffect(() => {
     const fetchPelanggaran = async () => {
       try {
-        const res = await axios.get("/pelanggaran");
+        const res = await axios.get("/poin-pelanggaran");
         console.log("DATA DARI API :", res.data);
         setData(res.data.data);
         setFilteredData(res.data.data);
@@ -54,13 +54,15 @@ const PoinPelanggaran = () => {
   useEffect(() => {
     let result = [...data];
 
-    if (filterJenis !== "Semua") {
-      result = result.filter((item) => item.jenis === filterJenis);
+    if (filterJenisPelanggaran !== "Semua") {
+      result = result.filter(
+        (item) => item.jenis_pelanggaran === filterJenisPelanggaran
+      );
     }
 
     if (searchTerm) {
       result = result.filter((item) =>
-        item.jenis_pelanggaran.toLowerCase().includes(searchTerm.toLowerCase())
+        item.jenis_penilaian.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -75,11 +77,11 @@ const PoinPelanggaran = () => {
     }
 
     setFilteredData(result);
-  }, [searchTerm, filterJenis, sortConfig, data]);
+  }, [searchTerm, filterJenisPelanggaran, sortConfig, data]);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, filterJenis]);
+  }, [searchTerm, filterJenisPelanggaran]);
 
   const requestSort = (key: keyof Pelanggaran) => {
     let direction: "asc" | "desc" = "asc";
@@ -134,17 +136,17 @@ const PoinPelanggaran = () => {
             <div className="flex flex-col md:flex-row gap-3 items-start md:items-center">
               <input
                 type="text"
-                placeholder="Cari jenis pelanggaran..."
+                placeholder="Cari jenis penilaian..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full md:w-64 px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-white/[0.03] dark:border-white/[0.05] dark:text-white/90"
               />
               <select
-                value={filterJenis}
-                onChange={(e) => setFilterJenis(e.target.value)}
+                value={filterJenisPelanggaran}
+                onChange={(e) => setFilterJenisPelanggaran(e.target.value)}
                 className="px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-white/[0.03] dark:border-white/[0.05] dark:text-white/90"
               >
-                <option value="Semua">Semua Jenis</option>
+                <option value="Semua">Semua Jenis Pelanggaran</option>
                 <option value="Kelakuan">Kelakuan</option>
                 <option value="Kerajinan">Kerajinan</option>
                 <option value="Kerapian">Kerapian</option>
@@ -162,18 +164,18 @@ const PoinPelanggaran = () => {
                   <thead className="bg-gray-100 dark:bg-white/[0.05] border-b border-gray-200 dark:border-white/[0.05]">
                     <tr>
                       <th
-                        onClick={() => requestSort("id")}
+                        onClick={() => requestSort("id_poin")}
                         className="px-5 py-3 cursor-pointer text-theme-xs dark:text-gray-400"
                       >
                         No{" "}
-                        {sortConfig?.key === "id"
+                        {sortConfig?.key === "id_poin"
                           ? sortConfig.direction === "asc"
                             ? "↑"
                             : "↓"
                           : ""}
                       </th>
                       <th className="px-5 py-3 text-theme-xs dark:text-gray-400">
-                        Jenis Pelanggaran
+                        Jenis Penilaian
                       </th>
                       <th
                         onClick={() => requestSort("bobot")}
@@ -187,11 +189,11 @@ const PoinPelanggaran = () => {
                           : ""}
                       </th>
                       <th
-                        onClick={() => requestSort("jenis")}
+                        onClick={() => requestSort("jenis_pelanggaran")}
                         className="px-5 py-3 cursor-pointer text-theme-xs dark:text-gray-400"
                       >
-                        Jenis{" "}
-                        {sortConfig?.key === "jenis"
+                        Jenis Pelanggaran{" "}
+                        {sortConfig?.key === "jenis_pelanggaran"
                           ? sortConfig.direction === "asc"
                             ? "↑"
                             : "↓"
@@ -208,20 +210,20 @@ const PoinPelanggaran = () => {
                   <tbody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
                     {currentItems.map((row, index) => (
                       <tr
-                        key={row.id}
+                        key={row.id_poin}
                         className="hover:bg-gray-50 dark:hover:bg-white/[0.03]"
                       >
                         <td className="px-5 py-4 text-center text-gray-700 dark:text-white/90">
                           {(currentPage - 1) * itemsPerPage + index + 1}
                         </td>
                         <td className="px-5 py-4 text-gray-700 dark:text-white/90">
-                          {row.jenis_pelanggaran}
+                          {row.jenis_penilaian}
                         </td>
                         <td className="px-5 py-4 text-center text-gray-700 dark:text-white/90">
                           {row.bobot}
                         </td>
                         <td className="px-5 py-4 text-center text-gray-700 dark:text-white/90">
-                          {row.jenis}
+                          {row.jenis_pelanggaran}
                         </td>
                         <td className="px-5 py-4 text-center text-gray-700 dark:text-white/90">
                           {row.is_active ? "Aktif" : "Tidak Aktif"}
