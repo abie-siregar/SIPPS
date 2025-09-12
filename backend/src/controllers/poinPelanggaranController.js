@@ -85,7 +85,7 @@ module.exports = {
     ) {
       return res.status(400).json({
         error:
-          "Jenis Penilaian, Bobot, Jenis Pelanggaran, atau Active harus diisi dengan benar",
+          "Jenis Penilaian, Bobot, Jenis Pelanggaran, atau Active harus di isi dengan benar",
       });
     }
 

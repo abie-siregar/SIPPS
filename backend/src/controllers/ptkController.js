@@ -9,7 +9,7 @@ module.exports = {
       res.json(result.rows);
     } catch (error) {
       console.error("Error fetching ptk:", error.message);
-      res.status(500).json({ error: "Internal Server Error" });
+      res.status(500).json({ error: "Internall Server Error" });
     }
   },
 };

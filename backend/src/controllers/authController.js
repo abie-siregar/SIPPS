@@ -54,7 +54,7 @@ module.exports = {
         .json({ message: "User berhasil dibuat", user: result.rows[0] });
     } catch (error) {
       console.error("Register error:", error.message);
-      res.status(500).json({ error: "Internal Server Error" });
+      res.status(500).json({ error: "Internal Server Err" });
     }
   },
 };
