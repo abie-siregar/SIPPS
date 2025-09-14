@@ -9,7 +9,7 @@ module.exports = {
 
       // ambil user berdasarkan email
       const result = await pool.query(
-        "SELECT id, email, password_hash FROM users WHERE email = $1",
+        "SELECT id_users, email, password_hash FROM users WHERE email = $1",
         [email]
       );
 
@@ -39,14 +39,16 @@ module.exports = {
     }
   },
 
+  //Register
   async register(req, res) {
     try {
-      const { username, password } = req.body;
+      const { username, password, email } = req.body;
       const hashedPassword = await bcrypt.hash(password, 10);
 
+      const defaultRole='user'
       const result = await pool.query(
-        "INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id, username",
-        [username, hashedPassword]
+        "INSERT INTO users (username, password_hash, role, email) VALUES ($1, $2, $3, $4) RETURNING id_users, username",
+        [username, hashedPassword, defaultRole, email]
       );
 
       res
@@ -54,7 +56,7 @@ module.exports = {
         .json({ message: "User berhasil dibuat", user: result.rows[0] });
     } catch (error) {
       console.error("Register error:", error.message);
-      res.status(500).json({ error: "Internal Server Err" });
+      res.status(500).json({ error: "Internal Server Error" });
     }
   },
 };

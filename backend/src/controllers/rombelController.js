@@ -29,7 +29,7 @@ module.exports = {
         query += ` AND LOWER(wali_kelas) LIKE $${values.length}`;
       }
 
-      query += " ORDER BY id ASC";
+      query += " ORDER BY id_rombel ASC";
 
       const result = await pool.query(query, values);
       res.json({
