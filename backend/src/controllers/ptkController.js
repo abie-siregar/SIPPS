@@ -4,7 +4,7 @@ module.exports = {
   async getAll(req, res) {
     try {
       const result = await pool.query(
-        "SELECT nama, nuptk, jenis_ptk, tugas_tambahan, hp, email FROM ptk ORDER BY id ASC"
+        "SELECT nama, nuptk, jenis_ptk, tugas_tambahan, hp, email FROM ptk ORDER BY id_ptk ASC"
       );
       res.json(result.rows);
     } catch (error) {

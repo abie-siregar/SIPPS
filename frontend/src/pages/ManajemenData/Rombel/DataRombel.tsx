@@ -8,12 +8,12 @@ import Button from "../../../components/ui/button/Button";
 import { PencilIcon } from "../../../icons";
 
 interface Rombel {
-  id: number;
+  id_rombel: number;
   wali_kelas: string;
   rombel: string;
   tingkat: string;
-  l: number;
-  p: number;
+  jmlh_l: number;
+  jmlh_p: number;
   jurusan: string;
 }
 
@@ -61,7 +61,7 @@ const DataRombel = () => {
   }, [searchTerm, filterTingkat, filterJurusan]);
 
   const handleEdit = (row: Rombel) => {
-    navigate(`/data-rombel/edit/${row.id}`);
+    navigate(`/data-rombel/edit/${row.id_rombel}`);
   };
 
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -166,7 +166,7 @@ const DataRombel = () => {
                     <tbody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
                       {currentItems.map((row, index) => (
                         <tr
-                          key={row.id}
+                          key={row.id_rombel}
                           className="hover:bg-gray-50 dark:hover:bg-white/[0.03]"
                         >
                           <td className="px-5 py-4 text-center text-gray-700 dark:text-white/90">
@@ -182,10 +182,10 @@ const DataRombel = () => {
                             {row.tingkat}
                           </td>
                           <td className="px-5 py-4 text-center text-gray-700 dark:text-white/90">
-                            {row.l}
+                            {row.jmlh_l}
                           </td>
                           <td className="px-5 py-4 text-center text-gray-700 dark:text-white/90">
-                            {row.p}
+                            {row.jmlh_p}
                           </td>
                           <td className="px-5 py-4 text-gray-700 dark:text-white/90">
                             {row.jurusan}

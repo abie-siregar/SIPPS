@@ -8,12 +8,12 @@ import Button from "../../../components/ui/button/Button";
 import SuccessPopup from "../../UiElements/SuccessPopup";
 
 interface Rombel {
-  id: number;
+  id_rombel: number;
   wali_kelas: string;
   rombel: string;
   tingkat: string;
-  l: number;
-  p: number;
+  jmlh_l: number;
+  jmlh_p: number;
   jurusan: string;
 }
 
@@ -126,7 +126,7 @@ const EditDataRombel = () => {
                 <input
                   type="number"
                   name="l"
-                  value={formData.l}
+                  value={formData.jmlh_l}
                   onChange={handleChange}
                   className="w-full px-4 py-2 border rounded"
                 />
@@ -136,7 +136,7 @@ const EditDataRombel = () => {
                 <input
                   type="number"
                   name="p"
-                  value={formData.p}
+                  value={formData.jmlh_p}
                   onChange={handleChange}
                   className="w-full px-4 py-2 border rounded"
                 />
