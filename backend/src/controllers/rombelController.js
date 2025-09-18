@@ -99,4 +99,17 @@ module.exports = {
       res.status(500).json({ error: "Internal Server Error" });
     }
   },
+
+    async getAll(req, res) {
+    try {
+      const result = await pool.query(
+        "SELECT wali_kelas, rombel, tingkat, jmlh_l, jmlh_p, jurusan FROM ptk ORDER BY id_rombel ASC"
+      );
+      res.json(result.rows);
+    } catch (error) {
+      console.error("Error fetching rombel:", error.message);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  },
+
 };
