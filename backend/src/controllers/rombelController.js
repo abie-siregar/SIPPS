@@ -1,46 +1,46 @@
 const pool = require("../../config/database");
 
 module.exports = {
-  async getList(req, res) {
-    const { tingkat, jurusan, search } = req.body;
+  // async getList(req, res) {
+  //   const { tingkat, jurusan, search } = req.body;
 
-    try {
-      let query = "SELECT * FROM rombel WHERE 1=1";
-      const values = [];
+  //   try {
+  //     let query = "SELECT * FROM rombel WHERE 1=1";
+  //     const values = [];
 
-      if (tingkat && Array.isArray(tingkat) && tingkat.length > 0) {
-        const placeholders = tingkat
-          .map((_, i) => `$${values.length + i + 1}`)
-          .join(", ");
-        query += ` AND tingkat IN (${placeholders})`;
-        values.push(...tingkat);
-      }
+  //     if (tingkat && Array.isArray(tingkat) && tingkat.length > 0) {
+  //       const placeholders = tingkat
+  //         .map((_, i) => `$${values.length + i + 1}`)
+  //         .join(", ");
+  //       query += ` AND tingkat IN (${placeholders})`;
+  //       values.push(...tingkat);
+  //     }
 
-      if (jurusan && Array.isArray(jurusan) && jurusan.length > 0) {
-        const placeholders = jurusan
-          .map((_, i) => `$${values.length + i + 1}`)
-          .join(", ");
-        query += ` AND jurusan IN (${placeholders})`;
-        values.push(...jurusan);
-      }
+  //     if (jurusan && Array.isArray(jurusan) && jurusan.length > 0) {
+  //       const placeholders = jurusan
+  //         .map((_, i) => `$${values.length + i + 1}`)
+  //         .join(", ");
+  //       query += ` AND jurusan IN (${placeholders})`;
+  //       values.push(...jurusan);
+  //     }
 
-      if (search) {
-        values.push(`%${search.toLowerCase()}%`);
-        query += ` AND LOWER(wali_kelas) LIKE $${values.length}`;
-      }
+  //     if (search) {
+  //       values.push(`%${search.toLowerCase()}%`);
+  //       query += ` AND LOWER(wali_kelas) LIKE $${values.length}`;
+  //     }
 
-      query += " ORDER BY id_rombel ASC";
+  //     query += " ORDER BY id_rombel ASC";
 
-      const result = await pool.query(query, values);
-      res.json({
-        total: result.rowCount,
-        data: result.rows,
-      });
-    } catch (error) {
-      console.error("Gagal mengambil data rombel:", error);
-      res.status(500).json({ error: "Internal Server Error" });
-    }
-  },
+  //     const result = await pool.query(query, values);
+  //     res.json({
+  //       total: result.rowCount,
+  //       data: result.rows,
+  //     });
+  //   } catch (error) {
+  //     console.error("Gagal mengambil data rombel:", error);
+  //     res.status(500).json({ error: "Internal Server Error" });
+  //   }
+  // },
 
   async getById(req, res) {
     const { id } = req.params;
@@ -103,7 +103,7 @@ module.exports = {
     async getAll(req, res) {
     try {
       const result = await pool.query(
-        "SELECT wali_kelas, rombel, tingkat, jmlh_l, jmlh_p, jurusan FROM ptk ORDER BY id_rombel ASC"
+        "SELECT wali_kelas, rombel, tingkat, jmlh_l, jmlh_p, jurusan FROM rombel ORDER BY id_rombel ASC"
       );
       res.json(result.rows);
     } catch (error) {
