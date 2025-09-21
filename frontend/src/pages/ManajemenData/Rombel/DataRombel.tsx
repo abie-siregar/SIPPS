@@ -85,12 +85,12 @@ const DataRombel = () => {
   return (
     <>
       <PageMeta
-        title="Data Rombel | Dashboard SMKN 1 Batam"
+        title="Data Rombongan Belajar | Dashboard SMKN 1 Batam"
         description="Halaman menampilkan tabel data rombel"
       />
-      <PageBreadcrumb pageTitle="Data Rombel" />
+      <PageBreadcrumb pageTitle="Data Rombongan Belajar" />
       <div className="space-y-6">
-        <ComponentCard title="Tabel Rombel">
+        <ComponentCard title="Tabel Rombongan Belajar">
           {loading ? (
             <p className="text-center dark:text-gray-400">Loading...</p>
           ) : (

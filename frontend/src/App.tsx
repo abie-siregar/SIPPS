@@ -28,7 +28,7 @@ import DataRombel from "./pages/ManajemenData/Rombel/DataRombel";
 import EditDataRombel from "./pages/ManajemenData/Rombel/EditDataRombel";
 import TambahPelanggaran from "./pages/ManajemenData/PoinPelanggaran/TambahDataPoinPelanggaran";
 import PTK from "./pages/ManajemenData/PTK/DataPTK";
-import PD from "./pages/ManajemenData/Siswa";
+import Siswa from "./pages/ManajemenData/Siswa/DataSiswa";
 
 export default function App() {
   return (
@@ -71,7 +71,7 @@ export default function App() {
           <Route path="/data-user" element={<DataRombel />} />
 
           <Route path="ptk" element={<PTK />} />
-          <Route path="siswa" element={<PD />} />
+          <Route path="/siswa" element={<Siswa />} />
 
           {/* Others */}
           <Route path="/calendar" element={<Calendar />} />
