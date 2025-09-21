@@ -27,8 +27,7 @@ import DataPoinPelanggaran from "./pages/ManajemenData/PoinPelanggaran/DataPoinP
 import DataRombel from "./pages/ManajemenData/Rombel/DataRombel";
 import EditDataRombel from "./pages/ManajemenData/Rombel/EditDataRombel";
 import TambahPelanggaran from "./pages/ManajemenData/PoinPelanggaran/TambahDataPoinPelanggaran";
-import EditDataPoinPelanggaran from "./pages/ManajemenData/PoinPelanggaran/EditDataPoinPelanggaran";
-import PTK from "./pages/ManajemenData/PTK";
+import PTK from "./pages/ManajemenData/PTK/DataPTK";
 import PD from "./pages/ManajemenData/Siswa";
 
 export default function App() {
