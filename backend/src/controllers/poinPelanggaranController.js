@@ -1,6 +1,8 @@
 const pool = require("../../config/database");
 
 module.exports = {
+
+  //Menambahkan data Poin_pelanggaran
   async create(req, res) {
     const { jenis_penilaian, bobot, jenis_pelanggaran } = req.body;
 
@@ -30,6 +32,7 @@ module.exports = {
     }
   },
 
+  // Mengambil Seluruh Data Poin_pelanggaran
   async getList(req, res) {
     try {
       const result = await pool.query(
@@ -45,6 +48,7 @@ module.exports = {
     }
   },
 
+  // Mengambil data poin_pelanggaran berdasarkan ID
   async getById(req, res) {
     const { id_poin } = req.params;
 
@@ -69,6 +73,7 @@ module.exports = {
     }
   },
 
+  // Memperbaharui data Poin_pelanggaran
   async update(req, res) {
     const { id_poin } = req.params;
     const { jenis_penilaian, bobot, jenis_pelanggaran, is_active } = req.body;
@@ -111,4 +116,20 @@ module.exports = {
       res.status(500).json({ error: "Internal Server Error" });
     }
   },
+
+  // Menghapus Data Poin_pelanggaran
+  async delete(req, res){
+    try {
+      const {id} = req.params;
+      const result = await pool.query (" DELETE FROM poin_pelanggaran WHERE id_poin = $1", [id]);
+      if ( result.rowCount === 0 ){
+        return res.status(404).json({message: "Data Poin tidak ditemukan"})
+      }
+      res.json({
+        message: "Data Poin Pelanggaran Berhasil dihapus"
+      })
+    } catch (error) {
+      res.status(500).json({error: error.message});
+    }
+  }
 };
