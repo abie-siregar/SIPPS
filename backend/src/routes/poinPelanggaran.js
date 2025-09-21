@@ -7,5 +7,6 @@ router.post("/", poinPelanggaranController.create);
 router.get("/", poinPelanggaranController.getList);
 router.get("/:id_poin", poinPelanggaranController.getById);
 router.put("/:id_poin", poinPelanggaranController.update);
+router.delete("/:id", poinPelanggaranController.delete);
 
 module.exports = router;
