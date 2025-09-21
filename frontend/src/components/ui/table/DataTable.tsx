@@ -27,7 +27,7 @@ interface DataTableProps<T extends object> {
   itemsPerPageOptions?: number[];
   searchable?: boolean;
   filterable?: boolean;
-  filterColumns?: (keyof T)[]; // kolom mana yang bisa difilter
+  filterColumns?: (keyof T)[];
   paginated?: boolean;
   defaultItemsPerPage?: number;
 }
@@ -50,7 +50,13 @@ export default function DataTable<T extends object>({
   const [filters, setFilters] = useState<{ [key: string]: any }>({});
   const [showFilterForm, setShowFilterForm] = useState(false);
 
-  // generate dropdown filters berdasarkan filterColumns
+  // Sorting state
+  const [sortConfig, setSortConfig] = useState<{
+    key: string;
+    direction: "asc" | "desc";
+  } | null>(null);
+
+  // Dropdown filters
   const dropdownFilters: DropdownFilter[] = useMemo(() => {
     if (!filterable || !filterColumns) return [];
     return filterColumns
@@ -78,7 +84,7 @@ export default function DataTable<T extends object>({
       });
   }, [filterable, filterColumns, data, columns]);
 
-  // generate range filters berdasarkan filterColumns
+  // Range filters
   const rangeFilters: RangeFilter[] = useMemo(() => {
     if (!filterable || !filterColumns) return [];
     return filterColumns
@@ -99,11 +105,10 @@ export default function DataTable<T extends object>({
       });
   }, [filterable, filterColumns, data, columns]);
 
-  // Filtering + Searching
+  // Filtered data
   const filteredData = useMemo(() => {
     let rows = [...data];
 
-    // apply dropdown filters
     dropdownFilters.forEach((df) => {
       const value = filters[df.key];
       if (value && value !== "all") {
@@ -115,7 +120,6 @@ export default function DataTable<T extends object>({
       }
     });
 
-    // apply range filters
     rangeFilters.forEach((rf) => {
       const range = filters[rf.key];
       if (range && Array.isArray(range) && range.length === 2) {
@@ -126,7 +130,6 @@ export default function DataTable<T extends object>({
       }
     });
 
-    // apply search
     if (searchable && search.trim() !== "") {
       const q = search.toLowerCase();
       rows = rows.filter((row) =>
@@ -149,16 +152,38 @@ export default function DataTable<T extends object>({
     searchable,
   ]);
 
+  // Sorted data
+  const sortedData = useMemo(() => {
+    if (!sortConfig) return filteredData;
+    const { key, direction } = sortConfig;
+    return [...filteredData].sort((a, b) => {
+      const aVal = (a as any)[key];
+      const bVal = (b as any)[key];
+      if (aVal === bVal) return 0;
+      if (direction === "asc") return aVal > bVal ? 1 : -1;
+      return aVal < bVal ? 1 : -1;
+    });
+  }, [filteredData, sortConfig]);
+
   useEffect(() => {
     setCurrentPage(1);
-  }, [filters, search, itemsPerPage]);
+  }, [filters, search, itemsPerPage, sortConfig]);
 
   const totalPages = paginated
-    ? Math.max(1, Math.ceil(filteredData.length / itemsPerPage))
+    ? Math.max(1, Math.ceil(sortedData.length / itemsPerPage))
     : 1;
   const pageStart = paginated ? (currentPage - 1) * itemsPerPage : 0;
-  const pageEnd = paginated ? currentPage * itemsPerPage : filteredData.length;
-  const currentItems = filteredData.slice(pageStart, pageEnd);
+  const pageEnd = paginated ? currentPage * itemsPerPage : sortedData.length;
+  const currentItems = sortedData.slice(pageStart, pageEnd);
+
+  const handleSort = (key: string) => {
+    setSortConfig((prev) => {
+      if (prev?.key === key) {
+        return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
+      }
+      return { key, direction: "asc" };
+    });
+  };
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
@@ -194,11 +219,19 @@ export default function DataTable<T extends object>({
                 <TableCell
                   key={idx}
                   isHeader
-                  className={`px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 ${
+                  className={`px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer ${
                     col.className || ""
                   }`}
+                  onClick={() => handleSort(String(col.accessor))}
                 >
-                  {col.header}
+                  <div className="flex items-center gap-1">
+                    {col.header}
+                    {sortConfig?.key === col.accessor && (
+                      <span>
+                        {sortConfig.direction === "asc" ? "🔼" : "🔽"}
+                      </span>
+                    )}
+                  </div>
                 </TableCell>
               ))}
             </TableRow>
