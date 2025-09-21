@@ -85,5 +85,20 @@ async createUser(req, res) {
         }
     },
 
-
+    async deleteUser(req, res) {
+        try{
+            const {id} = req.params;
+            const result = await pool.query(
+                "DELETE FROM users WHERE id_users =$1", [id]
+            );
+            if (result.rowCount === 0){
+                return res.status(404).json({message: "Data user tidak ditemukan"})
+            }
+            res.json({
+                message: "Data User berhasil dihapus"
+            })
+        } catch (error) {
+            res.status(500).json({ error: error.message});
+        }
+    }
 };
