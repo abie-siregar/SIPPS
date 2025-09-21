@@ -66,10 +66,6 @@ export default function App() {
             path="/data-poin-pelanggaran/tambah"
             element={<TambahPelanggaran />}
           />
-          <Route
-            path="/data-poin-pelanggaran/edit/:id_poin"
-            element={<EditDataPoinPelanggaran />}
-          />
 
           <Route path="/data-rombel" element={<DataRombel />} />
           <Route path="/data-rombel/edit/:id" element={<EditDataRombel />} />
