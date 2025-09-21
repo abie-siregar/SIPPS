@@ -212,8 +212,8 @@ export default function DataTable<T extends object>({
 
       {/* Table */}
       <div className="max-w-full overflow-x-auto">
-        <Table>
-          <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
+        <Table className="min-w-full text-sm text-left">
+          <TableHeader className="bg-gray-100 text-black rounded-t-lg border-b border-gray-200">
             <TableRow>
               {columns.map((col, idx) => (
                 <TableCell

@@ -1,4 +1,5 @@
 import { Link } from "react-router";
+import { useEffect, useState } from "react";
 
 interface AlertProps {
   variant: "success" | "error" | "warning" | "info"; // Alert type
@@ -7,6 +8,8 @@ interface AlertProps {
   showLink?: boolean; // Whether to show the "Learn More" link
   linkHref?: string; // Link URL
   linkText?: string; // Link text
+  show?: boolean; // Tambahkan prop show untuk kontrol transisi
+  onClose?: () => void; // Callback saat selesai transisi
 }
 
 const Alert: React.FC<AlertProps> = ({
@@ -16,7 +19,20 @@ const Alert: React.FC<AlertProps> = ({
   showLink = false,
   linkHref = "#",
   linkText = "Learn more",
+  show = true,
+  onClose,
 }) => {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    if (show) {
+      setIsVisible(true);
+    } else {
+      setIsVisible(false);
+      if (onClose) setTimeout(onClose, 300); // durasi sama dengan transition
+    }
+  }, [show, onClose]);
+
   // Tailwind classes for each variant
   const variantClasses = {
     success: {
@@ -40,7 +56,6 @@ const Alert: React.FC<AlertProps> = ({
       icon: "text-blue-light-500",
     },
   };
-
   // Icon for each variant
   const icons = {
     success: (
@@ -113,15 +128,19 @@ const Alert: React.FC<AlertProps> = ({
 
   return (
     <div
-      className={`rounded-xl border p-4 ${variantClasses[variant].container}`}
+      className={`fixed inset-0 z-50 flex items-center justify-center transition-all duration-300 transform ${
+        isVisible ? "opacity-100 scale-100" : "opacity-0 scale-90"
+      }`}
     >
-      <div className="flex items-start gap-3">
-        <div className={`-mt-0.5 ${variantClasses[variant].icon}`}>
-          {icons[variant]}
-        </div>
+      <div
+        className={`rounded-xl border p-6 max-w-md w-full ${variantClasses[variant].container}`}
+      >
+        <div className="flex flex-col items-center gap-3 text-center">
+          <div className={`-mt-0.5 ${variantClasses[variant].icon}`}>
+            {icons[variant]}
+          </div>
 
-        <div>
-          <h4 className="mb-1 text-sm font-semibold text-gray-800 dark:text-white/90">
+          <h4 className="text-lg font-semibold text-gray-800 dark:text-white/90">
             {title}
           </h4>
 
@@ -130,7 +149,7 @@ const Alert: React.FC<AlertProps> = ({
           {showLink && (
             <Link
               to={linkHref}
-              className="inline-block mt-3 text-sm font-medium text-gray-500 underline dark:text-gray-400"
+              className="mt-3 text-sm font-medium text-gray-500 underline dark:text-gray-400"
             >
               {linkText}
             </Link>

@@ -1,41 +1,46 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
 import axios from "../../../api/axios";
-import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
-import ComponentCard from "../../../components/common/ComponentCard";
-import PageMeta from "../../../components/common/PageMeta";
-import SuccessPopup from "../../UiElements/SuccessPopup";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Pelanggaran } from "./DataPoinPelanggaran";
+import Alert from "../../../components/ui/alert/Alert";
+import Button from "../../../components/ui/button/Button";
 
-const EditDataPoinPelanggaran = () => {
-  const navigate = useNavigate();
-  const { id_poin } = useParams();
-  const [jenisPenilaian, setjenisPenilaian] = useState("");
-  const [bobot, setBobot] = useState<number | "">("");
-  const [jenisPelanggaran, setJenisPelanggaran] = useState("Kelakuan");
-  const [isActive, setIsActive] = useState<boolean>(true);
+interface EditPopupProps {
+  show: boolean;
+  onClose: () => void;
+  row: Pelanggaran;
+}
+
+const EditDataPoinPelanggaran: React.FC<EditPopupProps> = ({
+  show,
+  onClose,
+  row,
+}) => {
+  const [jenisPenilaian, setjenisPenilaian] = useState(row.jenis_penilaian);
+  const [bobot, setBobot] = useState<number | "">(row.bobot);
+  const [jenisPelanggaran, setJenisPelanggaran] = useState(
+    row.jenis_pelanggaran
+  );
+  const [isActive, setIsActive] = useState<boolean>(row.is_active);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [showPopup, setShowPopup] = useState(false);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
+  const navigate = useNavigate();
+
+  // Reset form saat popup dibuka
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await axios.get(`/poin-pelanggaran/${id_poin}`);
-        const data = res.data;
-        setjenisPenilaian(data.jenis_penilaian);
-        setBobot(data.bobot);
-        setJenisPelanggaran(data.jenis_pelanggaran);
-        setIsActive(data.is_active);
-      } catch (err) {
-        setError("Gagal memuat data pelanggaran.");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [id_poin]);
+    if (show) {
+      setjenisPenilaian(row.jenis_penilaian);
+      setBobot(row.bobot);
+      setJenisPelanggaran(row.jenis_pelanggaran);
+      setIsActive(row.is_active);
+      setError("");
+      setTimeout(() => setIsVisible(true), 10); // trigger transisi masuk
+    } else {
+      setIsVisible(false);
+    }
+  }, [show, row]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,7 +57,7 @@ const EditDataPoinPelanggaran = () => {
     }
 
     try {
-      const res = await axios.put(`/poin-pelanggaran/${id_poin}`, {
+      const res = await axios.put(`/poin-pelanggaran/${row.id_poin}`, {
         jenis_penilaian: jenisPenilaian,
         bobot: Number(bobot),
         jenis_pelanggaran: jenisPelanggaran,
@@ -60,12 +65,14 @@ const EditDataPoinPelanggaran = () => {
       });
 
       if (res.status === 200) {
-        setShowPopup(true);
+        setShowSuccessPopup(true);
         setTimeout(() => {
-          navigate("/data-poin-pelanggaran");
+          setShowSuccessPopup(false);
+          setIsVisible(false);
+          setTimeout(onClose, 1500);
         }, 1500);
       } else {
-        console.log("Update Gagal");
+        setError("Update gagal");
       }
     } catch (error) {
       setError("Gagal mengupdate data.");
@@ -73,103 +80,108 @@ const EditDataPoinPelanggaran = () => {
     }
   };
 
+  const handleClose = () => {
+    setIsVisible(false);
+    setTimeout(onClose, 300); // durasi sama dengan transisi
+  };
+
+  if (!show) return null;
+
   return (
     <>
-      <PageMeta
-        title="Edit Pelanggaran | Dashboard SMKN 1 Batam"
-        description="Halaman untuk mengubah data pelanggaran siswa"
+      {/* Overlay */}
+      <div
+        className={`fixed inset-0 bg-black/40 z-40 transition-opacity duration-300 ${
+          isVisible ? "opacity-100" : "opacity-0"
+        }`}
+        onClick={handleClose}
       />
-      <PageBreadcrumb pageTitle="Edit Data Poin Pelanggaran" />
-      <div className="space-y-6">
-        <ComponentCard title="Form Edit Pelanggaran">
-          {loading ? (
-            <p className="text-gray-500 text-sm">Memuat data...</p>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4 max-w-xl">
-              {error && (
-                <p className="text-red-500 text-sm font-medium">{error}</p>
-              )}
 
-              <div>
-                <label className="block text-sm mb-1 font-medium text-gray-700 dark:text-white/90">
-                  Jenis Penilaian
-                </label>
-                <textarea
-                  value={jenisPenilaian}
-                  onChange={(e) => setjenisPenilaian(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg dark:bg-white/[0.03] dark:border-white/[0.1] dark:text-white/90"
-                  required
+      {/* Popup */}
+      <div
+        className={`fixed inset-0 flex items-center justify-center z-50 p-4 transition-all duration-300 transform ${
+          isVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-6"
+        }`}
+      >
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-xl p-6 relative">
+          <h2 className="text-lg font-semibold mb-4">Edit Poin Pelanggaran</h2>
+
+          {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label>Jenis Penilaian</label>
+              <textarea
+                value={jenisPenilaian}
+                onChange={(e) => setjenisPenilaian(e.target.value)}
+                className="w-full border px-3 py-2 rounded"
+              />
+            </div>
+            <div>
+              <label>Bobot</label>
+              <input
+                type="number"
+                value={bobot}
+                onChange={(e) => setBobot(Number(e.target.value))}
+                className="w-full border px-3 py-2 rounded"
+              />
+            </div>
+            <div>
+              <label>Jenis Pelanggaran</label>
+              <select
+                value={jenisPelanggaran}
+                onChange={(e) => setJenisPelanggaran(e.target.value)}
+                className="w-full border px-3 py-2 rounded"
+              >
+                <option value="Kelakuan">Kelakuan</option>
+                <option value="Kerajinan">Kerajinan</option>
+                <option value="Kerapian">Kerapian</option>
+              </select>
+            </div>
+            <label className="flex items-center gap-3 cursor-pointer">
+              <span>Status:</span>
+              <div
+                className={`relative w-12 h-6 transition-all duration-300 rounded-full ${
+                  isActive ? "bg-blue-600" : "bg-gray-300 dark:bg-gray-600"
+                }`}
+                onClick={() => setIsActive(!isActive)}
+              >
+                <span
+                  className={`absolute left-0 top-0.5 w-5 h-5 bg-white rounded-full shadow transform transition-transform duration-300 ${
+                    isActive ? "translate-x-6" : "translate-x-0"
+                  }`}
                 />
               </div>
+              <span>{isActive ? "Aktif" : "Tidak Aktif"}</span>
+            </label>
 
-              <div>
-                <label className="block text-sm mb-1 font-medium text-gray-700 dark:text-white/90">
-                  Bobot
-                </label>
-                <input
-                  type="number"
-                  value={bobot}
-                  onChange={(e) => setBobot(Number(e.target.value))}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg dark:bg-white/[0.03] dark:border-white/[0.1] dark:text-white/90"
-                  required
-                />
-              </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={handleClose}
+              >
+                Batal
+              </Button>
 
-              <div>
-                <label className="block text-sm mb-1 font-medium text-gray-700 dark:text-white/90">
-                  Jenis
-                </label>
-                <select
-                  value={jenisPelanggaran}
-                  onChange={(e) => setJenisPelanggaran(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg dark:bg-white/[0.03] dark:border-white/[0.1] dark:text-white/90"
-                >
-                  <option value="Kelakuan">Kelakuan</option>
-                  <option value="Kerajinan">Kerajinan</option>
-                  <option value="Kerapian">Kerapian</option>
-                </select>
-              </div>
+              <Button type="submit" variant="primary" size="sm">
+                Simpan
+              </Button>
+            </div>
+          </form>
 
-              <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
-                <span>Status:</span>
-                <div className="relative">
-                  <input
-                    type="checkbox"
-                    checked={isActive}
-                    onChange={(e) => setIsActive(e.target.checked)}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-gray-300 peer-checked:bg-green-500 rounded-full transition-all"></div>
-                  <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-all peer-checked:translate-x-full"></div>
-                </div>
-                <span>{isActive ? "Aktif" : "Tidak Aktif"}</span>
-              </label>
-
-              <div className="flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => navigate("/data-poin-pelanggaran")}
-                  className="px-4 py-2 text-sm rounded-lg bg-gray-300 hover:bg-gray-400 text-gray-800"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 text-sm rounded-lg bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  Simpan Perubahan
-                </button>
-              </div>
-            </form>
+          {showSuccessPopup && (
+            <Alert
+              variant="success"
+              title="Sukses"
+              message="Data berhasil diperbarui"
+              show={showSuccessPopup}
+              onClose={() => setShowSuccessPopup(false)}
+            />
           )}
-        </ComponentCard>
+        </div>
       </div>
-
-      <SuccessPopup
-        message="Data Berhasil Diperbarui"
-        show={showPopup}
-        onClose={() => setShowPopup(false)}
-      />
     </>
   );
 };

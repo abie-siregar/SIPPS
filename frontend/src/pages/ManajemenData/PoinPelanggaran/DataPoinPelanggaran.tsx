@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "../../../api/axios";
 
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
@@ -8,8 +7,9 @@ import PageMeta from "../../../components/common/PageMeta";
 import Button from "../../../components/ui/button/Button";
 import { PencilIcon } from "../../../icons";
 import DataTable, { Column } from "../../../components/ui/table/DataTable";
+import EditDataPoinPelanggaran from "./EditDataPoinPelanggaran";
 
-interface Pelanggaran {
+export interface Pelanggaran {
   id_poin: number;
   jenis_penilaian: string;
   bobot: number;
@@ -20,27 +20,29 @@ interface Pelanggaran {
 const PoinPelanggaran = () => {
   const [data, setData] = useState<Pelanggaran[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showEditPopup, setShowEditPopup] = useState(false);
+  const [selectedRow, setSelectedRow] = useState<Pelanggaran | null>(null);
 
-  const navigate = useNavigate();
-
-  const handleEdit = (row: Pelanggaran) => {
-    navigate(`/data-poin-pelanggaran/edit/${row.id_poin}`);
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get("/poin-pelanggaran");
+      setData(res.data.data);
+    } catch (error) {
+      console.error("Gagal mengambil data:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    const fetchPelanggaran = async () => {
-      try {
-        const res = await axios.get("/poin-pelanggaran");
-        setData(res.data.data);
-      } catch (error) {
-        console.error("Gagal mengambil data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPelanggaran();
+    fetchData();
   }, []);
+
+  const handleEdit = (row: Pelanggaran) => {
+    setSelectedRow(row);
+    setShowEditPopup(true);
+  };
 
   const columns: Column<Pelanggaran>[] = [
     {
@@ -57,7 +59,7 @@ const PoinPelanggaran = () => {
       className: "text-start",
     },
     {
-      header: "Aktif",
+      header: "Status",
       accessor: "is_active",
       render: (row) => (row.is_active ? "Aktif" : "Tidak Aktif"),
       className: "text-center w-32",
@@ -96,7 +98,7 @@ const PoinPelanggaran = () => {
               data={data}
               searchable
               filterable
-              filterColumns={["jenis_pelanggaran", "bobot"]} // 🔥 hanya kolom ini bisa difilter
+              filterColumns={["jenis_pelanggaran", "bobot"]}
               paginated
               itemsPerPageOptions={[5, 10, 20, 50]}
               defaultItemsPerPage={10}
@@ -104,6 +106,19 @@ const PoinPelanggaran = () => {
           )}
         </ComponentCard>
       </div>
+
+      {/* Popup Edit */}
+      {selectedRow && (
+        <EditDataPoinPelanggaran
+          show={showEditPopup}
+          onClose={() => {
+            setShowEditPopup(false);
+            setSelectedRow(null);
+            fetchData(); // refresh tabel setelah edit
+          }}
+          row={selectedRow} // <-- kirim data row ke popup
+        />
+      )}
     </>
   );
 };
