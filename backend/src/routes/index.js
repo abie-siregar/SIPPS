@@ -6,9 +6,10 @@ const authController = require("../controllers/authController");
 // import route modules
 const poinPelanggaranRoutes = require("./poinPelanggaran");
 const rombelRoutes = require("./rombel");
-// const siswaRoutes = require("./siswa");
+const siswaRoutes = require("./siswa");
 const ptkRoutes = require("./ptk");
 const userRoutes = require("./users");
+const importRoutes = require("./import")
 
 // 🔓 Auth routes (tidak perlu token)
 router.post("/auth/login", authController.login);
@@ -17,8 +18,9 @@ router.post("/register", authController.register);
 // 🔒 Protected routes (butuh token)
 router.use("/poin-pelanggaran", authenticate, poinPelanggaranRoutes);
 router.use("/rombel", authenticate, rombelRoutes);
-// router.use("/siswa", authenticate, siswaRoutes);
+router.use("/siswa", authenticate, siswaRoutes);
 router.use("/ptk", authenticate, ptkRoutes);
 router.use("/user", authenticate, userRoutes);
 
+router.use("/import", authenticate, importRoutes);
 module.exports = router;
