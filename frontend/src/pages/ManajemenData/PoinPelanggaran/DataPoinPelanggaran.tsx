@@ -96,9 +96,9 @@ const PoinPelanggaran = () => {
               data={data}
               searchable
               filterable
-              filterBy="jenis_pelanggaran" // filter default berdasarkan jenis_pelanggaran
+              filterColumns={["jenis_pelanggaran", "bobot"]} // 🔥 hanya kolom ini bisa difilter
               paginated
-              itemsPerPageOptions={[5, 10, 20, 50]} // 🔥 bisa pilih jumlah data per halaman
+              itemsPerPageOptions={[5, 10, 20, 50]}
               defaultItemsPerPage={10}
             />
           )}

@@ -8,7 +8,11 @@ import {
 } from "../../ui/table";
 import InputField from "../field/InputFields";
 import Pagination from "../button/Pagination";
-import FilterForm from "../../filter/FilterForm";
+import FilterForm, {
+  DropdownFilter,
+  RangeFilter,
+} from "../../filter/FilterForm";
+import Button from "../button/Button";
 
 export interface Column<T> {
   header: string;
@@ -23,8 +27,8 @@ interface DataTableProps<T extends object> {
   itemsPerPageOptions?: number[];
   searchable?: boolean;
   filterable?: boolean;
+  filterColumns?: (keyof T)[]; // kolom mana yang bisa difilter
   paginated?: boolean;
-  filterBy?: keyof T | string;
   defaultItemsPerPage?: number;
 }
 
@@ -34,110 +38,131 @@ export default function DataTable<T extends object>({
   itemsPerPageOptions = [5, 10, 20],
   searchable = true,
   filterable = false,
+  filterColumns,
   paginated = true,
-  filterBy,
   defaultItemsPerPage,
 }: DataTableProps<T>) {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState<number>(
+  const [itemsPerPage, setItemsPerPage] = useState(
     defaultItemsPerPage ?? itemsPerPageOptions[0]
   );
-
-  // 🔥 state untuk filter form
+  const [filters, setFilters] = useState<{ [key: string]: any }>({});
   const [showFilterForm, setShowFilterForm] = useState(false);
-  const [filters, setFilters] = useState<{
-    dropdown: string;
-    min?: number;
-    max?: number;
-  }>({
-    dropdown: "all",
-  });
 
-  const inferredFilterKey = useMemo(() => {
-    if (!filterable) return undefined;
-    if (filterBy) return filterBy;
-    const candidate = columns.find((col) =>
-      data.some((row) => {
-        const v = (row as any)[col.accessor];
-        return typeof v === "string" || typeof v === "boolean";
-      })
-    );
-    return candidate?.accessor;
-  }, [filterable, filterBy, columns, data]);
+  // generate dropdown filters berdasarkan filterColumns
+  const dropdownFilters: DropdownFilter[] = useMemo(() => {
+    if (!filterable || !filterColumns) return [];
+    return filterColumns
+      .filter((key) =>
+        data.some((row) => {
+          const v = (row as any)[key];
+          return typeof v === "string" || typeof v === "boolean";
+        })
+      )
+      .map((key) => {
+        const options = Array.from(
+          new Set(
+            data
+              .map((row) => (row as any)[key])
+              .filter((v) => v !== undefined && v !== null)
+              .map(String)
+          )
+        ).sort();
+        const col = columns.find((c) => c.accessor === key);
+        return {
+          key: String(key),
+          label: col?.header || String(key),
+          options: options.map((v) => ({ label: v, value: v })),
+        };
+      });
+  }, [filterable, filterColumns, data, columns]);
 
-  const filterOptions = useMemo(() => {
-    if (!inferredFilterKey) return [];
-    const s = new Set<string>();
-    data.forEach((row) => {
-      const v = (row as any)[inferredFilterKey];
-      if (v !== undefined && v !== null) s.add(String(v));
-    });
-    return Array.from(s).sort();
-  }, [inferredFilterKey, data]);
+  // generate range filters berdasarkan filterColumns
+  const rangeFilters: RangeFilter[] = useMemo(() => {
+    if (!filterable || !filterColumns) return [];
+    return filterColumns
+      .filter((key) =>
+        data.some((row) => typeof (row as any)[key] === "number")
+      )
+      .map((key) => {
+        const numbers = data
+          .map((row) => Number((row as any)[key]))
+          .filter((v) => !isNaN(v));
+        const col = columns.find((c) => c.accessor === key);
+        return {
+          key: String(key),
+          label: col?.header || String(key),
+          min: Math.min(...numbers),
+          max: Math.max(...numbers),
+        };
+      });
+  }, [filterable, filterColumns, data, columns]);
 
-  // Filtering & Search logic
+  // Filtering + Searching
   const filteredData = useMemo(() => {
-    let rows = data.slice();
+    let rows = [...data];
 
-    if (
-      filterable &&
-      inferredFilterKey &&
-      filters.dropdown &&
-      filters.dropdown !== "all"
-    ) {
-      rows = rows.filter(
-        (r) =>
-          String((r as any)[inferredFilterKey] ?? "").toLowerCase() ===
-          filters.dropdown.toLowerCase()
-      );
-    }
+    // apply dropdown filters
+    dropdownFilters.forEach((df) => {
+      const value = filters[df.key];
+      if (value && value !== "all") {
+        rows = rows.filter(
+          (r) =>
+            String((r as any)[df.key]).toLowerCase() ===
+            String(value).toLowerCase()
+        );
+      }
+    });
 
-    if (filters.min !== undefined) {
-      rows = rows.filter((r) => (r as any).bobot >= filters.min!);
-    }
-    if (filters.max !== undefined) {
-      rows = rows.filter((r) => (r as any).bobot <= filters.max!);
-    }
+    // apply range filters
+    rangeFilters.forEach((rf) => {
+      const range = filters[rf.key];
+      if (range && Array.isArray(range) && range.length === 2) {
+        rows = rows.filter(
+          (r) =>
+            (r as any)[rf.key] >= range[0] && (r as any)[rf.key] <= range[1]
+        );
+      }
+    });
 
+    // apply search
     if (searchable && search.trim() !== "") {
       const q = search.toLowerCase();
       rows = rows.filter((row) =>
-        columns.some((col) => {
-          const v = (row as any)[col.accessor];
-          return String(v ?? "")
+        columns.some((col) =>
+          String((row as any)[col.accessor] ?? "")
             .toLowerCase()
-            .includes(q);
-        })
+            .includes(q)
+        )
       );
     }
 
     return rows;
   }, [
     data,
+    filters,
     search,
     columns,
-    filterable,
-    inferredFilterKey,
-    filters,
+    dropdownFilters,
+    rangeFilters,
     searchable,
   ]);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, filters, itemsPerPage]);
+  }, [filters, search, itemsPerPage]);
 
   const totalPages = paginated
     ? Math.max(1, Math.ceil(filteredData.length / itemsPerPage))
     : 1;
-
   const pageStart = paginated ? (currentPage - 1) * itemsPerPage : 0;
   const pageEnd = paginated ? currentPage * itemsPerPage : filteredData.length;
   const currentItems = filteredData.slice(pageStart, pageEnd);
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
-      {/* Kontrol: search / filter */}
+      {/* Kontrol */}
       <div className="flex items-center justify-between gap-2 p-4 flex-wrap">
         {searchable && (
           <InputField
@@ -148,14 +173,15 @@ export default function DataTable<T extends object>({
             className="max-w-xs"
           />
         )}
-
         {filterable && (
-          <button
+          <Button
+            type="button"
+            variant="primary"
+            size="sm"
             onClick={() => setShowFilterForm(true)}
-            className="px-3 py-1 text-sm bg-gray-100 rounded hover:bg-gray-200 dark:bg-gray-700 dark:text-white"
           >
             🔍 Filter
-          </button>
+          </Button>
         )}
       </div>
 
@@ -213,26 +239,29 @@ export default function DataTable<T extends object>({
         </Table>
       </div>
 
-      {/* Pagination + per-page dropdown */}
+      {/* Pagination */}
       {paginated && totalPages > 1 && (
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
-          onPageChange={(page) => setCurrentPage(page)}
+          onPageChange={setCurrentPage}
           itemsPerPage={itemsPerPage}
           itemsPerPageOptions={itemsPerPageOptions}
           onItemsPerPageChange={setItemsPerPage}
         />
       )}
 
-      {/* Popup FilterForm */}
-      {showFilterForm && filterable && inferredFilterKey && (
-        <FilterForm
-          options={filterOptions}
-          onApply={(f) => setFilters(f)}
-          onClose={() => setShowFilterForm(false)}
-        />
-      )}
+      {/* FilterForm */}
+      {showFilterForm &&
+        filterable &&
+        (dropdownFilters.length > 0 || rangeFilters.length > 0) && (
+          <FilterForm
+            dropdownFilters={dropdownFilters}
+            rangeFilters={rangeFilters}
+            onApply={(f) => setFilters(f)}
+            onClose={() => setShowFilterForm(false)}
+          />
+        )}
     </div>
   );
 }
