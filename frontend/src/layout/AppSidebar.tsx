@@ -54,11 +54,14 @@ const navItems: NavItem[] = [
         path: "/data-poin-pelanggaran",
         pro: false,
       },
-      { name: "Data Rombel", path: "/data-rombel", pro: false },
-      { name: "Data User", path: "/data-user", pro: false },
-      { name: "Data PTK", path: "/PTK", pro: false },
+      {
+        name: "Data Pendidik dan Tenaga Kependidikan",
+        path: "/PTK",
+        pro: false,
+      },
+      { name: "Data Rombongan Belajar", path: "/data-rombel", pro: false },
       { name: "Data Siswa", path: "/siswa", pro: false },
-      { name: "Data Rombongan Belajar", path: "/poin-pelanggaran", pro: false },
+      { name: "Data User", path: "/data-user", pro: false },
     ],
   },
   {

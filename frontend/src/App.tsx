@@ -27,9 +27,8 @@ import DataPoinPelanggaran from "./pages/ManajemenData/PoinPelanggaran/DataPoinP
 import DataRombel from "./pages/ManajemenData/Rombel/DataRombel";
 import EditDataRombel from "./pages/ManajemenData/Rombel/EditDataRombel";
 import TambahPelanggaran from "./pages/ManajemenData/PoinPelanggaran/TambahDataPoinPelanggaran";
-import EditDataPoinPelanggaran from "./pages/ManajemenData/PoinPelanggaran/EditDataPoinPelanggaran";
-import PTK from "./pages/ManajemenData/PTK";
-import PD from "./pages/ManajemenData/Siswa";
+import PTK from "./pages/ManajemenData/PTK/DataPTK";
+import Siswa from "./pages/ManajemenData/Siswa/DataSiswa";
 
 export default function App() {
   return (
@@ -66,17 +65,13 @@ export default function App() {
             path="/data-poin-pelanggaran/tambah"
             element={<TambahPelanggaran />}
           />
-          <Route
-            path="/data-poin-pelanggaran/edit/:id_poin"
-            element={<EditDataPoinPelanggaran />}
-          />
 
           <Route path="/data-rombel" element={<DataRombel />} />
           <Route path="/data-rombel/edit/:id" element={<EditDataRombel />} />
           <Route path="/data-user" element={<DataRombel />} />
 
           <Route path="ptk" element={<PTK />} />
-          <Route path="siswa" element={<PD />} />
+          <Route path="/siswa" element={<Siswa />} />
 
           {/* Others */}
           <Route path="/calendar" element={<Calendar />} />
