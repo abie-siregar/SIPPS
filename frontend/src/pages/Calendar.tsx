@@ -33,30 +33,30 @@ const Calendar: React.FC = () => {
     Warning: "warning",
   };
 
-  useEffect(() => {
-    // Initialize with some events
-    setEvents([
-      {
-        id: "1",
-        title: "Event Conf.",
-        start: new Date().toISOString().split("T")[0],
-        extendedProps: { calendar: "Danger" },
-      },
-      {
-        id: "2",
-        title: "Meeting",
-        start: new Date(Date.now() + 86400000).toISOString().split("T")[0],
-        extendedProps: { calendar: "Success" },
-      },
-      {
-        id: "3",
-        title: "Workshop",
-        start: new Date(Date.now() + 172800000).toISOString().split("T")[0],
-        end: new Date(Date.now() + 259200000).toISOString().split("T")[0],
-        extendedProps: { calendar: "Primary" },
-      },
-    ]);
-  }, []);
+  // useEffect(() => {
+  //   // Initialize with some events
+  //   setEvents([
+  //     {
+  //       id: "1",
+  //       title: "Event Conf.",
+  //       start: new Date().toISOString().split("T")[0],
+  //       extendedProps: { calendar: "Danger" },
+  //     },
+  //     {
+  //       id: "2",
+  //       title: "Meeting",
+  //       start: new Date(Date.now() + 86400000).toISOString().split("T")[0],
+  //       extendedProps: { calendar: "Success" },
+  //     },
+  //     {
+  //       id: "3",
+  //       title: "Workshop",
+  //       start: new Date(Date.now() + 172800000).toISOString().split("T")[0],
+  //       end: new Date(Date.now() + 259200000).toISOString().split("T")[0],
+  //       extendedProps: { calendar: "Primary" },
+  //     },
+  //   ]);
+  // }, []);
 
   const handleDateSelect = (selectInfo: DateSelectArg) => {
     resetModalFields();
@@ -128,7 +128,8 @@ const Calendar: React.FC = () => {
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
             initialView="dayGridMonth"
             headerToolbar={{
-              left: "prev,next addEventButton",
+              left: "prev,next",
+              // "prev,next addEventButton",
               center: "title",
               right: "dayGridMonth,timeGridWeek,timeGridDay",
             }}
@@ -137,15 +138,15 @@ const Calendar: React.FC = () => {
             select={handleDateSelect}
             eventClick={handleEventClick}
             eventContent={renderEventContent}
-            customButtons={{
-              addEventButton: {
-                text: "Add Event +",
-                click: openModal,
-              },
-            }}
+            // customButtons={{
+            //   addEventButton: {
+            //     text: "Add Event +",
+            //     click: openModal,
+            //   },
+            // }}
           />
         </div>
-        <Modal
+        {/* <Modal
           isOpen={isOpen}
           onClose={closeModal}
           className="max-w-[700px] p-6 lg:p-10"
@@ -262,7 +263,7 @@ const Calendar: React.FC = () => {
               </button>
             </div>
           </div>
-        </Modal>
+        </Modal> */}
       </div>
     </>
   );
