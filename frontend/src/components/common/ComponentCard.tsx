@@ -6,7 +6,7 @@ interface ComponentCardProps {
 }
 
 const ComponentCard: React.FC<ComponentCardProps> = ({
-  title,
+  // title, // un-comment original -run test server ta2022
   children,
   className = "",
   desc = "",

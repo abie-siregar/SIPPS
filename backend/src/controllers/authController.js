@@ -9,7 +9,7 @@ module.exports = {
 
       // ambil user berdasarkan email
       const result = await pool.query(
-        "SELECT id_users, email, password_hash FROM users WHERE email = $1",
+        "SELECT user_id, email, password FROM users WHERE email = $1",
         [email]
       );
 
@@ -20,7 +20,7 @@ module.exports = {
       const user = result.rows[0];
 
       // cek password
-      const valid = await bcrypt.compare(password, user.password_hash);
+      const valid = await bcrypt.compare(password, user.password);
       if (!valid) {
         return res.status(401).json({ error: "Password salah" });
       }
@@ -42,13 +42,13 @@ module.exports = {
   //Register
   async register(req, res) {
     try {
-      const { username, password, email } = req.body;
+      const { user_id, username, password, email } = req.body;
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      const defaultRole='user'
+      const defaultRole=3
       const result = await pool.query(
-        "INSERT INTO users (username, password_hash, role, email) VALUES ($1, $2, $3, $4) RETURNING id_users, username",
-        [username, hashedPassword, defaultRole, email]
+        "INSERT INTO users (user_id, username, password, role_id, email) VALUES ($1, $2, $3, $4, $5) RETURNING user_id, username, email",
+        [user_id, username, hashedPassword, defaultRole, email]
       );
 
       res

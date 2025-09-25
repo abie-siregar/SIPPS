@@ -1,6 +1,6 @@
 import axios from "../../../api/axios";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom"; un-comment original -run test server ta2022
 import { Pelanggaran } from "./DataPoinPelanggaran";
 import Alert from "../../../components/ui/alert/Alert";
 import Button from "../../../components/ui/button/Button";
@@ -26,7 +26,7 @@ const EditDataPoinPelanggaran: React.FC<EditPopupProps> = ({
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
-  const navigate = useNavigate();
+  // const navigate = useNavigate(); // un-comment original -run test server ta2022
 
   // Reset form saat popup dibuka
   useEffect(() => {
