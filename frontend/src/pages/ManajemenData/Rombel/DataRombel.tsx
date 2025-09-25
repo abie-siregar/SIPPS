@@ -4,8 +4,8 @@ import axios from "../../../api/axios";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import ComponentCard from "../../../components/common/ComponentCard";
 import PageMeta from "../../../components/common/PageMeta";
-import Button from "../../../components/ui/button/Button";
-import { PencilIcon } from "../../../icons";
+// import Button from "../../../components/ui/button/Button"; //un-comment original -run test server ta2022
+// import { PencilIcon } from "../../../icons"; //un-comment original -run test server ta2022
 import DataTable, { Column } from "../../../components/ui/table/DataTable";
 
 export interface Rombel {
@@ -21,7 +21,8 @@ export interface Rombel {
 const DataRombel = () => {
   const [data, setData] = useState<Rombel[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedRow, setSelectedRow] = useState<Rombel | null>(null);
+  // const [, setSelectedRow] = useState<Rombel | null>(null); // un-comment original -run test server ta2022
+  // const [selectedRow, setSelectedRow] = useState<Rombel | null>(null); //un-comment original -run test server ta2022
 
   const fetchData = async () => {
     setLoading(true);
@@ -48,9 +49,9 @@ const DataRombel = () => {
     fetchData();
   }, []);
 
-  const handleEdit = (row: Rombel) => {
-    setSelectedRow(row);
-  };
+  // const handleEdit = (row: Rombel) => { //un-comment original -run test server ta2022
+  //   setSelectedRow(row); //un-comment original -run test server ta2022
+  // }; //un-comment original -run test server ta2022
 
   const columns: Column<Rombel>[] = [
     {

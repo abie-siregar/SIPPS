@@ -5,7 +5,7 @@ module.exports = {
   async getAll(req, res) {
   try {
     const result = await pool.query(
-      "SELECT * FROM rombel ORDER BY id_rombel ASC"
+      "SELECT * FROM rombel ORDER BY rombel_id ASC"
     );
     res.json(result.rows);
   } catch (error) {
@@ -16,26 +16,26 @@ module.exports = {
 
   async getFiltered(req, res) {
     try {
-      const { tingkat, jurusan, search} = req.query;
+      const { tingkat_id, jurusan_id, search} = req.query;
 
       let query = "SELECT * FROM rombel WHERE 1=1";
       let params = [];
       let index = 1;
 
-      if (tingkat) {
-        query += ` AND tingkat = $${index}`;
-        params.push(tingkat);
+      if (tingkat_id) {
+        query += ` AND tingkat_id = $${index}`;
+        params.push(tingkat_id);
         index++;
       }
 
-      if (jurusan) {
-        query += ` AND jurusan = $${index}`;
-        params.push(jurusan);
+      if (jurusan_id) {
+        query += ` AND jurusan_id = $${index}`;
+        params.push(jurusan_id);
         index++;
       }
 
       if (search) {
-        query += ` AND (rombel ILIKE $${index} OR wali_kelas ILIKE $${index})`;
+        query += ` AND (nama ILIKE $${index} OR ptk_id ILIKE $${index})`;
         params.push(`%${search}%`);
         index++;
       }
@@ -51,27 +51,27 @@ module.exports = {
       res.json(result.rows[0]);
     }
     catch (error) {
-      console.error("Gagam mengambil data rombel", error);
+      console.error("Gagal mengambil data rombel", error);
       res.status(500).json({error : "Internal Server Error" });
     }
   },
 
   async update(req, res) {
-    const { id } = req.params;
-    const { wali_kelas, rombel, tingkat, jmlh_l, jmlh_p, jurusan } = req.body;
+    const { rombel_id } = req.params;
+    const { nama, ptk_id_dapodik, tingkat_id, jurusan_id  } = req.body;
 
-    if (isNaN(parseInt(id))) {
+    if (isNaN(parseInt(rombel_id))) {
       return res.status(400).json({ error: "ID harus berupa angka" });
     }
 
     try {
       const query = `
         UPDATE rombel 
-        SET wali_kelas = $1, rombel = $2, tingkat = $3, jmlh_l = $4, jmlh_p = $5, jurusan = $6
-        WHERE id = $7
+        SET nama = $1, ptk_id_dapodik = $2, tingkat_id = $3, jurusan_id = $4
+        WHERE rombel_id = $5
         RETURNING *
       `;
-      const values = [wali_kelas, rombel, tingkat, jmlh_l, p, jurusan, id];
+      const values = [nama, ptk_id_dapodik, tingkat_id, jurusan_id, rombel_id];
 
       const result = await pool.query(query, values);
 

@@ -5,12 +5,12 @@ const jwt = require("jsonwebtoken");
 module.exports = {
   async login(req, res) {
     try {
-      const { email, password } = req.body; // gunakan email dari client
+      const { username , password } = req.body; // gunakan email dari client
 
       // ambil user berdasarkan email
       const result = await pool.query(
-        "SELECT id_users, email, password_hash FROM users WHERE email = $1",
-        [email]
+        "SELECT user_id, username, password FROM users WHERE username = $1",
+        [ username]
       );
 
       if (result.rows.length === 0) {
@@ -20,14 +20,14 @@ module.exports = {
       const user = result.rows[0];
 
       // cek password
-      const valid = await bcrypt.compare(password, user.password_hash);
+      const valid = await bcrypt.compare(password, user.password);
       if (!valid) {
         return res.status(401).json({ error: "Password salah" });
       }
 
       // buat token JWT
       const token = jwt.sign(
-        { id: user.id, email: user.email }, // simpan email di token
+        { id: user.id, username: user.username }, // simpan email/username di token
         process.env.JWT_SECRET_KEY || "secret",
         { expiresIn: "1d" }
       );
@@ -42,13 +42,13 @@ module.exports = {
   //Register
   async register(req, res) {
     try {
-      const { username, password, email } = req.body;
+      const { user_id, username, password, email } = req.body;
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      const defaultRole='user'
+      const defaultRole=3
       const result = await pool.query(
-        "INSERT INTO users (username, password_hash, role, email) VALUES ($1, $2, $3, $4) RETURNING id_users, username",
-        [username, hashedPassword, defaultRole, email]
+        "INSERT INTO users (user_id, username, password, role_id, email) VALUES ($1, $2, $3, $4, $5) RETURNING user_id, username, email",
+        [user_id, username, hashedPassword, defaultRole, email]
       );
 
       res
