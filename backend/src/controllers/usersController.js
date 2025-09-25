@@ -92,7 +92,7 @@ async createUser(req, res) {
                 "DELETE FROM users WHERE user_id =$1", [id]
             );
             if (result.rowCount === 0){
-                return res.status(404).json({message: "Data user tidak ditemukan"})
+                return res.status(404).json({message: "Data User tidak ditemukan"})
             }
             res.json({
                 message: "Data User berhasil dihapus"
