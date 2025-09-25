@@ -12,7 +12,8 @@ import axios from "../../api/axios";
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  // const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ export default function LoginForm() {
 
     try {
       const res = await axios.post("/auth/login", {
-        email,
+        username,
         password,
       });
 
@@ -54,7 +55,7 @@ export default function LoginForm() {
               Login
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Enter your email and password to login!
+              Enter your email/username and password to login!
             </p>
           </div>
 
@@ -72,8 +73,8 @@ export default function LoginForm() {
                 </Label>
                 <Input
                   placeholder="info@gmail.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                 />
               </div>
               <div>
