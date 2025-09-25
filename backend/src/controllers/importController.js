@@ -5,8 +5,99 @@ const path = require("path");
 
 module.exports = {
 
-    async importJsonFile(req, res) {
+    async importPtk(req, res) {
             try {
+                const filePath = path.join(__dirname, "../data/getGtk.json");
+                const rawData = fs.readFileSync(filePath, "utf-8");
+                const dapodikData = JSON.parse(rawData);
+    
+                const dataGtk= Array.isArray(dapodikData) ? dapodikData : dapodikData.rows;
+
+                const results = [];
+    
+                for (const gtk of dataGtk) {
+                  
+                  const ptk_id_dapodik = gtk.ptk_id;
+                  const nuptk = gtk.nuptk;
+                  const nik = gtk.nik;
+                  const nip = gtk.nip;
+                  const agama_id = gtk.agama_id.toString();
+                  const nama = gtk.nama;
+                  const jenis_kelamin = gtk.jenis_kelamin;
+                  const jenis_ptk_id = gtk.jenis_ptk_id;
+                  const alamat = gtk.alamat;
+                  const email = gtk.email;
+    
+            const query = `
+              INSERT INTO ptk (
+                ptk_id_dapodik, nuptk, nik, nip, agama_id, nama, jenis_kelamin, jenis_ptk_id,
+                alamat, email
+                ) 
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+              RETURNING *;
+            `;
+    
+            const result = await pool.query(query, [
+              ptk_id_dapodik, nuptk, nik, nip, agama_id, nama, jenis_kelamin, jenis_ptk_id,
+              alamat, email
+            ]);
+    
+            results.push(result.rows[0]);
+          }
+    
+                res.status(200).json({
+                    message: " Data Berhasil di Import", count: results.length, data:results, 
+                });
+            } catch (error) {
+                console.error("Gagal Import Data", error.message);
+                res.status(500).json({error: "Gagal Import Data Dapodik"})
+            }
+        },
+
+    async importRombel(req, res) {
+            try {
+                const filePath = path.join(__dirname, "../data/getRombonganBelajar.json");
+                const rawData = fs.readFileSync(filePath, "utf-8");
+                const dapodikData = JSON.parse(rawData);
+    
+                const dataRombel= Array.isArray(dapodikData) ? dapodikData : dapodikData.rows;
+
+                const results = [];
+    
+                for (const rombel of dataRombel) {
+                  
+                  const rombel_id_dapodik = rombel.rombongan_belajar_id;
+                  const nama = rombel.nama;
+                  const ptk_id_dapodik = rombel.ptk_id;
+                  const tingkat_id = rombel.tingkat_pendidikan_id;
+                  const jurusan_id = rombel.jurusan_id;
+    
+            const query = `
+              INSERT INTO rombel (
+                rombel_id_dapodik, nama, ptk_id_dapodik, tingkat_id, jurusan_id
+                ) 
+                VALUES ($1, $2, $3, $4, $5)
+              RETURNING *;
+            `;
+    
+            const result = await pool.query(query, [
+              rombel_id_dapodik, nama, ptk_id_dapodik, tingkat_id, jurusan_id
+            ]);
+    
+            results.push(result.rows[0]);
+          }
+    
+                res.status(200).json({
+                    message: " Data Berhasil di Import", count: results.length, data:results, 
+                });
+            } catch (error) {
+                console.error("Gagal Import Data", error.message);
+                res.status(500).json({error: "Gagal Import Data Dapodik"})
+            }
+        },
+
+        async importSiswa (req, res) {
+          try {
                 const filePath = path.join(__dirname, "../data/getPesertaDidik.json");
                 const rawData = fs.readFileSync(filePath, "utf-8");
                 const dapodikData = JSON.parse(rawData);
@@ -53,4 +144,5 @@ module.exports = {
                 res.status(500).json({error: "Gagal Import Data Dapodik"})
             }
         },
+
 }

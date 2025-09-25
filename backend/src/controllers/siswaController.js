@@ -3,7 +3,7 @@ const pool = require("../../config/database");
 module.exports = {
   async getAll(req, res) {
     try {
-      const result = await pool.query("SELECT * FROM siswa ORDER BY id_siswa ASC");
+      const result = await pool.query("SELECT * FROM siswa ORDER BY siswa_id ASC");
       res.json(result.rows);
     } catch (error) {
       console.error("Error fetching siswa:", error.message);
@@ -26,7 +26,7 @@ module.exports = {
       }
 
       if (rombel) {
-        query += ` AND rombel = $${index}`;
+        query += ` AND rombel_id_dapodik = $${index}`;
         params.push(rombel);
         index++;
       }
@@ -37,7 +37,7 @@ module.exports = {
         index++;
       }
 
-      query += " ORDER BY id_siswa ASC";
+      query += " ORDER BY siswa_id ASC";
 
       const result = await pool.query(query, params);
 
@@ -54,16 +54,16 @@ module.exports = {
   },
 
   async getById(req, res) {
-    const { id_siswa } = req.params;
+    const { siswa_id } = req.params;
 
-    if (isNaN(id_siswa)) {
+    if (isNaN(siswa_id)) {
       return res.status(400).json({ error: "ID harus berupa angka" });
     }
 
     try {
       const result = await pool.query(
-        "SELECT * FROM siswa WHERE id_siswa = $1",
-        [id_siswa]
+        "SELECT * FROM siswa WHERE siswa_id = $1",
+        [siswa_id]
       );
 
       if (result.rows.length === 0) {

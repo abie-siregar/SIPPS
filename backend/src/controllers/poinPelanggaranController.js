@@ -36,7 +36,7 @@ module.exports = {
   async getList(req, res) {
     try {
       const result = await pool.query(
-        "SELECT * FROM poin_pelanggaran ORDER BY id_poin ASC"
+        "SELECT * FROM poin_pelanggaran ORDER BY poin_id ASC"
       );
       res.json({
         total: result.rowCount,
@@ -50,16 +50,16 @@ module.exports = {
 
   // Mengambil data poin_pelanggaran berdasarkan ID
   async getById(req, res) {
-    const { id_poin } = req.params;
+    const { poin_id } = req.params;
 
-    if (isNaN(id_poin)) {
+    if (isNaN(poin_id)) {
       return res.status(400).json({ error: "ID harus berupa angka" });
     }
 
     try {
       const result = await pool.query(
-        "SELECT * FROM poin_pelanggaran WHERE id_poin = $1",
-        [id_poin]
+        "SELECT * FROM poin_pelanggaran WHERE poin_id = $1",
+        [poin_id]
       );
 
       if (result.rows.length === 0) {
@@ -75,10 +75,10 @@ module.exports = {
 
   // Memperbaharui data Poin_pelanggaran
   async update(req, res) {
-    const { id_poin } = req.params;
+    const { poin_id } = req.params;
     const { jenis_penilaian, bobot, jenis_pelanggaran, is_active } = req.body;
 
-    if (isNaN(id_poin)) {
+    if (isNaN(poin_id)) {
       return res.status(400).json({ error: "ID harus berupa angka" });
     }
 
@@ -98,9 +98,9 @@ module.exports = {
       const result = await pool.query(
         `UPDATE poin_pelanggaran
          SET jenis_penilaian = $1, bobot = $2, jenis_pelanggaran = $3, is_active = $4
-         WHERE id_poin = $5
+         WHERE poin_id = $5
          RETURNING *`,
-        [jenis_penilaian, bobot, jenis_pelanggaran, is_active, id_poin]
+        [jenis_penilaian, bobot, jenis_pelanggaran, is_active, poin_id]
       );
 
       if (result.rows.length === 0) {
@@ -120,8 +120,8 @@ module.exports = {
   // Menghapus Data Poin_pelanggaran
   async delete(req, res){
     try {
-      const {id} = req.params;
-      const result = await pool.query (" DELETE FROM poin_pelanggaran WHERE id_poin = $1", [id]);
+      const {poin_id} = req.params;
+      const result = await pool.query (" DELETE FROM poin_pelanggaran WHERE poin_id = $1", [poin_id]);
       if ( result.rowCount === 0 ){
         return res.status(404).json({message: "Data Poin tidak ditemukan"})
       }

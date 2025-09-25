@@ -4,24 +4,84 @@ module.exports = {
   async getAll(req, res) {
     try {
       const result = await pool.query(
-        "SELECT nama, nuptk, jenis_ptk, tugas_tambahan, hp, email FROM ptk ORDER BY id_ptk ASC"
+        "SELECT * FROM ptk ORDER BY ptk_id ASC"
       );
       res.json(result.rows);
     } catch (error) {
       console.error("Error fetching ptk:", error.message);
-      res.status(500).json({ error: "Internall Server Error" });
+      res.status(500).json({ error: "Internal Server Error" });
     }
   },
 
-    async getEverything(req, res) {
+    async getFiltered(req, res) {
+    try {
+      const {  nip , nuptk, email, search} = req.query;
+
+      let query = "SELECT * FROM ptk WHERE 1=1";
+      let params = [];
+      let index = 1;
+
+      if (nip) {
+        query += ` AND nip = $${index}`;
+        params.push(nip);
+        index++;
+      }
+
+      if (nuptk) {
+        query += ` AND nuptk = $${index}`;
+        params.push(nuptk);
+        index++;
+      }
+
+      if (email) {
+        query += ` AND email = $${index}`;
+        params.push(email);
+        index++;
+      }
+
+      if (search) {
+        query += ` AND (nama ILIKE $${index}`;
+        params.push(`%${search}%`);
+        index++;
+      }
+
+      query += " ORDER BY ptk_id ASC";
+
+      const result = await pool.query(query, params);
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ message: "Data PTK tidak ditemukan" });
+      }
+
+      res.json(result.rows[0]);
+    }
+    catch (error) {
+      console.error("Gagal mengambil data PTK", error);
+      res.status(500).json({error : "Internal Server Error" });
+    }
+  },
+
+  async getById(req, res) {
+    const { ptk_id } = req.params;
+
+    if (isNaN(ptk_id)) {
+      return res.status(400).json({ error: "ID harus berupa angka" });
+    }
+
     try {
       const result = await pool.query(
-        "SELECT nama, nuptk, nip, jk, agama, alamat, kelurahan, kecamatan, hp, jenis_ptk, mata_pelajaran, gelar_depan, gelar_belakang, tugas_tambahan, ket_tugas_tambahan, email FROM ptk ORDER BY id_ptk ASC"
+        "SELECT * FROM ptk WHERE ptk_id = $1",
+        [ptk_id]
       );
-      res.json(result.rows);
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: "Data PTK tidak ditemukan" });
+      }
+
+      res.json(result.rows[0]);
     } catch (error) {
-      console.error("Error fetching ptk:", error.message);
-      res.status(500).json({ error: "Internall Server Error" });
+      console.error("Error fetching PTK by ID:", error.message);
+      res.status(500).json({ error: "Internal Server Error" });
     }
   },
 };

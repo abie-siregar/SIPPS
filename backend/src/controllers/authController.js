@@ -5,12 +5,12 @@ const jwt = require("jsonwebtoken");
 module.exports = {
   async login(req, res) {
     try {
-      const { email, password } = req.body; // gunakan email dari client
+      const { username , password } = req.body; // gunakan email dari client
 
       // ambil user berdasarkan email
       const result = await pool.query(
-        "SELECT user_id, email, password FROM users WHERE email = $1",
-        [email]
+        "SELECT user_id, username, password FROM users WHERE username = $1",
+        [ username]
       );
 
       if (result.rows.length === 0) {
@@ -27,7 +27,7 @@ module.exports = {
 
       // buat token JWT
       const token = jwt.sign(
-        { id: user.id, email: user.email }, // simpan email di token
+        { id: user.id, username: user.username }, // simpan email/username di token
         process.env.JWT_SECRET_KEY || "secret",
         { expiresIn: "1d" }
       );

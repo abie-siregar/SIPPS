@@ -9,9 +9,9 @@ async createUser(req, res) {
       const { username, password, email } = req.body;
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      const defaultRole='user'
+      const defaultRole=3
       const result = await pool.query(
-        "INSERT INTO users (username, password_hash, role, email) VALUES ($1, $2, $3, $4) RETURNING id_users, username",
+        "INSERT INTO users (username, password, role_id, email) VALUES ($1, $2, $3, $4) RETURNING user_id, username",
         [username, hashedPassword, defaultRole, email]
       );
 
@@ -26,7 +26,7 @@ async createUser(req, res) {
     // Mengambil seluruh Data User
     async getAllUser (req, res) {
         try{
-            const result = await pool.query("SELECT username, email, role FROM users ORDER BY id_users ASC");
+            const result = await pool.query("SELECT username, email, role_id FROM users ORDER BY siswa_id ASC");
             res.json(result.rows);
         } catch (error) {
             res.status(500).json({error : "Gagal mengambil data users"});
@@ -36,9 +36,9 @@ async createUser(req, res) {
     // Mengambil data user by ID
     async getByIdUser (req, res) {
         try {
-            const {id} = req.params;
+            const {user_id} = req.params;
             const result = await pool.query(
-                "SELECT * FROM users WHERE id_users = $1", [id]
+                "SELECT * FROM users WHERE user_id = $1", [user_id]
             );
             if (result.rows.length === 0) return res.status(404).json({message: "User tidak ditemukan"});
             res.json(result.rows[0]);
@@ -51,7 +51,7 @@ async createUser(req, res) {
     async updateUser(req, res) {
         
         try {
-            const {id} = req.params;
+            const {user_id} = req.params;
             const {email, role} = req.body;
             
             let fields = [];
@@ -63,7 +63,7 @@ async createUser(req, res) {
                 values.push(email);
             }
             if (role) {
-                fields.push (`role = $${index++}`);
+                fields.push (`role_id = $${index++}`);
                 values.push(role);
             }
 
@@ -74,7 +74,7 @@ async createUser(req, res) {
             fields.push(`updated_at = NOW()`);
 
             const query = `UPDATE users SET ${fields.join(", ")} WHERE id_users = $${index} RETURNING username, email, role, updated_at`;
-            values.push(id);
+            values.push(user_id);
 
             const result = await pool.query(query, values);
 
@@ -89,7 +89,7 @@ async createUser(req, res) {
         try{
             const {id} = req.params;
             const result = await pool.query(
-                "DELETE FROM users WHERE id_users =$1", [id]
+                "DELETE FROM users WHERE user_id =$1", [id]
             );
             if (result.rowCount === 0){
                 return res.status(404).json({message: "Data user tidak ditemukan"})
