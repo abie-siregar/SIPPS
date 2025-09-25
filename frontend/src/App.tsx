@@ -29,6 +29,7 @@ import EditDataRombel from "./pages/ManajemenData/Rombel/EditDataRombel";
 import TambahPelanggaran from "./pages/ManajemenData/PoinPelanggaran/TambahDataPoinPelanggaran";
 import PTK from "./pages/ManajemenData/PTK/DataPTK";
 import Siswa from "./pages/ManajemenData/Siswa/DataSiswa";
+import UserProfile from "./components/UserProfile";
 // import DataUsers from "./"
 
 export default function App() {
@@ -92,6 +93,7 @@ export default function App() {
           {/* Charts */}
           <Route path="/line-chart" element={<LineChart />} />
           <Route path="/bar-chart" element={<BarChart />} />
+          <Route path="/user-profile" element={<UserProfile />} />
         </Route>
 
         {/* Fallback */}
