@@ -72,7 +72,7 @@ module.exports = {
 
       res.json(result.rows[0]);
     } catch (error) {
-      console.error("Error fetching siswa by ID:", error.message);
+      console.error("Error fetching siswa by Id:", error.message);
       res.status(500).json({ error: "Internal Server Error" });
     }
   },
