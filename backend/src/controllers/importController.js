@@ -145,4 +145,82 @@ module.exports = {
             }
         },
 
+        async importPengguna(req, res) {
+          let client;
+            try {
+              const filePath = path.join(__dirname, "../data/getPengguna.json");
+              const rawData = fs.readFileSync(filePath, "utf-8");
+              const dapodikData = JSON.parse(rawData);
+
+              const dataPengguna = Array.isArray(dapodikData) ? dapodikData : dapodikData.rows;
+
+              // === Hilangkan duplikat ID ===
+              const uniqueSiswa = new Map();
+              const uniquePtk = new Map();
+
+              for (const pengguna of dataPengguna) {
+                if (pengguna.peserta_didik_id && !uniqueSiswa.has(pengguna.peserta_didik_id)) {
+                  uniqueSiswa.set(pengguna.peserta_didik_id, pengguna);
+                }
+                if (pengguna.ptk_id && !uniquePtk.has(pengguna.ptk_id)) {
+                  uniquePtk.set(pengguna.ptk_id, pengguna);
+                }
+              }
+
+              client = await pool.connect();
+
+              await client.query("BEGIN");
+
+              let totalSiswaUpdated = 0;
+              let totalPtkUpdated = 0;
+
+              // === UPDATE SISWA ===
+              for (const pengguna of uniqueSiswa.values()) {
+                const querySiswa = `
+                  UPDATE siswa
+                  SET email = $1, alamat = $2
+                  WHERE siswa_id_dapodik = $3
+                `;
+                const resultSiswa = await client.query(querySiswa, [
+                  pengguna.username,
+                  pengguna.alamat,
+                  pengguna.peserta_didik_id,
+                ]);
+                totalSiswaUpdated += resultSiswa.rowCount;
+              }
+
+              // === UPDATE PTK ===
+              for (const pengguna of uniquePtk.values()) {
+                const queryPtk = `
+                  UPDATE ptk
+                  SET email = $1, alamat = $2
+                  WHERE ptk_id_dapodik = $3
+                `;
+                const resultPtk = await client.query(queryPtk, [
+                  pengguna.username,
+                  pengguna.alamat,
+                  pengguna.ptk_id,
+                ]);
+                totalPtkUpdated += resultPtk.rowCount;
+              }
+
+              await client.query("COMMIT");
+
+              res.json({
+                success: true,
+                message: "Data siswa & ptk berhasil diupdate",
+                updated: {
+                  siswa: totalSiswaUpdated,
+                  ptk: totalPtkUpdated,
+                },
+              });
+            } catch (err) {
+              if (client) await client.query("ROLLBACK");
+              console.error("Error update data:", err);
+              res.status(500).json({ success: false, error: err.message });
+            } finally {
+              if (client) client.release();
+            }
+        }
+
 }

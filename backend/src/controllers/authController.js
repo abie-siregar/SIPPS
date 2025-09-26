@@ -42,13 +42,13 @@ module.exports = {
   //Register
   async register(req, res) {
     try {
-      const { user_id, username, password, email } = req.body;
+      const { username, password, email } = req.body;
       const hashedPassword = await bcrypt.hash(password, 10);
 
       const defaultRole=3
       const result = await pool.query(
-        "INSERT INTO users (user_id, username, password, role_id, email) VALUES ($1, $2, $3, $4, $5) RETURNING user_id, username, email",
-        [user_id, username, hashedPassword, defaultRole, email]
+        "INSERT INTO users (username, password, role_id, email) VALUES ($1, $2, $3, $4) RETURNING user_id, username, email",
+        [username, hashedPassword, defaultRole, email]
       );
 
       res
