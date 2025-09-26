@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import axios from "../../api/axios";
-import PageBreadcrumb from "../../components/common/PageBreadCrumb";
-import ComponentCard from "../../components/common/ComponentCard";
-import PageMeta from "../../components/common/PageMeta";
+import axios from "../../../api/axios";
+import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
+import ComponentCard from "../../../components/common/ComponentCard";
+import PageMeta from "../../../components/common/PageMeta";
 
 interface Pelanggaran {
   id: number;
