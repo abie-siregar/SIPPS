@@ -4,7 +4,7 @@ const pelanggaranSiswaController = require("../controllers/pelanggaranSiswaContr
 
 // semua route sudah otomatis terproteksi lewat index.js
 router.post("/", pelanggaranSiswaController.create);
-router.get("/", pelanggaranSiswaController.getList);
+router.get("/", pelanggaranSiswaController.getAll);
 router.get("/:id_poin", pelanggaranSiswaController.getById);
 router.put("/:id_poin", pelanggaranSiswaController.update);
 router.delete("/:id", pelanggaranSiswaController.delete);

@@ -1,6 +1,7 @@
 const pool = require("../../config/database");
 
 module.exports = {
+  //mengambil seluruh data ptk
   async getAll(req, res) {
     try {
       const result = await pool.query(
@@ -13,7 +14,8 @@ module.exports = {
     }
   },
 
-    async getFiltered(req, res) {
+  //mengambil seluruh data ptk menggunakan filter
+  async getFiltered(req, res) {
     try {
       const {  nip , nuptk, email, search} = req.query;
 
@@ -61,6 +63,7 @@ module.exports = {
     }
   },
 
+//mengambil seluruh data ptk menggunakan id
   async getById(req, res) {
     const { ptk_id } = req.params;
 

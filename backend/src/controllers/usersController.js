@@ -4,7 +4,7 @@ const bcrypt = require("bcrypt")
 module.exports= {
 
     //Membuat User baru
-async createUser(req, res) {
+    async createUser(req, res) {
     try {
       const { username, password, email } = req.body;
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -22,7 +22,7 @@ async createUser(req, res) {
       console.error("Register error:", error.message);
       res.status(500).json({ error: "Internal Server Error" });
     }
-  },
+    },
     // Mengambil seluruh Data User
     async getAllUser (req, res) {
         try{
@@ -85,6 +85,7 @@ async createUser(req, res) {
         }
     },
 
+    //hapus user
     async deleteUser(req, res) {
         try{
             const {id} = req.params;
@@ -102,7 +103,7 @@ async createUser(req, res) {
         }
     },
 
-        // generate user PTK
+    // generate user PTK
     async generateUserPtk(req, res) {
     try {
         
@@ -138,10 +139,10 @@ async createUser(req, res) {
       console.error(error);
       res.status(500).json({ error: "Gagal generate user PTK" });
     }
-  },
+    },
 
-  // Generate user dari Siswa
-  async generateUserSiswa(req, res) {
+    // Generate user dari Siswa
+    async generateUserSiswa(req, res) {
     try {
       const defaultPassword = "sipps1234siswa"
       const hashedPassword = await bcrypt.hash(defaultPassword, 10);

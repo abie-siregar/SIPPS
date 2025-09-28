@@ -7,9 +7,17 @@ module.exports = {
     try {
       const { username , password } = req.body; // gunakan email dari client
 
-      // ambil user berdasarkan email
+      // ambil user berdasarkan username
       const result = await pool.query(
-        "SELECT user_id, username, password FROM users WHERE username = $1",
+        `SELECT
+          u.user_id, u.username, u.password,
+          r.role_id_str 
+        FROM 
+          users u
+        LEFT JOIN
+          roles r ON r.role_id = u.role_id
+        WHERE 
+          username = $1`,
         [ username]
       );
 
@@ -27,7 +35,7 @@ module.exports = {
 
       // buat token JWT
       const token = jwt.sign(
-        { id: user.id, username: user.username }, // simpan email/username di token
+        { id: user.user_id, username: user.username, role:user.role_id_str }, // simpan email/username di token //abi menambahkanrole:user.role
         process.env.JWT_SECRET_KEY || "secret",
         { expiresIn: "1d" }
       );

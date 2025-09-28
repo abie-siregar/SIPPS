@@ -2,6 +2,7 @@ const pool = require("../../config/database");
 
 module.exports = {
 
+  //mengambil seluruh rombel
   async getAll(req, res) {
   try {
     const result = await pool.query(
@@ -14,6 +15,7 @@ module.exports = {
   }
   },
 
+  //mengambil seluruh data rombel menggunakan filter
   async getFiltered(req, res) {
     try {
       const { tingkat_id, jurusan_id, search} = req.query;
@@ -56,6 +58,7 @@ module.exports = {
     }
   },
 
+  //update untuk data rombel
   async update(req, res) {
     const { rombel_id } = req.params;
     const { nama, ptk_id_dapodik, tingkat_id, jurusan_id  } = req.body;

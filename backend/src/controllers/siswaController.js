@@ -1,6 +1,7 @@
 const pool = require("../../config/database");
 
 module.exports = {
+  //mengambil seluruh data siswa
   async getAll(req, res) {
     try {
       const result = await pool.query("SELECT * FROM siswa ORDER BY siswa_id ASC");
@@ -11,6 +12,7 @@ module.exports = {
     }
   },
 
+  //mengambil seluruh data siswa menggunakan filter
   async getFiltered(req, res) {
     try {
       const { nisn, rombel, search} = req.query;
@@ -53,6 +55,7 @@ module.exports = {
     }
   },
 
+  //mengambil seluruh data siswa menggunakan id
   async getById(req, res) {
     const { siswa_id } = req.params;
 

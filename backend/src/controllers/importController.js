@@ -96,8 +96,8 @@ module.exports = {
             }
         },
 
-        async importSiswa (req, res) {
-          try {
+    async importSiswa (req, res) {
+            try {
                 const filePath = path.join(__dirname, "../data/getPesertaDidik.json");
                 const rawData = fs.readFileSync(filePath, "utf-8");
                 const dapodikData = JSON.parse(rawData);
@@ -145,7 +145,7 @@ module.exports = {
             }
         },
 
-        async importPengguna(req, res) {
+    async importPengguna(req, res) {
           let client;
             try {
               const filePath = path.join(__dirname, "../data/getPengguna.json");

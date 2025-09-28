@@ -9,7 +9,7 @@ const rombelRoutes = require("./rombel");
 const siswaRoutes = require("./siswa");
 const ptkRoutes = require("./ptk");
 const userRoutes = require("./users");
-// const pelanggaranRoutes = require("./pelanggaranSiswa")
+const pelanggaranRoutes = require("./pelanggaranSiswa")
 const importRoutes = require("./import")
 
 // 🔓 Auth routes (tidak perlu token)
@@ -22,7 +22,7 @@ router.use("/rombel", authenticate, rombelRoutes);
 router.use("/siswa", authenticate, siswaRoutes);
 router.use("/ptk", authenticate, ptkRoutes);
 router.use("/user", authenticate, userRoutes);
-// router.use("/pelanggaran-siswa", authenticate, pelanggaranRoutes);
-
+router.use("/pelanggaran-siswa", authenticate, pelanggaranRoutes);
 router.use("/import", authenticate, importRoutes);
+
 module.exports = router;
