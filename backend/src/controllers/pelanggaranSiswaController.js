@@ -22,7 +22,7 @@ module.exports = {
             VALUES 
                 ($1, $2, $3, $4, $5)
             RETURNING *`,
-            [tanggal, keterangan,jenis_penilaian, bobot, jenis_pelanggaran]
+            [tanggal, keterangan, jenis_penilaian, bobot, jenis_pelanggaran]
         );
 
         res.status(201).json({
@@ -65,9 +65,9 @@ module.exports = {
     //mengambil seluruh data pelanggaran_siswa BY ID
     async getById(req, res) {
 
-        const { pelanggaran_id } = req.params;
+        const { id } = req.params;
 
-        if (isNaN(pelanggaran_id)) {
+        if (isNaN(id)) {
         return res.status(400).json({ error: "ID harus berupa angka" });
         }
 
@@ -88,7 +88,7 @@ module.exports = {
                 pelsis.pelanggaran_id = $1
             ASC
         `
-        [pelanggaran_id]
+        [id]
         );
 
         if (result.rows.length === 0) {
@@ -104,10 +104,10 @@ module.exports = {
 
     // Memperbaharui data pelanggaran_siswa
     async update(req, res) {
-        const { pelanggaran_id } = req.params;
+        const { id } = req.params;
         const { tanggal, keterangan,jenis_penilaian, bobot, jenis_pelanggaran, status } = req.body;
 
-        if (isNaN(pelanggaran_id)) {
+        if (isNaN(id)) {
         return res.status(400).json({ error: "ID harus berupa angka" });
         }
 
@@ -136,7 +136,7 @@ module.exports = {
                 pelanggaran_id = $7
             RETURNING *`,
             
-            [tanggal, keterangan, jenis_penilaian, bobot, jenis_pelanggaran, status, pelanggaran_id]
+            [tanggal, keterangan, jenis_penilaian, bobot, jenis_pelanggaran, status, id]
         );
 
         if (result.rows.length === 0) {
@@ -156,13 +156,13 @@ module.exports = {
     //menghapus data pelanggaran_siswa
     async delete(req, res){
         try {
-            const {pelanggaran_id} = req.params;
+            const {id} = req.params;
             const result = await pool.query(
             `DELETE FROM 
                 pelanggaran_siswa 
             WHERE 
                 pelanggaran_id = $1`,
-            [pelanggaran_id]);
+            [id]);
 
         if ( result.rowCount === 0 ){
             return res.status(404).json({message: "Data pelanggaran tidak ditemukan"})

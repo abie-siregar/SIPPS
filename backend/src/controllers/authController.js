@@ -10,14 +10,14 @@ module.exports = {
       // ambil user berdasarkan username
       const result = await pool.query(
         `SELECT
-          u.user_id, u.username, u.password,
+          u.user_id, u.username,  u.password, 
           r.role_id_str 
         FROM 
           users u
         LEFT JOIN
           roles r ON r.role_id = u.role_id
         WHERE 
-          username = $1`,
+          u.username = $1 OR u.email = $1`,
         [ username]
       );
 
@@ -35,12 +35,21 @@ module.exports = {
 
       // buat token JWT
       const token = jwt.sign(
-        { id: user.user_id, username: user.username, role:user.role_id_str }, // simpan email/username di token //abi menambahkanrole:user.role
+        { id: user.user_id, username: user.username, role:user.role_id_str, email:user.email }, // simpan email/username di token //abi menambahkanrole:user.role
         process.env.JWT_SECRET_KEY || "secret",
         { expiresIn: "1d" }
       );
 
-      res.json({ token });
+      res.json({ token,
+        user: {
+          // id: user.user_id,
+          username: user.username,
+          role:user.role_id_str,
+          email:user.email
+        }
+       }
+        
+      );
     } catch (error) {
       console.error("Login error:", error.message);
       res.status(500).json({ error: "Internal Server Error" });
@@ -55,7 +64,17 @@ module.exports = {
 
       const defaultRole=3
       const result = await pool.query(
-        "INSERT INTO users (username, password, role_id, email) VALUES ($1, $2, $3, $4) RETURNING user_id, username, email",
+        `
+        INSERT INTO 
+          users 
+            (username, password, role_id, email) 
+        VALUES 
+            ($1, $2, $3, $4) 
+        RETURNING 
+            user_id, 
+            username, 
+            email
+        `,
         [username, hashedPassword, defaultRole, email]
       );
 

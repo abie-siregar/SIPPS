@@ -25,20 +25,21 @@ module.exports = {
                   const nama = gtk.nama;
                   const jenis_kelamin = gtk.jenis_kelamin;
                   const jenis_ptk_id = gtk.jenis_ptk_id;
+                  const jabatan_ptk_id = gtk.jabatan_ptk_id;
                   const alamat = gtk.alamat;
                   const email = gtk.email;
     
             const query = `
               INSERT INTO ptk (
-                ptk_id_dapodik, nuptk, nik, nip, agama_id, nama, jenis_kelamin, jenis_ptk_id,
+                ptk_id_dapodik, nuptk, nik, nip, agama_id, nama, jenis_kelamin, jenis_ptk_id, jabatan_ptk_id,
                 alamat, email
                 ) 
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
               RETURNING *;
             `;
     
             const result = await pool.query(query, [
-              ptk_id_dapodik, nuptk, nik, nip, agama_id, nama, jenis_kelamin, jenis_ptk_id,
+              ptk_id_dapodik, nuptk, nik, nip, agama_id, nama, jenis_kelamin, jenis_ptk_id, jabatan_ptk_id,
               alamat, email
             ]);
     

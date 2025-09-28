@@ -10,13 +10,13 @@ const isAdmin = async (req, res, next) => {
   try {
     const query = `
       SELECT 
-        roles.role_id
+        r.role_id
       FROM 
-        users
+        users u
       JOIN 
-        roles ON users.role_id = roles.role_id
+        roles r ON u.role_id = r.role_id
       WHERE 
-        users.user_id = $1
+        u.user_id = $1
     `;
     const { rows } = await pool.query(query, [user_id]);
 

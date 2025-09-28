@@ -5,7 +5,22 @@ module.exports = {
   async getAll(req, res) {
     try {
       const result = await pool.query(
-        "SELECT * FROM ptk ORDER BY ptk_id ASC"
+        `SELECT 
+          p.*,
+          a.agama_id_str,
+          jn.jenis_ptk_id_str,
+          jb.jabatan_ptk_id_str
+        FROM 
+          ptk p
+        LEFT JOIN
+          agama a ON a.agama_id = p.agama_id
+        LEFT JOIN
+          jenis_ptk jn ON jn.jenis_ptk_id = p.jenis_ptk_id
+        LEFT JOIN
+          jabatan_ptk jb ON jb.jabatan_ptk_id = p.jabatan_ptk_id
+        ORDER BY 
+          ptk_id
+        ASC`
       );
       res.json(result.rows);
     } catch (error) {
@@ -19,30 +34,46 @@ module.exports = {
     try {
       const {  nip , nuptk, email, search} = req.query;
 
-      let query = "SELECT * FROM ptk WHERE 1=1";
+      let query = `
+        SELECT 
+          p.*,
+          a.agama_id_str,
+          jn.jenis_ptk_id_str,
+          jb.jabatan_ptk_id_str
+        FROM 
+          ptk p
+        LEFT JOIN
+          agama a ON a.agama_id = p.agama_id
+        LEFT JOIN
+          jenis_ptk jn ON jn.jenis_ptk_id = p.jenis_ptk_id
+        LEFT JOIN
+          jabatan_ptk jb ON jb.jabatan_ptk_id = p.jabatan_ptk_id
+        WHERE
+          ptk_id 1=1
+        `;
       let params = [];
       let index = 1;
 
       if (nip) {
-        query += ` AND nip = $${index}`;
+        query += ` AND p.nip = $${index}`;
         params.push(nip);
         index++;
       }
 
       if (nuptk) {
-        query += ` AND nuptk = $${index}`;
+        query += ` AND p.nuptk = $${index}`;
         params.push(nuptk);
         index++;
       }
 
       if (email) {
-        query += ` AND email = $${index}`;
+        query += ` AND p.email = $${index}`;
         params.push(email);
         index++;
       }
 
       if (search) {
-        query += ` AND (nama ILIKE $${index}`;
+        query += ` AND (p.nama ILIKE $${index}`;
         params.push(`%${search}%`);
         index++;
       }
@@ -65,16 +96,32 @@ module.exports = {
 
 //mengambil seluruh data ptk menggunakan id
   async getById(req, res) {
-    const { ptk_id } = req.params;
+    const { id } = req.params;
 
-    if (isNaN(ptk_id)) {
+    if (isNaN(id)) {
       return res.status(400).json({ error: "ID harus berupa angka" });
     }
 
     try {
       const result = await pool.query(
-        "SELECT * FROM ptk WHERE ptk_id = $1",
-        [ptk_id]
+        `
+        SELECT 
+          p.*,
+          a.agama_id_str,
+          jn.jenis_ptk_id_str,
+          jb.jabatan_ptk_id_str
+        FROM 
+          ptk p
+        LEFT JOIN
+          agama a ON a.agama_id = p.agama_id
+        LEFT JOIN
+          jenis_ptk jn ON jn.jenis_ptk_id = p.jenis_ptk_id
+        LEFT JOIN
+          jabatan_ptk jb ON jb.jabatan_ptk_id = p.jabatan_ptk_id
+        WHERE
+          ptk_id = $1
+        `,
+        [id]
       );
 
       if (result.rows.length === 0) {

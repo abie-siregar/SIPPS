@@ -4,7 +4,24 @@ module.exports = {
   //mengambil seluruh data siswa
   async getAll(req, res) {
     try {
-      const result = await pool.query("SELECT * FROM siswa ORDER BY siswa_id ASC");
+      const result = await pool.query(
+        `SELECT 
+          s.*,
+          a.agama_id_str,
+          smt.semester_id_str,
+          r.nama
+        FROM 
+          siswa s
+        LEFT JOIN
+          agama a ON s.agama_id = s.agama_id
+        LEFT JOIN
+          semester smt ON s.semester_id = s.semester_id
+        LEFT JOIN
+          rombel r ON s.rombel_id_dapodik = s.rombel_id_dapodik
+        ORDER BY 
+          siswa_id
+        ASC`
+      );
       res.json(result.rows);
     } catch (error) {
       console.error("Error fetching siswa:", error.message);
@@ -17,7 +34,23 @@ module.exports = {
     try {
       const { nisn, rombel, search} = req.query;
 
-      let query = "SELECT * FROM siswa WHERE 1=1";
+      let query = `
+        SELECT 
+          s.*,
+          a.agama_id_str,
+          smt.semester_id_str,
+          r.nama
+        FROM 
+          siswa s
+        LEFT JOIN
+          agama a ON s.agama_id = s.agama_id
+        LEFT JOIN
+          semester smt ON s.semester_id = s.semester_id
+        LEFT JOIN
+          rombel r ON s.rombel_id_dapodik = s.rombel_id_dapodik
+        WHERE 
+          siswa_id 1=1
+        `;
       let params = [];
       let index = 1;
 
@@ -65,7 +98,22 @@ module.exports = {
 
     try {
       const result = await pool.query(
-        "SELECT * FROM siswa WHERE siswa_id = $1",
+        `
+        SELECT 
+          s.*,
+          a.agama_id_str,
+          smt.semester_id_str,
+          r.nama
+        FROM 
+          siswa s
+        LEFT JOIN
+          agama a ON s.agama_id = s.agama_id
+        LEFT JOIN
+          semester smt ON s.semester_id = s.semester_id
+        LEFT JOIN
+          rombel r ON s.rombel_id_dapodik = s.rombel_id_dapodik
+        WHERE 
+          siswa_id = $1`,
         [siswa_id]
       );
 

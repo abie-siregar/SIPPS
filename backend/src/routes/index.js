@@ -11,6 +11,7 @@ const ptkRoutes = require("./ptk");
 const userRoutes = require("./users");
 const pelanggaranRoutes = require("./pelanggaranSiswa")
 const importRoutes = require("./import")
+const generateRoutes = require("./generate")
 
 // 🔓 Auth routes (tidak perlu token)
 router.post("/auth/login", authController.login);
@@ -24,5 +25,6 @@ router.use("/ptk", authenticate, ptkRoutes);
 router.use("/user", authenticate, userRoutes);
 router.use("/pelanggaran-siswa", authenticate, pelanggaranRoutes);
 router.use("/import", authenticate, importRoutes);
+router.use("/generate", authenticate, generateRoutes );
 
 module.exports = router;

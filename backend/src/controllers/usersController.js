@@ -26,7 +26,18 @@ module.exports= {
     // Mengambil seluruh Data User
     async getAllUser (req, res) {
         try{
-            const result = await pool.query("SELECT username, email, role_id FROM users ORDER BY siswa_id ASC");
+            const result = await pool.query(
+              `SELECT 
+                u.username, 
+                u.email, 
+                r.role_id_str 
+              FROM 
+                users u
+              LEFT JOIN
+                roles r ON r.role_id = u.role_id
+              ORDER BY 
+                user_id 
+              ASC`);
             res.json(result.rows);
         } catch (error) {
             res.status(500).json({error : "Gagal mengambil data users"});
@@ -38,7 +49,17 @@ module.exports= {
         try {
             const {user_id} = req.params;
             const result = await pool.query(
-                "SELECT * FROM users WHERE user_id = $1", [user_id]
+                `SELECT 
+                  u.username, 
+                  u.email, 
+                  r.role_id_str 
+                FROM 
+                  users u
+                LEFT JOIN
+                  roles r ON r.role_id = u.role_id
+                WHERE 
+                  user_id = $1
+                `, [user_id]
             );
             if (result.rows.length === 0) return res.status(404).json({message: "User tidak ditemukan"});
             res.json(result.rows[0]);
@@ -47,17 +68,21 @@ module.exports= {
         }
     },
 
-    //Update email atau role
+    //Update username, email atau role
     async updateUser(req, res) {
         
         try {
             const {user_id} = req.params;
-            const {email, role} = req.body;
+            const {username, email, role} = req.body;
             
             let fields = [];
             let values = [];
             let index =1;
 
+            if (username) {
+                fields.push (`username = $${index++}`);
+                values.push(email);
+            }
             if (email) {
                 fields.push (`email = $${index++}`);
                 values.push(email);
@@ -73,7 +98,12 @@ module.exports= {
 
             fields.push(`updated_at = NOW()`);
 
-            const query = `UPDATE users SET ${fields.join(", ")} WHERE id_users = $${index} RETURNING username, email, role, updated_at`;
+            const query = `
+            UPDATE 
+              users SET ${fields.join(", ")} 
+            WHERE 
+              user_id = $${index} 
+            RETURNING username, email, role_id, updated_at`;
             values.push(user_id);
 
             const result = await pool.query(query, values);
@@ -103,83 +133,4 @@ module.exports= {
         }
     },
 
-    // generate user PTK
-    async generateUserPtk(req, res) {
-    try {
-        
-      const defaultPassword = "sipps1234"
-      const hashedPassword = await bcrypt.hash(defaultPassword, 10);
-
-      const query = `
-        INSERT INTO users (username, email, role_id, password, alamat, ptk_id_dapodik, is_active)
-        SELECT 
-            p.nuptk AS username,
-            p.email,
-            CASE 
-                WHEN p.jenis_ptk_id = 92 THEN 2
-                WHEN p.jenis_ptk_id = 93 THEN 3
-                WHEN r.rombel_id IS NOT NULL THEN 4
-                ELSE 99
-            END AS role_id,
-            $1 AS password,
-            p.alamat as alamat,
-            p.ptk_id_dapodik,
-            true
-        FROM ptk p
-        LEFT JOIN rombel r ON p.ptk_id_dapodik = r.ptk_id_dapodik
-        WHERE p.email IS NOT NULL
-        ON CONFLICT (ptk_id_dapodik) DO NOTHING
-        RETURNING *;
-      `;
-
-      const { rows } = await pool.query(query, [hashedPassword]);
-
-      res.json({ message: "Users PTK berhasil digenerate", inserted: rows.length, data: rows });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Gagal generate user PTK" });
-    }
-    },
-
-    // Generate user dari Siswa
-    async generateUserSiswa(req, res) {
-    try {
-      const defaultPassword = "sipps1234siswa"
-      const hashedPassword = await bcrypt.hash(defaultPassword, 10);
-
-      const query = `
-         INSERT INTO users (
-        username,
-        email,
-        role_id,
-        password,
-        alamat,
-        no_telepon,
-        no_hp,
-        siswa_id_dapodik,
-        is_active
-      )
-      SELECT 
-        s.nisn AS username,
-        COALESCE(s.email, s.nisn || '@sipps.com') AS email, -- jika email null, gunakan nisn@sipps.com
-        6 AS role_id, -- siswa selalu role 6
-        $1 AS password,
-        s.alamat AS alamat,
-        s.nomor_telepon_rumah AS no_telepon,
-        s.nomor_telepon_seluler AS no_hp,   
-        s.siswa_id_dapodik,
-        true
-      FROM siswa s
-      ON CONFLICT (siswa_id_dapodik) DO NOTHING
-      RETURNING *;
-    `;
-
-      const { rows } = await pool.query(query, [hashedPassword]);
-
-      res.json({ message: "Users Siswa berhasil digenerate", inserted: rows.length, data: rows });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Gagal generate user Siswa" });
-    }
-  },
 };

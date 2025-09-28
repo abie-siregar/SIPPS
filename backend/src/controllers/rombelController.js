@@ -6,7 +6,22 @@ module.exports = {
   async getAll(req, res) {
   try {
     const result = await pool.query(
-      "SELECT * FROM rombel ORDER BY rombel_id ASC"
+      `SELECT 
+        r.*,
+        t.tingkat_id_str,
+        j.jurusan_id_str,
+        p.nama
+      FROM 
+        rombel r
+      LEFT JOIN
+        tingkat t ON t.tingkat_id = r.tingkat_id
+      LEFT JOIN
+        jurusan j ON j.jurusan_id = r.jurusan_id
+      LEFT JOIN
+        ptk p ON p.ptk_id_dapodik = r.ptk_id_dapodik
+      ORDER BY 
+        rombel_id
+      ASC`
     );
     res.json(result.rows);
   } catch (error) {
@@ -20,7 +35,23 @@ module.exports = {
     try {
       const { tingkat_id, jurusan_id, search} = req.query;
 
-      let query = "SELECT * FROM rombel WHERE 1=1";
+      let query = 
+      `SELECT 
+        r.*,
+        t.tingkat_id_str,
+        j.jurusan_id_str,
+        p.nama
+      FROM 
+        rombel r
+      LEFT JOIN
+        tingkat t ON t.tingkat_id = r.tingkat_id
+      LEFT JOIN
+        jurusan j ON j.jurusan_id = r.jurusan_id
+      LEFT JOIN
+        ptk p ON p.ptk_id_dapodik = r.ptk_id_dapodik
+      WHERE 
+        rombel_id
+      ASC`;
       let params = [];
       let index = 1;
 
@@ -37,12 +68,12 @@ module.exports = {
       }
 
       if (search) {
-        query += ` AND (nama ILIKE $${index} OR ptk_id ILIKE $${index})`;
+        query += ` AND (nama ILIKE $${index} OR ptk_id_dapodik ILIKE $${index})`;
         params.push(`%${search}%`);
         index++;
       }
 
-      query += " ORDER BY id_rombel ASC";
+      query += " ORDER BY rombel_id ASC ";
 
       const result = await pool.query(query, params);
 
@@ -69,10 +100,29 @@ module.exports = {
 
     try {
       const query = `
-        UPDATE rombel 
-        SET nama = $1, ptk_id_dapodik = $2, tingkat_id = $3, jurusan_id = $4
-        WHERE rombel_id = $5
-        RETURNING *
+        WITH updated AS (
+          UPDATE 
+            rombel 
+          SET 
+            nama = $1, 
+            ptk_id_dapodik = $2, 
+            tingkat_id = $3, 
+            jurusan_id = $4
+          WHERE rombel_id = $5
+          RETURNING *)
+        SELECT 
+          u.rombel_id,
+          u.nama,
+          p.nama,
+          t.tingkat_id_str,
+          j.jurusan_id_str,
+        FROM
+          updated u
+        LEFT JOIN
+          ptk p ON p.ptk_id_dapodik = u.ptk_id_dapodik
+          tingkat t ON t.tingkat_id = u.tingkat_id
+          jurusan j ON j.jurusan_id = u.jurusan_id;
+
       `;
       const values = [nama, ptk_id_dapodik, tingkat_id, jurusan_id, rombel_id];
 
