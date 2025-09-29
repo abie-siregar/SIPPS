@@ -10,12 +10,17 @@ module.exports = {
       // ambil user berdasarkan username
       const result = await pool.query(
         `SELECT
-          u.user_id, u.username, u.email, u.password, 
+          u.user_id, u.username, u.email, u.password, u.no_hp,
+          COALESCE (p.nama, s.nama) AS nama,
           r.role_id_str 
         FROM 
           users u
         LEFT JOIN
           roles r ON r.role_id = u.role_id
+        LEFT JOIN
+          ptk p ON p.ptk_id_dapodik = u.ptk_id_dapodik
+        LEFT JOIN
+          ptk s ON s.siswa_id_dapodik = u.siswa_id_dapodik
         WHERE 
           u.username = $1 OR u.email = $1`,
         [username]

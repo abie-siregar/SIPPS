@@ -6,10 +6,10 @@ module.exports = {
     try {
       const result = await pool.query(
         `SELECT 
-          p.*,
-          a.agama_id_str,
-          jn.jenis_ptk_id_str,
-          jb.jabatan_ptk_id_str
+          p.ptk_id, p.nama, p.nuptk, p.nip, p.email,
+          a.agama_id_str AS agama,
+          jn.jenis_ptk_id_str AS jenis,
+          jb.jabatan_ptk_id_str AS jabatan
         FROM 
           ptk p
         LEFT JOIN
@@ -36,10 +36,10 @@ module.exports = {
 
       let query = `
         SELECT 
-          p.*,
-          a.agama_id_str,
-          jn.jenis_ptk_id_str,
-          jb.jabatan_ptk_id_str
+          p.ptk_id, p.nama, p.nuptk, p.nip, p.email,
+          a.agama_id_str AS agama,
+          jn.jenis_ptk_id_str AS jenis,
+          jb.jabatan_ptk_id_str AS jabatan
         FROM 
           ptk p
         LEFT JOIN
@@ -106,10 +106,10 @@ module.exports = {
       const result = await pool.query(
         `
         SELECT 
-          p.*,
-          a.agama_id_str,
-          jn.jenis_ptk_id_str,
-          jb.jabatan_ptk_id_str
+          p.ptk_id, p.nama, p.nuptk, p.nip, p.email,
+          a.agama_id_str AS agama,
+          jn.jenis_ptk_id_str AS jenis,
+          jb.jabatan_ptk_id_str AS jabatan
         FROM 
           ptk p
         LEFT JOIN
