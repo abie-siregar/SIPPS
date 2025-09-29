@@ -31,75 +31,78 @@ import {
     import Siswa from "./pages/ManajemenData/Siswa/DataSiswa";
     import UserProfile from "./components/UserProfile";
     import DataUsers from "./pages/ManajemenData/Users/DataUsers";
-import SignUp from "./pages/AuthPages/SignUp";
+    import SignUp from "./pages/AuthPages/SignUp";
+    import { AuthProvider } from "./context/AuthContext";
 
 export default function App() {
   return (
-    <Router>
-      <ScrollToTop />
-      <Routes>
+    <AuthProvider>
+      <Router>
+        <ScrollToTop />
+        <Routes>
 
-        {/* Default route */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          {/* Default route */}
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-        {/* Auth routes (tanpa layout) */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<SignUp />} />
-        <Route path="/admin-login" element={<AdminLogin />} />
+          {/* Auth routes (tanpa layout) */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<SignUp />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
 
-        {/* Routes yang memakai AppLayout */}
-        <Route element={<AppLayout />}>
-          {/* Dashboard (dengan proteksi login) */}
-          <Route path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
-            }
-          />
+          {/* Routes yang memakai AppLayout */}
+          <Route element={<AppLayout />}>
+            {/* Dashboard (dengan proteksi login) */}
+            <Route path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Home />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* Manajemen Data */}
+            {/* Manajemen Data */}
 
-          {/* Data Poin Pelanggaran */}
-          <Route path="/data-poin-pelanggaran" element={<DataPoinPelanggaran />} />
-          <Route path="/data-poin-pelanggaran/tambah" element={<TambahPelanggaran />} />
+            {/* Data Poin Pelanggaran */}
+            <Route path="/data-poin-pelanggaran" element={<DataPoinPelanggaran />} />
+            <Route path="/data-poin-pelanggaran/tambah" element={<TambahPelanggaran />} />
 
-            {/* Pelanggaran-siswa */}
-          <Route path="/data-pelanggaran-siswa" element={<DataPelanggaranSiswa />} />
+              {/* Pelanggaran-siswa */}
+            <Route path="/data-pelanggaran-siswa" element={<DataPelanggaranSiswa />} />
 
-            {/* Data Rombongan Belajar */}
-          <Route path="/data-rombel" element={<DataRombel />} />
-          <Route path="/data-rombel/edit/:id" element={<EditDataRombel />} />
-          <Route path="/data-user" element={<DataUsers />} />
+              {/* Data Rombongan Belajar */}
+            <Route path="/data-rombel" element={<DataRombel />} />
+            <Route path="/data-rombel/edit/:id" element={<EditDataRombel />} />
+            <Route path="/data-user" element={<DataUsers />} />
 
-            {/* Data PTK & PD */}
-          <Route path="/ptk" element={<PTK />} />
-          <Route path="/siswa" element={<Siswa />} />
+              {/* Data PTK & PD */}
+            <Route path="/ptk" element={<PTK />} />
+            <Route path="/siswa" element={<Siswa />} />
 
-          {/* Others */}
-          <Route path="/calendar" element={<Calendar />} />
-          <Route path="/blank" element={<Blank />} />
+            {/* Others */}
+            <Route path="/calendar" element={<Calendar />} />
+            <Route path="/blank" element={<Blank />} />
 
-          {/* Tables */}
-          <Route path="/basic-tables" element={<BasicTables />} />
+            {/* Tables */}
+            <Route path="/basic-tables" element={<BasicTables />} />
 
-          {/* UI Elements */}
-          <Route path="/alerts" element={<Alerts />} />
-          <Route path="/avatars" element={<Avatars />} />
-          <Route path="/badge" element={<Badges />} />
-          <Route path="/buttons" element={<Buttons />} />
-          <Route path="/images" element={<Images />} />
-          <Route path="/videos" element={<Videos />} />
+            {/* UI Elements */}
+            <Route path="/alerts" element={<Alerts />} />
+            <Route path="/avatars" element={<Avatars />} />
+            <Route path="/badge" element={<Badges />} />
+            <Route path="/buttons" element={<Buttons />} />
+            <Route path="/images" element={<Images />} />
+            <Route path="/videos" element={<Videos />} />
 
-          {/* Charts */}
-          <Route path="/line-chart" element={<LineChart />} />
-          <Route path="/bar-chart" element={<BarChart />} />
-          <Route path="/user-profile" element={<UserProfile />} />
-        </Route>
+            {/* Charts */}
+            <Route path="/line-chart" element={<LineChart />} />
+            <Route path="/bar-chart" element={<BarChart />} />
+            <Route path="/user-profile" element={<UserProfile />} />
+          </Route>
 
-        {/* Fallback */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Router>
+          {/* Fallback */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 }

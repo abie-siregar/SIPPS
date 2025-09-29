@@ -82,7 +82,7 @@ const TableCell: React.FC<TableCellProps> = ({
   return (
     <CellTag
       className={`px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400 max-w-[250px] whitespace-normal break-words ${
-        className || ""
+        className ?? "text-start"
       }`}
       {...rest}
     >

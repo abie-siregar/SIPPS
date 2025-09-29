@@ -220,11 +220,15 @@ export default function DataTable<T extends object>({
                   key={idx}
                   isHeader
                   className={`px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400 cursor-pointer ${
-                    col.className || ""
+                    col.className ?? "text-left"
                   }`}
                   onClick={() => handleSort(String(col.accessor))}
                 >
-                  <div className="flex items-center gap-1">
+                  <div className={`flex items-center gap-1 ${
+                        col.className?.includes("text-center")
+                          ? "justify-center"
+                          : "justify-start"
+                      }`}>
                     {col.header}
                     {sortConfig?.key === col.accessor && (
                       <span>
@@ -247,7 +251,7 @@ export default function DataTable<T extends object>({
                       <TableCell
                         key={colIndex}
                         className={`px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400 ${
-                          col.className || ""
+                          col.className ?? "text-left"
                         }`}
                       >
                         {col.render
