@@ -8,9 +8,10 @@ module.exports = {
     const result = await pool.query(
       `SELECT 
         r.*,
+        r.nama AS nama_rombel,
         t.tingkat_id_str,
         j.jurusan_id_str,
-        p.nama
+        p.nama AS wali_kelas
       FROM 
         rombel r
       LEFT JOIN

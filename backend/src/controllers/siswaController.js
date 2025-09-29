@@ -9,17 +9,17 @@ module.exports = {
           s.*,
           a.agama_id_str,
           smt.semester_id_str,
-          r.nama
+          r.nama AS rombel
         FROM 
           siswa s
         LEFT JOIN
-          agama a ON s.agama_id = s.agama_id
+          agama a ON a.agama_id = s.agama_id
         LEFT JOIN
-          semester smt ON s.semester_id = s.semester_id
+          semester smt ON smt.semester_id = s.semester_id
         LEFT JOIN
-          rombel r ON s.rombel_id_dapodik = s.rombel_id_dapodik
+          rombel r ON r.rombel_id_dapodik = s.rombel_id_dapodik
         ORDER BY 
-          siswa_id
+          rombel
         ASC`
       );
       res.json(result.rows);

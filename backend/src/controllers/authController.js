@@ -10,7 +10,7 @@ module.exports = {
       // ambil user berdasarkan username
       const result = await pool.query(
         `SELECT
-          u.user_id, u.username,  u.password, 
+          u.user_id, u.username, u.email, u.password, 
           r.role_id_str 
         FROM 
           users u
@@ -18,7 +18,7 @@ module.exports = {
           roles r ON r.role_id = u.role_id
         WHERE 
           u.username = $1 OR u.email = $1`,
-        [ username]
+        [username]
       );
 
       if (result.rows.length === 0) {
@@ -40,14 +40,7 @@ module.exports = {
         { expiresIn: "1d" }
       );
 
-      res.json({ token,
-        user: {
-          // id: user.user_id,
-          username: user.username,
-          role:user.role_id_str,
-          email:user.email
-        }
-       }
+      res.json({ token }
         
       );
     } catch (error) {
@@ -86,4 +79,38 @@ module.exports = {
       res.status(500).json({ error: "Internal Server Error" });
     }
   },
-};
+
+  //userInfo
+  async profile(req, res){
+    try {
+      const {username, email} = req.user;
+      const result = await pool.query(
+      `SELECT
+          u.user_id, u.username, u.email, u.alamat,
+          r.role_id_str AS role,
+          COALESCE(s.nama, p.nama) AS nama,
+          COALESCE(s.nomor_telepon_rumah, u.no_telepon ) AS no_telepon,
+          COALESCE(s.nomor_telepon_seluler, u.no_hp) AS no_hp
+        FROM 
+          users u
+        LEFT JOIN
+          roles r ON r.role_id = u.role_id
+        LEFT JOIN
+          siswa s ON s.siswa_id_dapodik = u.siswa_id_dapodik
+        LEFT JOIN
+          ptk p ON p.ptk_id_dapodik = u.ptk_id_dapodik
+        WHERE 
+          u.username = $1 OR u.email = $1`,
+      [username || email]
+      );
+
+      if (result.rows.length === 0)
+      return res.status(404).json({ error: "User tidak ditemukan" });
+
+        res.json({ user: result.rows[0] });
+      } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Internal Server Error" });
+      }
+  },
+}

@@ -117,31 +117,42 @@ module.exports = {
                   const tanggal_lahir = siswa.tanggal_lahir;
                   const email = siswa.email;
                   const semester_id = siswa.semester_id;
-                  // const rombel_id_dapodik = siswa.rombongan_belajar_id;
+                  const rombel_id_dapodik = siswa.rombongan_belajar_id;
     
             const query = `
               INSERT INTO siswa (
                 siswa_id_dapodik, nipd, nisn, nik, agama_id, nama, tempat_lahir,
-                tanggal_lahir, email, semester_id
+                tanggal_lahir, email, semester_id, rombel_id_dapodik
                 ) 
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                ON CONFLICT (siswa_id_dapodik) DO UPDATE SET
+                  nipd = EXCLUDED.nipd,
+                  nisn = EXCLUDED.nisn,
+                  nik = EXCLUDED.nik,
+                  agama_id = EXCLUDED.agama_id,
+                  nama = EXCLUDED.nama,
+                  tempat_lahir = EXCLUDED.tempat_lahir,
+                  tanggal_lahir = EXCLUDED.tanggal_lahir,
+                  email = EXCLUDED.email,
+                  semester_id = EXCLUDED.semester_id,
+                  rombel_id_dapodik = EXCLUDED.rombel_id_dapodik
               RETURNING *;
             `;
     
             const result = await pool.query(query, [
               siswa_id_dapodik, nipd, nisn, nik, agama_id, nama, tempat_lahir,
               tanggal_lahir,
-              email, semester_id
+              email, semester_id, rombel_id_dapodik
             ]);
     
             results.push(result.rows[0]);
           }
     
                 res.status(200).json({
-                    message: " Data Berhasil di Import", count: results.length, data:results, 
+                    message: "Data Berhasil di Import dan di perbaharui", count: results.length, data:results, 
                 });
             } catch (error) {
-                console.error("Gagal Import Data", error.message);
+                console.error("Gagal Import Data da", error.message);
                 res.status(500).json({error: "Gagal Import Data Dapodik"})
             }
         },

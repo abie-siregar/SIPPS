@@ -26,5 +26,6 @@ router.use("/user", authenticate, userRoutes);
 router.use("/pelanggaran-siswa", authenticate, pelanggaranRoutes);
 router.use("/import", authenticate, importRoutes);
 router.use("/generate", authenticate, generateRoutes );
+router.get("/auth/profile", authenticate, authController.profile );
 
 module.exports = router;

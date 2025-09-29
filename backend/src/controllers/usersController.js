@@ -30,13 +30,18 @@ module.exports= {
               `SELECT 
                 u.username, 
                 u.email, 
-                r.role_id_str 
+                r.role_id_str,
+                COALESCE(siswa.nama, ptk.nama) AS nama
               FROM 
                 users u
               LEFT JOIN
                 roles r ON r.role_id = u.role_id
+              LEFT JOIN
+                ptk ptk ON ptk.ptk_id_dapodik = u.ptk_id_dapodik
+              LEFT JOIN
+                siswa siswa ON siswa.siswa_id_dapodik = u.siswa_id_dapodik
               ORDER BY 
-                user_id 
+                u.user_id 
               ASC`);
             res.json(result.rows);
         } catch (error) {
