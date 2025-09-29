@@ -6,7 +6,7 @@ export default function AdminLogin() {
   return (
     <>
       <PageMeta
-        title="Admin Login - TailAdmin"
+        title="Admin Login"
         description="Admin access to dashboard"
       />
       <AuthLayout reverse>

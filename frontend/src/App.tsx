@@ -4,51 +4,53 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
-import NotFound from "./pages/OtherPage/NotFound";
-import Videos from "./pages/UiElements/Videos";
-import Images from "./pages/UiElements/Images";
-import Alerts from "./pages/UiElements/Alerts";
-import Badges from "./pages/UiElements/Badges";
-import Avatars from "./pages/UiElements/Avatars";
-import Buttons from "./pages/UiElements/Buttons";
-import LineChart from "./pages/Charts/LineChart";
-import BarChart from "./pages/Charts/BarChart";
-import Calendar from "./pages/Calendar";
-import BasicTables from "./pages/Tables/BasicTables";
-import Blank from "./pages/Blank";
-import AppLayout from "./layout/AppLayout";
-import { ScrollToTop } from "./components/common/ScrollToTop";
-import Home from "./pages/Dashboard/Home";
-import Login from "./pages/AuthPages/Login";
-import AdminLogin from "./pages/AuthPages/AdminLogin";
-import ProtectedRoute from "./components/auth/ProtectedRoute";
-
-import DataPoinPelanggaran from "./pages/ManajemenData/PoinPelanggaran/DataPoinPelanggaran";
-import DataRombel from "./pages/ManajemenData/Rombel/DataRombel";
-import EditDataRombel from "./pages/ManajemenData/Rombel/EditDataRombel";
-import TambahPelanggaran from "./pages/ManajemenData/PoinPelanggaran/TambahDataPoinPelanggaran";
-import PTK from "./pages/ManajemenData/PTK/DataPTK";
-import Siswa from "./pages/ManajemenData/Siswa/DataSiswa";
-import UserProfile from "./components/UserProfile";
-// import DataUsers from "./"
+    import NotFound from "./pages/OtherPage/NotFound";
+    import Videos from "./pages/UiElements/Videos";
+    import Images from "./pages/UiElements/Images";
+    import Alerts from "./pages/UiElements/Alerts";
+    import Badges from "./pages/UiElements/Badges";
+    import Avatars from "./pages/UiElements/Avatars";
+    import Buttons from "./pages/UiElements/Buttons";
+    import LineChart from "./pages/Charts/LineChart";
+    import BarChart from "./pages/Charts/BarChart";
+    import Calendar from "./pages/Calendar";
+    import BasicTables from "./pages/Tables/BasicTables";
+    import Blank from "./pages/Blank";
+    import AppLayout from "./layout/AppLayout";
+    import { ScrollToTop } from "./components/common/ScrollToTop";
+    import Home from "./pages/Dashboard/Home";
+    import Login from "./pages/AuthPages/Login";
+    import AdminLogin from "./pages/AuthPages/AdminLogin";
+    import ProtectedRoute from "./components/auth/ProtectedRoute";
+    import DataPoinPelanggaran from "./pages/ManajemenData/PoinPelanggaran/DataPoinPelanggaran";
+    import DataRombel from "./pages/ManajemenData/Rombel/DataRombel";
+    import EditDataRombel from "./pages/ManajemenData/Rombel/EditDataRombel";
+    import TambahPelanggaran from "./pages/ManajemenData/PoinPelanggaran/TambahDataPoinPelanggaran";
+    import DataPelanggaranSiswa from "./pages/ManajemenData/PelanggaranSiswa/DataPelanggaranSiswa";
+    import PTK from "./pages/ManajemenData/PTK/DataPTK";
+    import Siswa from "./pages/ManajemenData/Siswa/DataSiswa";
+    import UserProfile from "./components/UserProfile";
+    import DataUsers from "./pages/ManajemenData/Users/DataUsers";
+import SignUp from "./pages/AuthPages/SignUp";
 
 export default function App() {
   return (
     <Router>
       <ScrollToTop />
       <Routes>
+
         {/* Default route */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
         {/* Auth routes (tanpa layout) */}
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<SignUp />} />
         <Route path="/admin-login" element={<AdminLogin />} />
 
         {/* Routes yang memakai AppLayout */}
         <Route element={<AppLayout />}>
           {/* Dashboard (dengan proteksi login) */}
-          <Route
-            path="/dashboard"
+          <Route path="/dashboard"
             element={
               <ProtectedRoute>
                 <Home />
@@ -59,20 +61,19 @@ export default function App() {
           {/* Manajemen Data */}
 
           {/* Data Poin Pelanggaran */}
-          <Route
-            path="/data-poin-pelanggaran"
-            element={<DataPoinPelanggaran />}
-          />
-          <Route
-            path="/data-poin-pelanggaran/tambah"
-            element={<TambahPelanggaran />}
-          />
+          <Route path="/data-poin-pelanggaran" element={<DataPoinPelanggaran />} />
+          <Route path="/data-poin-pelanggaran/tambah" element={<TambahPelanggaran />} />
 
+            {/* Pelanggaran-siswa */}
+          <Route path="/data-pelanggaran-siswa" element={<DataPelanggaranSiswa />} />
+
+            {/* Data Rombongan Belajar */}
           <Route path="/data-rombel" element={<DataRombel />} />
           <Route path="/data-rombel/edit/:id" element={<EditDataRombel />} />
-          <Route path="/data-user" element={<DataRombel />} />
+          <Route path="/data-user" element={<DataUsers />} />
 
-          <Route path="ptk" element={<PTK />} />
+            {/* Data PTK & PD */}
+          <Route path="/ptk" element={<PTK />} />
           <Route path="/siswa" element={<Siswa />} />
 
           {/* Others */}

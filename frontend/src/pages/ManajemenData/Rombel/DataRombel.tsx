@@ -9,12 +9,10 @@ import PageMeta from "../../../components/common/PageMeta";
 import DataTable, { Column } from "../../../components/ui/table/DataTable";
 
 export interface Rombel {
-  id_rombel: number;
+  rombel_id: number;
   wali_kelas: string;
-  rombel: string;
+  nama: string;
   tingkat: string;
-  jmlh_l: number;
-  jmlh_p: number;
   jurusan: string;
 }
 
@@ -56,31 +54,14 @@ const DataRombel = () => {
   const columns: Column<Rombel>[] = [
     {
       header: "No",
-      accessor: "id_rombel",
+      accessor: "rombel_id",
       render: (_row, rowIndex) => (rowIndex ?? 0) + 1,
       className: "text-center w-16",
     },
     { header: "Wali Kelas", accessor: "wali_kelas" },
-    { header: "Rombel", accessor: "rombel" },
-    { header: "Tingkat", accessor: "tingkat", className: "text-center w-24" },
-    { header: "L", accessor: "jmlh_l", className: "text-center w-20" },
-    { header: "P", accessor: "jmlh_p", className: "text-center w-20" },
-    { header: "Jurusan", accessor: "jurusan" },
-    // {
-    //   header: "Aksi",
-    //   accessor: "id_rombel",
-    //   render: (row) => (
-    //     <Button
-    //       size="sm"
-    //       variant="primary"
-    //       startIcon={<PencilIcon className="size-4" />}
-    //       onClick={() => handleEdit(row)}
-    //     >
-    //       Edit
-    //     </Button>
-    //   ),
-    //   className: "text-center w-32",
-    // },
+    { header: "Rombel", accessor: "nama" },
+    { header: "Tingkat", accessor: "tingkat_id", className: "text-center w-24" },
+    { header: "Jurusan", accessor: "jurusan_id_str" },
   ];
 
   return (
@@ -100,7 +81,7 @@ const DataRombel = () => {
               data={data}
               searchable
               filterable
-              filterColumns={["wali_kelas", "rombel", "tingkat", "jurusan"]}
+              filterColumns={["wali_kelas", "nama", "tingkat", "jurusan"]}
               paginated
               itemsPerPageOptions={[5, 10, 20, 50]}
               defaultItemsPerPage={10}

@@ -2,17 +2,17 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
 
 import {
-  BoxCubeIcon,
+  // BoxCubeIcon,
   CalenderIcon,
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
   // ListIcon,
-  PageIcon,
-  PieChartIcon,
-  PlugInIcon,
+  // PageIcon,
+  // PieChartIcon,
+  // PlugInIcon,
   TableIcon,
-  UserCircleIcon,
+  // UserCircleIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 
@@ -64,12 +64,27 @@ const navItems: NavItem[] = [
       { name: "Data User", path: "/data-user", pro: false },
     ],
   },
+
   {
     name: "Pelanggaran Siswa",
     icon: <TableIcon />,
-    path: "/basic-tables",
+    subItems: [
+      {
+        name: "Data Pelanggaran Siswa",
+        path: "/data-pelanggaran-siswa",
+        pro: false,
+      },
+    ],
   },
+
+
+
   // {
+  //   name: "Pelanggaran Siswa",
+  //   icon: <TableIcon />,
+  //   path: "/basic-tables",
+  // },
+  // // {
   //   name: "Tables",
   //   icon: <TableIcon />,
   //   subItems: [{ name: "Basic Tables", path: "/basic-tables", pro: false }],
@@ -84,36 +99,36 @@ const navItems: NavItem[] = [
   // },
 ];
 
-const othersItems: NavItem[] = [
-  {
-    icon: <PieChartIcon />,
-    name: "Charts",
-    subItems: [
-      { name: "Line Chart", path: "/line-chart", pro: false },
-      { name: "Bar Chart", path: "/bar-chart", pro: false },
-    ],
-  },
-  {
-    icon: <BoxCubeIcon />,
-    name: "UI Elements",
-    subItems: [
-      { name: "Alerts", path: "/alerts", pro: false },
-      { name: "Avatar", path: "/avatars", pro: false },
-      { name: "Badge", path: "/badge", pro: false },
-      { name: "Buttons", path: "/buttons", pro: false },
-      { name: "Images", path: "/images", pro: false },
-      { name: "Videos", path: "/videos", pro: false },
-    ],
-  },
-  {
-    icon: <PlugInIcon />,
-    name: "Authentication",
-    subItems: [
-      { name: "Login", path: "/login", pro: false },
-      { name: "Sign Up", path: "/signup", pro: false },
-    ],
-  },
-];
+// const othersItems: NavItem[] = [
+//   {
+//     icon: <PieChartIcon />,
+//     name: "Charts",
+//     subItems: [
+//       { name: "Line Chart", path: "/line-chart", pro: false },
+//       { name: "Bar Chart", path: "/bar-chart", pro: false },
+//     ],
+//   },
+//   {
+//     icon: <BoxCubeIcon />,
+//     name: "UI Elements",
+//     subItems: [
+//       { name: "Alerts", path: "/alerts", pro: false },
+//       { name: "Avatar", path: "/avatars", pro: false },
+//       { name: "Badge", path: "/badge", pro: false },
+//       { name: "Buttons", path: "/buttons", pro: false },
+//       { name: "Images", path: "/images", pro: false },
+//       { name: "Videos", path: "/videos", pro: false },
+//     ],
+//   },
+//   {
+//     icon: <PlugInIcon />,
+//     name: "Authentication",
+//     subItems: [
+//       { name: "Login", path: "/login", pro: false },
+//       { name: "Sign Up", path: "/signup", pro: false },
+//     ],
+//   },
+// ];
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
@@ -320,7 +335,7 @@ const AppSidebar: React.FC = () => {
         }
         ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
         lg:translate-x-0`}
-      onMouseEnter={() => !isExpanded && setIsHovered(true)}
+      onMouseEnter={() => !isExpanded && setIsHovered(false)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <div
@@ -328,7 +343,7 @@ const AppSidebar: React.FC = () => {
           !isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
         }`}
       >
-        <Link to="/">
+        <Link to="/" className="hidden lg:block">
           {isExpanded || isHovered || isMobileOpen ? (
             <>
               <img

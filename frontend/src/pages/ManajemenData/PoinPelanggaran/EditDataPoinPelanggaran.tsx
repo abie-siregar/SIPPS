@@ -110,7 +110,7 @@ const EditDataPoinPelanggaran: React.FC<EditPopupProps> = ({
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label>Jenis Penilaian</label>
+              <label>Jenis Pelanggaran</label>
               <textarea
                 value={jenisPenilaian}
                 onChange={(e) => setjenisPenilaian(e.target.value)}
@@ -127,7 +127,7 @@ const EditDataPoinPelanggaran: React.FC<EditPopupProps> = ({
               />
             </div>
             <div>
-              <label>Jenis Pelanggaran</label>
+              <label>Jenis Penilaian</label>
               <select
                 value={jenisPelanggaran}
                 onChange={(e) => setJenisPelanggaran(e.target.value)}

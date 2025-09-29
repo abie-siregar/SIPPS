@@ -59,7 +59,7 @@ const DataSiswa = () => {
   const columns: Column<Siswa>[] = [
     {
       header: "No",
-      accessor: "id",
+      accessor: "siswa_id",
       render: (_row, rowIndex) => (rowIndex ?? 0) + 1,
       className: "text-center w-16",
     },

@@ -13,7 +13,6 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
   const [username, setUsername] = useState("");
-  // const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -32,6 +31,7 @@ export default function LoginForm() {
 
       if (res.status === 200 && data.token) {
         localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user)); // ditambahkan 290902025
         navigate("/dashboard");
       } else {
         setError(data.message || "Login gagal");

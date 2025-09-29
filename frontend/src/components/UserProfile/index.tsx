@@ -1,13 +1,25 @@
+import { useEffect, useState } from "react";
+import axios from "../../api/axios";
 import UserInfoCard from "./UserInfoCard";
-import UserAddressCard from "./UserAddressCard";
 import UserMetaCard from "./UserMetaCard";
 
 export default function UserProfile() {
-  const user = {
-    username: "John Doe",
-    email: "johndoe@example.com",
-    role: "Admin",
-  };
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await axios.get("/auth/profile");
+        setUser(res.data.user);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  if (!user) return <p>Loading...</p>;
 
   return (
     <div className="space-y-6 p-6">

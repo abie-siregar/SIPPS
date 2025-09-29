@@ -55,15 +55,6 @@ export default function UserInfoCard() {
                 +09 363 398 46
               </p>
             </div>
-
-            <div>
-              {/* <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-                Bio
-              </p>
-              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                Team Manager
-              </p> */}
-            </div>
           </div>
         </div>
 
@@ -142,7 +133,7 @@ export default function UserInfoCard() {
 
                 <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
                   <div className="col-span-2 lg:col-span-1">
-                    <Label>First Name</Label>
+                    <Label>Nama Lengkap</Label>
                     <Input type="text" value="Musharof" />
                   </div>
 
