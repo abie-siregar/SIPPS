@@ -15,4 +15,7 @@ export default defineConfig({
       },
     }),
   ],
+  server: {
+    allowedHosts: ["mekhi-unwarned-leonie.ngrok-free.dev"],
+  },
 });

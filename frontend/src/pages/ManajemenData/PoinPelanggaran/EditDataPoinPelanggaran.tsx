@@ -112,8 +112,8 @@ const EditDataPoinPelanggaran: React.FC<EditPopupProps> = ({
             <div>
               <label>Jenis Pelanggaran</label>
               <textarea
-                value={jenisPenilaian}
-                onChange={(e) => setjenisPenilaian(e.target.value)}
+                value={jenisPelanggaran}
+                onChange={(e) => setJenisPelanggaran(e.target.value)}
                 className="w-full border px-3 py-2 rounded"
               />
             </div>
