@@ -5,24 +5,23 @@ const jwt = require("jsonwebtoken");
 module.exports = {
   async login(req, res) {
     try {
-      const { username , password } = req.body; // gunakan email dari client
+      const { username, password } = req.body; // bisa username atau email
 
-      // ambil user berdasarkan username
+      // cari user berdasarkan username/email
       const result = await pool.query(
         `SELECT
-          u.user_id, u.username, u.email, u.password, u.no_hp,
+          u.user_id, 
+          u.username, 
+          u.email, 
+          u.password, 
+          u.no_hp,
           COALESCE (p.nama, s.nama) AS nama,
           r.role_id_str 
-        FROM 
-          users u
-        LEFT JOIN
-          roles r ON r.role_id = u.role_id
-        LEFT JOIN
-          ptk p ON p.ptk_id_dapodik = u.ptk_id_dapodik
-        LEFT JOIN
-          ptk s ON s.siswa_id_dapodik = u.siswa_id_dapodik
-        WHERE 
-          u.username = $1 OR u.email = $1`,
+        FROM users u
+        LEFT JOIN roles r ON r.role_id = u.role_id
+        LEFT JOIN ptk p ON p.ptk_id_dapodik = u.ptk_id_dapodik
+        LEFT JOIN siswa s ON s.siswa_id_dapodik = u.siswa_id_dapodik
+        WHERE u.username = $1 OR u.email = $1`,
         [username]
       );
 
@@ -38,16 +37,30 @@ module.exports = {
         return res.status(401).json({ error: "Password salah" });
       }
 
-      // buat token JWT
+      // buat token JWT dengan role
       const token = jwt.sign(
-        { id: user.user_id, username: user.username, role:user.role_id_str, email:user.email }, // simpan email/username di token //abi menambahkanrole:user.role
+        {
+          id: user.user_id,
+          username: user.username,
+          email: user.email,
+          role: user.role_id_str,
+        },
         process.env.JWT_SECRET_KEY || "secret",
         { expiresIn: "1d" }
       );
 
-      res.json({ token }
-        
-      );
+      res.json({
+        message: "Login berhasil",
+        token,
+        user: {
+          id: user.user_id,
+          username: user.username,
+          email: user.email,
+          nama: user.nama,
+          no_hp: user.no_hp,
+          role: user.role_id_str,
+        },
+      });
     } catch (error) {
       console.error("Login error:", error.message);
       res.status(500).json({ error: "Internal Server Error" });
@@ -60,7 +73,7 @@ module.exports = {
       const { username, password, email } = req.body;
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      const defaultRole=3
+      const defaultRole = 3;
       const result = await pool.query(
         `
         INSERT INTO 
@@ -86,11 +99,11 @@ module.exports = {
   },
 
   //userInfo
-  async profile(req, res){
+  async profile(req, res) {
     try {
-      const {username, email} = req.user;
+      const { username, email } = req.user;
       const result = await pool.query(
-      `SELECT
+        `SELECT
           u.user_id, u.username, u.email, u.alamat,
           r.role_id_str AS role,
           COALESCE(s.nama, p.nama) AS nama,
@@ -106,16 +119,16 @@ module.exports = {
           ptk p ON p.ptk_id_dapodik = u.ptk_id_dapodik
         WHERE 
           u.username = $1 OR u.email = $1`,
-      [username || email]
+        [username || email]
       );
 
       if (result.rows.length === 0)
-      return res.status(404).json({ error: "User tidak ditemukan" });
+        return res.status(404).json({ error: "User tidak ditemukan" });
 
-        res.json({ user: result.rows[0] });
-      } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Internal Server Error" });
-      }
+      res.json({ user: result.rows[0] });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
   },
-}
+};
