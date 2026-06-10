@@ -2,23 +2,23 @@ const pool = require("../../config/database");
 
 const isAdmin = async (req, res, next) => {
 
-  const user_id = req.user?.id;
-  if (!user_id) {
+  const id_user = req.user?.id;
+  if (!id_user) {
     return res.status(401).json({ error: "Unauthorized" });
   }
 
   try {
     const query = `
       SELECT 
-        r.role_id
+        r.id_role
       FROM 
         users u
       JOIN 
-        roles r ON u.role_id = r.role_id
+        roles r ON u.id_role = r.id_role
       WHERE 
-        u.user_id = $1
+        u.id_user = $1
     `;
-    const { rows } = await pool.query(query, [user_id]);
+    const { rows } = await pool.query(query, [id_user]);
 
     const isAdmin = rows.some((role) => role.name === "Admin");
 

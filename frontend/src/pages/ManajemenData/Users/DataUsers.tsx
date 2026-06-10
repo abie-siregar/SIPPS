@@ -72,7 +72,7 @@ const DataUsers = () => {
     { header: "Username", accessor: "username", className: "w-40" },
     { header: "Nama", accessor: "nama", className: "w-48" },
     { header: "Email", accessor: "email", className: "text-center w-56 truncate" },
-    { header: "Roles", accessor: "role_id_str", className: "w-28 text-center" },
+    { header: "Roles", accessor: "nama_role", className: "w-28 text-center" },
   ];
 
   return (

@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 module.exports = {
+  // Login
   async login(req, res) {
     try {
       const { username, password } = req.body; // bisa username atau email
@@ -10,18 +11,13 @@ module.exports = {
       // cari user berdasarkan username/email
       const result = await pool.query(
         `SELECT
-          u.user_id, 
+          u.id_user, 
           u.username, 
-          u.email, 
           u.password, 
-          u.no_hp,
-          COALESCE (p.nama, s.nama) AS nama,
-          r.role_id_str 
+          r.nama_role 
         FROM users u
-        LEFT JOIN roles r ON r.role_id = u.role_id
-        LEFT JOIN ptk p ON p.ptk_id_dapodik = u.ptk_id_dapodik
-        LEFT JOIN siswa s ON s.siswa_id_dapodik = u.siswa_id_dapodik
-        WHERE u.username = $1 OR u.email = $1`,
+        LEFT JOIN roles r ON r.id_role = u.id_role
+        WHERE u.username = $1`,
         [username]
       );
 
@@ -40,10 +36,9 @@ module.exports = {
       // buat token JWT dengan role
       const token = jwt.sign(
         {
-          id: user.user_id,
+          id: user.id_user,
           username: user.username,
-          email: user.email,
-          role: user.role_id_str,
+          role: user.nama_role,
         },
         process.env.JWT_SECRET_KEY || "secret",
         { expiresIn: "1d" }
@@ -53,12 +48,9 @@ module.exports = {
         message: "Login berhasil",
         token,
         user: {
-          id: user.user_id,
+          id: user.id_user,
           username: user.username,
-          email: user.email,
-          nama: user.nama,
-          no_hp: user.no_hp,
-          role: user.role_id_str,
+          role: user.nama_role
         },
       });
     } catch (error) {
@@ -70,23 +62,25 @@ module.exports = {
   //Register
   async register(req, res) {
     try {
-      const { username, password, email } = req.body;
+      const { username, password, id_role} = req.body;
       const hashedPassword = await bcrypt.hash(password, 10);
 
       const defaultRole = 3;
+
+      const assignedRole = id_role || defaultRole;
+      
       const result = await pool.query(
         `
         INSERT INTO 
           users 
-            (username, password, role_id, email) 
+            (username, password, id_role ) 
         VALUES 
-            ($1, $2, $3, $4) 
+            ($1, $2, $3) 
         RETURNING 
-            user_id, 
-            username, 
-            email
+            id_user, 
+            username
         `,
-        [username, hashedPassword, defaultRole, email]
+        [username, hashedPassword, assignedRole]
       );
 
       res
@@ -101,25 +95,18 @@ module.exports = {
   //userInfo
   async profile(req, res) {
     try {
-      const { username, email } = req.user;
+      const { username } = req.user;
       const result = await pool.query(
         `SELECT
-          u.user_id, u.username, u.email, u.alamat,
-          r.role_id_str AS role,
-          COALESCE(s.nama, p.nama) AS nama,
-          COALESCE(s.nomor_telepon_rumah, u.no_telepon ) AS no_telepon,
-          COALESCE(s.nomor_telepon_seluler, u.no_hp) AS no_hp
+          u.id_user, u.username,
+          r.nama_role AS role
         FROM 
           users u
         LEFT JOIN
-          roles r ON r.role_id = u.role_id
-        LEFT JOIN
-          siswa s ON s.siswa_id_dapodik = u.siswa_id_dapodik
-        LEFT JOIN
-          ptk p ON p.ptk_id_dapodik = u.ptk_id_dapodik
+          roles r ON r.id_role = u.id_role
         WHERE 
-          u.username = $1 OR u.email = $1`,
-        [username || email]
+          u.username = $1`,
+        [username]
       );
 
       if (result.rows.length === 0)

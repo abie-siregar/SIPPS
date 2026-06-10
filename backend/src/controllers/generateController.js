@@ -52,7 +52,7 @@ module.exports= {
           users (
             username,
             email,
-            role_id,
+            id_role,
             password,
             alamat,
             no_telepon,
@@ -63,7 +63,7 @@ module.exports= {
       SELECT 
         s.nisn AS username,
         COALESCE(s.email, s.nisn || '@sipps.com') AS email, -- jika email null, gunakan nisn@sipps.com
-        6 AS role_id, -- siswa selalu role 6
+        6 AS id_role, -- siswa selalu role 6
         $1 AS password,
         s.alamat AS alamat,
         s.nomor_telepon_rumah AS no_telepon,

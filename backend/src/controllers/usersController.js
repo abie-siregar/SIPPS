@@ -6,13 +6,18 @@ module.exports= {
     //Membuat User baru
     async createUser(req, res) {
     try {
-      const { username, password, email } = req.body;
-      const hashedPassword = await bcrypt.hash(password, 10);
+      const { username, id_role, password } = req.body;
 
-      const defaultRole=3
+      console.log("Data dari Postman:", req.body);
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const defaultRole= 1; // Role default jika id_role tidak diberikan
+
+      const assignedRole = (id_role !== undefined && id_role !== null) ? id_role : defaultRole;
+
       const result = await pool.query(
-        "INSERT INTO users (username, password, role_id, email) VALUES ($1, $2, $3, $4) RETURNING user_id, username",
-        [username, hashedPassword, defaultRole, email]
+        "INSERT INTO users (username, id_role, password) VALUES ($1, $2, $3) RETURNING id_user, username", 
+        [username, assignedRole, hashedPassword ]
       );
 
       res
@@ -22,26 +27,26 @@ module.exports= {
       console.error("Register error:", error.message);
       res.status(500).json({ error: "Internal Server Error" });
     }
-    },
+},
+
     // Mengambil seluruh Data User
     async getAllUser (req, res) {
         try{
             const result = await pool.query(
               `SELECT 
                 u.username, 
-                u.email, 
-                r.role_id_str,
+                r.nama_role,
                 COALESCE(siswa.nama, ptk.nama) AS nama
               FROM 
                 users u
               LEFT JOIN
-                roles r ON r.role_id = u.role_id
+                roles r ON r.id_role = u.id_role
               LEFT JOIN
                 ptk ptk ON ptk.ptk_id_dapodik = u.ptk_id_dapodik
               LEFT JOIN
                 siswa siswa ON siswa.siswa_id_dapodik = u.siswa_id_dapodik
               ORDER BY 
-                u.user_id 
+                u.id_user 
               ASC`);
             res.json(result.rows);
         } catch (error) {
@@ -52,19 +57,18 @@ module.exports= {
     // Mengambil data user by ID
     async getByIdUser (req, res) {
         try {
-            const {user_id} = req.params;
+            const {id_user} = req.params;
             const result = await pool.query(
                 `SELECT 
                   u.username, 
-                  u.email, 
-                  r.role_id_str 
+                  r.nama_role 
                 FROM 
                   users u
                 LEFT JOIN
-                  roles r ON r.role_id = u.role_id
+                  roles r ON r.id_role = u.id_role
                 WHERE 
-                  user_id = $1
-                `, [user_id]
+                  id_user = $1
+                `, [id_user]
             );
             if (result.rows.length === 0) return res.status(404).json({message: "User tidak ditemukan"});
             res.json(result.rows[0]);
@@ -77,8 +81,8 @@ module.exports= {
     async updateUser(req, res) {
         
         try {
-            const {user_id} = req.params;
-            const {username, email, role} = req.body;
+            const {id_user} = req.params;
+            const {username, role} = req.body;
             
             let fields = [];
             let values = [];
@@ -86,14 +90,10 @@ module.exports= {
 
             if (username) {
                 fields.push (`username = $${index++}`);
-                values.push(email);
-            }
-            if (email) {
-                fields.push (`email = $${index++}`);
-                values.push(email);
+                values.push(username);
             }
             if (role) {
-                fields.push (`role_id = $${index++}`);
+                fields.push (`id_role = $${index++}`);
                 values.push(role);
             }
 
@@ -107,9 +107,9 @@ module.exports= {
             UPDATE 
               users SET ${fields.join(", ")} 
             WHERE 
-              user_id = $${index} 
-            RETURNING username, email, role_id, updated_at`;
-            values.push(user_id);
+              id_user = $${index} 
+            RETURNING username, id_role, updated_at`;
+            values.push(id_user);
 
             const result = await pool.query(query, values);
 
@@ -125,7 +125,7 @@ module.exports= {
         try{
             const {id} = req.params;
             const result = await pool.query(
-                "DELETE FROM users WHERE user_id =$1", [id]
+                "DELETE FROM users WHERE id_user =$1", [id]
             );
             if (result.rowCount === 0){
                 return res.status(404).json({message: "Data User tidak ditemukan"})

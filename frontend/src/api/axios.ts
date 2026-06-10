@@ -1,8 +1,8 @@
 import axios from "axios";
 
 const instance = axios.create({
-  // baseURL: "http://localhost:3000/api", //dev-abi
-  baseURL: "https://sipps.srg.my.id/api", //server
+  baseURL: "http://localhost:3000/api", //dev-abi
+  // baseURL: "https://sipps.srg.my.id/api", //server
 });
 
 instance.interceptors.request.use((config) => {

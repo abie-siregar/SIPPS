@@ -4,6 +4,8 @@ const fs = require("fs");
 const path = require("path");
 
 module.exports = {
+
+  // Import Data PTK dari Dapodik
   async importPtk(req, res) {
     try {
       const filePath = path.join(__dirname, "../data/getGtk.json");
@@ -17,51 +19,29 @@ module.exports = {
       const results = [];
 
       for (const gtk of dataGtk) {
-        const ptk_id_dapodik = gtk.ptk_id;
-        const nuptk = gtk.nuptk;
-        const nik = gtk.nik;
+        const id_ptk = gtk.ptk_id;
+        const id_jabatan = gtk.jenis_ptk_id; // Asumsikan jenis_ptk_id sebagai id_jabatan, sesuaikan jika berbeda
         const nip = gtk.nip;
-        const agama_id = gtk.agama_id.toString();
         const nama = gtk.nama;
-        const jenis_kelamin = gtk.jenis_kelamin;
-        const jenis_ptk_id = gtk.jenis_ptk_id;
-        const jabatan_ptk_id = gtk.jabatan_ptk_id;
-        const alamat = gtk.alamat;
-        const email = gtk.email;
 
         const query = `
             INSERT INTO
               ptk (
-                ptk_id_dapodik, nuptk, nik, nip, agama_id, nama, jenis_kelamin, jenis_ptk_id, jabatan_ptk_id,
-                alamat, email
+                id_ptk, id_jabatan, nip, nama
               )   
-              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-              ON CONFLICT (ptk_id_dapodik) 
+              VALUES ($1, $2, $3, $4)
+              ON CONFLICT (id_ptk) 
               DO UPDATE SET
-                nuptk = EXCLUDED.nuptk,
-                nik = EXCLUDED.nik,
+              id_jabatan = EXCLUDED.id_jabatan,
                 nip = EXCLUDED.nip,
-                agama_id = EXCLUDED.agama_id,
-                nama = EXCLUDED.nama,
-                jenis_kelamin = EXCLUDED.jenis_kelamin,
-                jenis_ptk_id = EXCLUDED.jenis_ptk_id,
-                jabatan_ptk_id = EXCLUDED.jabatan_ptk_id,
-                alamat = EXCLUDED.alamat,
-                email = EXCLUDED.email
+                nama = EXCLUDED.nama
               RETURNING *;
             `;
         const result = await pool.query(query, [
-          ptk_id_dapodik,
-          nuptk,
-          nik,
+          id_ptk,
+          id_jabatan,
           nip,
-          agama_id,
           nama,
-          jenis_kelamin,
-          jenis_ptk_id,
-          jabatan_ptk_id,
-          alamat,
-          email,
         ]);
 
         results.push(result.rows[0]);
@@ -78,6 +58,7 @@ module.exports = {
     }
   },
 
+  // Import data rombel dari Dapodik
   async importRombel(req, res) {
     try {
       const filePath = path.join(__dirname, "../data/getRombonganBelajar.json");
