@@ -8,7 +8,7 @@ module.exports = {
         const { id_siswa, id_ptk, id_semester, id_poin, tanggal, keterangan} = req.body;
 
         // Validasi input
-        if (!tanggal || keterangan || !id_siswa || !id_ptk || !id_semester || !id_poin ) {
+        if (!tanggal || !keterangan || !id_siswa || !id_ptk || !id_semester || !id_poin ) {
         return res.status(400).json({
             error:
             "tanggal, keterangan, ID siswa, ID ptk, ID semester, dan ID poin harus diisi dengan benar.",
@@ -69,8 +69,6 @@ module.exports = {
         LEFT JOIN
             semester ON semester.id_semester = pelanggaran.id_semester
             AND rombel.id_semester = pelanggaran.id_semester
-        LEFT JOIN
-            semester ON semester.id_semester = anggota_rombel.id_semester
         LEFT JOIN
             jurusan ON jurusan.id_jurusan = rombel.id_jurusan
         LEFT JOIN

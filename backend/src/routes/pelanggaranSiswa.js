@@ -6,12 +6,8 @@ const isRoles = require("../middlewares/isRoles");
 // semua route sudah otomatis terproteksi lewat index.js
 router.post("/", isRoles(["Admin", "BK"]), pelanggaranSiswaController.create);
 router.get("/", pelanggaranSiswaController.getAll);
-router.get("/:id", pelanggaranSiswaController.getById);
+router.get("/filter", pelanggaranSiswaController.getFiltered);
 router.put("/:id", isRoles(["Admin", "BK"]), pelanggaranSiswaController.update);
-router.delete(
-  "/:id",
-  isRoles(["Admin", "BK"]),
-  pelanggaranSiswaController.delete
-);
+router.delete("/:id", isRoles(["Admin", "BK"]), pelanggaranSiswaController.delete);
 
 module.exports = router;
