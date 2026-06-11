@@ -68,13 +68,13 @@ module.exports = {
             rombel ON rombel.id_rombel = anggota_rombel.id_rombel
         LEFT JOIN
             semester ON semester.id_semester = pelanggaran.id_semester
-            AND rombel.id_semester = pelanggaran.id_semester
+            AND anggota_rombel.id_semester = pelanggaran.id_semester
         LEFT JOIN
             jurusan ON jurusan.id_jurusan = rombel.id_jurusan
         LEFT JOIN
             ptk walikelas ON walikelas.id_ptk = rombel.id_ptk_wali
         LEFT JOIN
-            jabatan ON jabatan.id_jabatan = ptk.id_jabatan
+            jabatan_ptk jabatan ON jabatan.id_jabatan = ptk.id_jabatan
         ORDER BY
             pelanggaran.tanggal
         DESC
@@ -83,7 +83,7 @@ module.exports = {
       res.json(result.rows);
     } catch (error) {
       console.error("Error fetching ptk:", error.message);
-      res.status(500).json({ error: "Internal Server Error" });
+      res.status(500).json({ error: "Internal Server Error " + error.message });
     }
     },
 
