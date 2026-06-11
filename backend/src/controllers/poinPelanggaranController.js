@@ -4,7 +4,7 @@ module.exports = {
 
   //Menambahkan data Poin_pelanggaran
   async create(req, res) {
-    const { jenis_penilaian, bobot, jenis_pelanggaran } = req.body;
+    const { jenis_penilaian, jenis_pelanggaran, bobot } = req.body;
 
     // Validasi input
     if (!jenis_penilaian || typeof bobot !== "number" || !jenis_pelanggaran) {
@@ -16,10 +16,10 @@ module.exports = {
 
     try {
       const result = await pool.query(
-        `INSERT INTO poin_pelanggaran (jenis_penilaian, bobot, jenis_pelanggaran)
+        `INSERT INTO poin_pelanggaran (jenis_penilaian,jenis_pelanggaran, bobot )
          VALUES ($1, $2, $3)
          RETURNING *`,
-        [jenis_penilaian, bobot, jenis_pelanggaran]
+        [jenis_penilaian, jenis_pelanggaran, bobot]
       );
 
       res.status(201).json({
@@ -36,7 +36,7 @@ module.exports = {
   async getList(req, res) {
     try {
       const result = await pool.query(
-        "SELECT * FROM poin_pelanggaran ORDER BY poin_id ASC"
+        "SELECT * FROM poin_pelanggaran ORDER BY id_poin ASC"
       );
       res.json({
         total: result.rowCount,
@@ -50,16 +50,16 @@ module.exports = {
 
   // Mengambil data poin_pelanggaran berdasarkan ID
   async getById(req, res) {
-    const { poin_id } = req.params;
+    const { id_poin } = req.params;
 
-    if (isNaN(poin_id)) {
+    if (isNaN(id_poin)) {
       return res.status(400).json({ error: "ID harus berupa angka" });
     }
 
     try {
       const result = await pool.query(
-        "SELECT * FROM poin_pelanggaran WHERE poin_id = $1",
-        [poin_id]
+        "SELECT * FROM poin_pelanggaran WHERE id_poin = $1",
+        [id_poin]
       );
 
       if (result.rows.length === 0) {
@@ -75,10 +75,10 @@ module.exports = {
 
   // Memperbaharui data Poin_pelanggaran
   async update(req, res) {
-    const { poin_id } = req.params;
-    const { jenis_penilaian, bobot, jenis_pelanggaran, is_active } = req.body;
+    const { id_poin } = req.params;
+    const { jenis_penilaian, jenis_pelanggaran, bobot , is_active } = req.body;
 
-    if (isNaN(poin_id)) {
+    if (isNaN(id_poin)) {
       return res.status(400).json({ error: "ID harus berupa angka" });
     }
 
@@ -97,10 +97,10 @@ module.exports = {
     try {
       const result = await pool.query(
         `UPDATE poin_pelanggaran
-         SET jenis_penilaian = $1, bobot = $2, jenis_pelanggaran = $3, is_active = $4
-         WHERE poin_id = $5
+         SET jenis_penilaian = $1, jenis_pelanggaran = $2, bobot = $3 is_active = $4
+         WHERE id_poin = $5
          RETURNING *`,
-        [jenis_penilaian, bobot, jenis_pelanggaran, is_active, poin_id]
+        [jenis_penilaian, jenis_pelanggaran, bobot, is_active, id_poin]
       );
 
       if (result.rows.length === 0) {
@@ -120,8 +120,8 @@ module.exports = {
   // Menghapus Data Poin_pelanggaran
   async delete(req, res){
     try {
-      const {poin_id} = req.params;
-      const result = await pool.query (" DELETE FROM poin_pelanggaran WHERE poin_id = $1", [poin_id]);
+      const {id_poin} = req.params;
+      const result = await pool.query (" DELETE FROM poin_pelanggaran WHERE id_poin = $1", [id_poin]);
       if ( result.rowCount === 0 ){
         return res.status(404).json({message: "Data Poin tidak ditemukan"})
       }
