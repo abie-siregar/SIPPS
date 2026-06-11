@@ -5,7 +5,7 @@ const path = require("path");
 
 module.exports = {
 
-  // Import Data PTK dari Dapodik
+  // Import Data PTK dari Dapodik getGtk.json
   async importPtk(req, res) {
     try {
       const filePath = path.join(__dirname, "../data/getGtk.json");
@@ -20,28 +20,35 @@ module.exports = {
 
       for (const gtk of dataGtk) {
         const id_ptk = gtk.ptk_id;
-        const id_jabatan = gtk.jenis_ptk_id; // Asumsikan jenis_ptk_id sebagai id_jabatan, sesuaikan jika berbeda
+        const id_jabatan = gtk.jabatan_ptk_id; 
+        const id_jenis_jabatan = gtk.jenis_ptk_id;
         const nip = gtk.nip;
+        const nuptk = gtk.nuptk;
         const nama = gtk.nama;
+
 
         const query = `
             INSERT INTO
               ptk (
-                id_ptk, id_jabatan, nip, nama
+                id_ptk, id_jabatan, id_jenis_jabatan, nip, nuptk, nama  
               )   
-              VALUES ($1, $2, $3, $4)
+              VALUES ($1, $2, $3, $4, $5, $6)
               ON CONFLICT (id_ptk) 
               DO UPDATE SET
-              id_jabatan = EXCLUDED.id_jabatan,
+                id_jabatan = EXCLUDED.id_jabatan,
+                id_jenis_jabatan = EXCLUDED.id_jenis_jabatan,
                 nip = EXCLUDED.nip,
+                nuptk = EXCLUDED.nuptk,
                 nama = EXCLUDED.nama
               RETURNING *;
             `;
         const result = await pool.query(query, [
           id_ptk,
           id_jabatan,
+          id_jenis_jabatan,
           nip,
-          nama,
+          nuptk,
+          nama
         ]);
 
         results.push(result.rows[0]);
@@ -60,6 +67,9 @@ module.exports = {
 
   // Import data rombel dari Dapodik
   async importRombel(req, res) {
+
+    const client = await pool.connect();
+
     try {
       const filePath = path.join(__dirname, "../data/getRombonganBelajar.json");
       const rawData = fs.readFileSync(filePath, "utf-8");
@@ -71,106 +81,198 @@ module.exports = {
 
       const results = [];
 
-      for (const rombel of dataRombel) {
-        const rombel_id_dapodik = rombel.rombongan_belajar_id;
-        const nama = rombel.nama;
-        const ptk_id_dapodik = rombel.ptk_id;
-        const tingkat_id = rombel.tingkat_pendidikan_id;
-        const jurusan_id = rombel.jurusan_id;
+      await client.query("BEGIN");
 
-        const query = `
+      for (const rombel of dataRombel) {
+        const id_rombel = rombel.rombongan_belajar_id;
+        const nama_rombel = rombel.nama;
+        const id_tingkat = rombel.tingkat_pendidikan_id;
+        const nama_tingkat = rombel.tingkat_pendidikan_id_str
+        const id_jurusan = rombel.jurusan_id;
+        const nama_jurusan = rombel.jurusan_id_str
+        const id_ptk_wali = rombel.ptk_id;
+        const id_semester = rombel.semester_id;
+        const id_anggota_rombel = rombel.anggota_rombel_id;
+        const id_siswa = rombel.peserta_didik_id;
+
+        
+        let nama_semester = "";
+        if (id_semester && id_semester.length === 5) {
+          const tahunMulai = parseInt(id_semester.substring(0, 4));
+          const kodeSemester = id_semester.substring(4);
+          const tahunSelesai = tahunMulai + 1;
+          const jenisSemester = kodeSemester === "1" ? "Ganjil" : "Genap";
+          nama_semester = `Semester ${jenisSemester} ${tahunMulai}/${tahunSelesai}`;
+        } else {
+          nama_semester = rombel.semester_id || `Semester ${id_semester}`;
+        }
+
+          if (id_tingkat) {
+            await client.query(
+              `
+              INSERT INTO tingkat_pendidikan (id_tingkat, nama_tingkat)
+              VALUES ($1, $2) ON CONFLICT (id_tingkat) DO NOTHING;`,
+              [id_tingkat, nama_tingkat]
+            );
+          }
+
+          if (id_jurusan) {
+            await client.query(
+              `
+              INSERT INTO jurusan (id_jurusan, nama_jurusan)
+              VALUES ($1, $2) ON CONFLICT (id_jurusan) DO NOTHING;`,
+              [id_jurusan, nama_jurusan]
+            );
+          }
+
+          if (id_semester) {
+            await client.query(
+              `
+              INSERT INTO semester (id_semester, nama_semester)
+              VALUES ($1, $2) ON CONFLICT (id_semester) DO NOTHING;`, 
+              [id_semester, nama_semester]
+            );
+          }
+        
+            const queryRombel = `
               INSERT INTO rombel (
-                rombel_id_dapodik, nama, ptk_id_dapodik, tingkat_id, jurusan_id
+                id_rombel, nama_rombel, id_tingkat, id_jurusan, id_ptk_wali
               ) 
               VALUES ($1, $2, $3, $4, $5)
-              ON CONFLICT (rombel_id_dapodik) 
+              ON CONFLICT (id_rombel) 
               DO UPDATE SET
-                nama = EXCLUDED.nama,
-                ptk_id_dapodik = EXCLUDED.ptk_id_dapodik,
-                tingkat_id = EXCLUDED.tingkat_id,
-                jurusan_id = EXCLUDED.jurusan_id
+                nama_rombel = EXCLUDED.nama_rombel,
+                id_tingkat = EXCLUDED.id_tingkat,
+                id_jurusan = EXCLUDED.id_jurusan,
+                id_ptk_wali = EXCLUDED.id_ptk_wali
               RETURNING *;
             `;
 
-        const result = await pool.query(query, [
-          rombel_id_dapodik,
-          nama,
-          ptk_id_dapodik,
-          tingkat_id,
-          jurusan_id,
+        const resultRombel = await client.query(queryRombel, [ 
+          id_rombel,
+          nama_rombel,
+          id_tingkat,
+          id_jurusan,
+          id_ptk_wali || null 
         ]);
 
-        results.push(result.rows[0]);
+        if (rombel.peserta_didik_id) {
+          await client.query(
+            `insert into anggota_rombel (id_anggota_rombel, id_siswa, id_rombel, id_semester)
+             values ($1, $2, $3, $4)
+             on conflict (id_anggota_rombel) DO NOTHING;`,
+            [id_anggota_rombel, id_siswa, id_rombel, id_semester]
+          );
+        }
+        results.push(resultRombel.rows[0]);
       }
 
+      await client.query("COMMIT");
+
       res.status(200).json({
-        message: " Data Berhasil di Import",
+        message: " Data Berhasil di Import ",
         count: results.length,
         data: results,
       });
     } catch (error) {
+      await client.query("ROLLBACK");
       console.error("Gagal Import Data", error.message);
-      res.status(500).json({ error: "Gagal Import Data Dapodik" });
+      res.status(500).json({ error: "Gagal Import Data Dapodik: " + error.message });
+    } finally {
+      client.release();
     }
   },
 
+  // Import data siswa dari Dapodik
   async importSiswa(req, res) {
+    const client = await pool.connect();
     try {
       const filePath = path.join(__dirname, "../data/getPesertaDidik.json");
       const rawData = fs.readFileSync(filePath, "utf-8");
       const dapodikData = JSON.parse(rawData);
 
+      const dataSiswa = Array.isArray(dapodikData) ? dapodikData : dapodikData.rows;
+      
       const results = [];
 
-      for (const siswa of dapodikData) {
-        const siswa_id_dapodik = siswa.peserta_didik_id;
-        const nipd = siswa.nipd;
+      const ortuCacheMap = {};
+
+      await client.query("BEGIN");
+
+      for (const siswa of dataSiswa) {
+        const id_siswa = siswa.peserta_didik_id;
+        const id_agama = siswa.agama_id;
         const nisn = siswa.nisn;
-        const nik = siswa.nik;
-        const agama_id = siswa.agama_id.toString();
+        const nipd = siswa.nipd;
         const nama = siswa.nama;
         const tempat_lahir = siswa.tempat_lahir;
         const tanggal_lahir = siswa.tanggal_lahir;
         const email = siswa.email;
-        const semester_id = siswa.semester_id;
-        const rombel_id_dapodik = siswa.rombongan_belajar_id;
 
-        const query = `
+        const nama_ayah = siswa.nama_ayah ? siswa.nama_ayah.trim() : "";
+        const nama_ibu = siswa.nama_ibu ? siswa.nama_ibu.trim() : "";
+        const nama_wali = siswa.nama_wali ? siswa.nama_wali.trim() : "";
+
+        const ortuKey = `${nama_ayah}|${nama_ibu}|${nama_wali}`.toLowerCase();
+
+        let id_orangtua = null;
+
+        if (!ortuCacheMap[ortuKey]) {
+          
+          const cekDb = await client.query(
+            `SELECT id_orangtua FROM orangtua_wali WHERE 
+             LOWER(nama_ayah) = $1 AND loWER(nama_ibu) = $2 AND LOWER(nama_wali) = $3`,
+            [nama_ayah.toLowerCase(), nama_ibu.toLowerCase(), nama_wali.toLowerCase()]
+          );
+          if (cekDb.rows.length > 0) {
+            id_orangtua = cekDb.rows[0].id_orangtua;
+          } else {
+            const insertOrtu = await client.query(
+              `INSERT INTO orangtua_wali (nama_ayah, nama_ibu, nama_wali)
+               VALUES ($1, $2, $3) RETURNING id_orangtua`,
+              [nama_ayah, nama_ibu, nama_wali]
+            );
+            id_orangtua = insertOrtu.rows[0].id_orangtua;
+          }
+          ortuCacheMap[ortuKey] = id_orangtua;
+        } else {
+          id_orangtua = ortuCacheMap[ortuKey];
+        }
+
+        const querySiswa = `
               INSERT INTO siswa (
-                siswa_id_dapodik, nipd, nisn, nik, agama_id, nama, tempat_lahir,
-                tanggal_lahir, email, semester_id, rombel_id_dapodik
+                id_siswa, id_orangtua, id_agama, nipd, nisn, nama, tempat_lahir,
+                tanggal_lahir, email
                 ) 
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-                ON CONFLICT (siswa_id_dapodik) DO UPDATE SET
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                ON CONFLICT (id_siswa) DO UPDATE SET
+                  id_orangtua = EXCLUDED.id_orangtua,
+                  id_agama = EXCLUDED.id_agama,
                   nipd = EXCLUDED.nipd,
                   nisn = EXCLUDED.nisn,
-                  nik = EXCLUDED.nik,
-                  agama_id = EXCLUDED.agama_id,
                   nama = EXCLUDED.nama,
                   tempat_lahir = EXCLUDED.tempat_lahir,
                   tanggal_lahir = EXCLUDED.tanggal_lahir,
-                  email = EXCLUDED.email,
-                  semester_id = EXCLUDED.semester_id,
-                  rombel_id_dapodik = EXCLUDED.rombel_id_dapodik
+                  email = EXCLUDED.email
               RETURNING *;
             `;
 
-        const result = await pool.query(query, [
-          siswa_id_dapodik,
+        const resultSiswa = await client.query(querySiswa, [
+          id_siswa, 
+          id_orangtua,
+          id_agama,
           nipd,
           nisn,
-          nik,
-          agama_id,
           nama,
           tempat_lahir,
           tanggal_lahir,
-          email,
-          semester_id,
-          rombel_id_dapodik,
+          email
         ]);
 
-        results.push(result.rows[0]);
+        results.push(resultSiswa.rows[0]);
       }
+
+      await client.query("COMMIT");
 
       res.status(200).json({
         message: "Data Berhasil di Import dan di perbaharui",
@@ -178,23 +280,25 @@ module.exports = {
         data: results,
       });
     } catch (error) {
-      console.error("Gagal Import Data da", error.message);
+      await client.query("ROLLBACK");
+      console.error("Gagal Import Data", error.message);
       res.status(500).json({ error: "Gagal Import Data Dapodik" });
+    } finally {
+      client.release();
     }
   },
 
   async importPengguna(req, res) {
+
     let client;
+
     try {
       const filePath = path.join(__dirname, "../data/getPengguna.json");
       const rawData = fs.readFileSync(filePath, "utf-8");
       const dapodikData = JSON.parse(rawData);
 
-      const dataPengguna = Array.isArray(dapodikData)
-        ? dapodikData
-        : dapodikData.rows;
+      const dataPengguna = Array.isArray(dapodikData) ? dapodikData : dapodikData.rows;
 
-      // === Hilangkan duplikat ID ===
       const uniqueSiswa = new Map();
       const uniquePtk = new Map();
 
@@ -217,17 +321,28 @@ module.exports = {
       let totalSiswaUpdated = 0;
       let totalPtkUpdated = 0;
 
-      // === UPDATE SISWA ===
+      // update siswa
       for (const pengguna of uniqueSiswa.values()) {
         const querySiswa = `
-                  UPDATE siswa
-                  SET email = $1, alamat = $2
-                  WHERE siswa_id_dapodik = $3
-                `;
+                INSERT INTO siswa (id_siswa, alamat, no_telp, email)
+                VALUES ($1, $2, $3, $4)
+                ON CONFLICT (id_siswa) DO UPDATE SET
+                alamat = EXCLUDED.alamat,
+                no_telp = EXCLUDED.no_telp,
+                email = EXCLUDED.email
+          RETURNING *;
+          `;
+
+        const email = pengguna.username ? pengguna.username.trim() : null;
+        const alamat = pengguna.alamat ? pengguna.alamat.trim() : null;
+        const nomor_hp = pengguna.no_hp || pengguna.no_telp ;
+        const no_telp = pengguna.nomor_hp ? String(nomor_hp).trim() : null;
+        
         const resultSiswa = await client.query(querySiswa, [
-          pengguna.username,
-          pengguna.alamat,
           pengguna.peserta_didik_id,
+          alamat,
+          no_telp,
+          email
         ]);
         totalSiswaUpdated += resultSiswa.rowCount;
       }
@@ -235,14 +350,22 @@ module.exports = {
       // === UPDATE PTK ===
       for (const pengguna of uniquePtk.values()) {
         const queryPtk = `
-                  UPDATE ptk
-                  SET email = $1, alamat = $2
-                  WHERE ptk_id_dapodik = $3
+                  INSERT INTO ptk (id_ptk, no_telp, email)
+                  VALUES ($1, $2, $3)
+                  ON CONFLICT (id_ptk) DO UPDATE SET
+                  email = EXCLUDED.email,
+                  no_telp = EXCLUDED.no_telp
+          RETURNING *;
                 `;
+
+        const email = pengguna.username ? pengguna.username.trim() : null;
+        const nomor_hp = pengguna.no_hp || pengguna.no_telp ;
+        const no_telp = pengguna.no_hp ? String(pengguna.no_hp).trim() : null;
+        
         const resultPtk = await client.query(queryPtk, [
-          pengguna.username,
-          pengguna.alamat,
           pengguna.ptk_id,
+          no_telp,
+          email
         ]);
         totalPtkUpdated += resultPtk.rowCount;
       }
