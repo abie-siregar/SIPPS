@@ -5,24 +5,24 @@ module.exports = {
     //menambahkan pelanggaran baru
     async create(req, res) {
 
-        const { tanggal, keterangan,jenis_penilaian, bobot, jenis_pelanggaran,  } = req.body;
+        const { id_siswa, id_ptk, id_semester, id_poin, tanggal, keterangan} = req.body;
 
         // Validasi input
-        if (!tanggal || keterangan ||!jenis_penilaian || typeof bobot !== "number" || !jenis_pelanggaran) {
+        if (!tanggal || !keterangan || !id_siswa || !id_ptk || !id_semester || !id_poin ) {
         return res.status(400).json({
             error:
-            "tanggal, keterangan, Jenis penilaian, bobot (angka), dan jenis pelanggaran harus diisi dengan benar.",
+            "tanggal, keterangan, ID siswa, ID ptk, ID semester, dan ID poin harus diisi dengan benar.",
         });
         }
 
         try {
         const result = await pool.query(
             `INSERT INTO 
-                pelanggaran_siswa (tanngal, keterangan, jenis_penilaian, bobot, jenis_pelanggaran)
+                pelanggaran_siswa (id_siswa, id_poin, id_ptk, id_semester, tanggal, keterangan)
             VALUES 
-                ($1, $2, $3, $4, $5)
+                ($1, $2, $3, $4, $5, $6)
             RETURNING *`,
-            [tanggal, keterangan, jenis_penilaian, bobot, jenis_pelanggaran]
+            [id_siswa, id_poin, id_ptk, id_semester, tanggal, keterangan]
         );
 
         res.status(201).json({
@@ -41,85 +41,137 @@ module.exports = {
       const result = await pool.query(
         `
         SELECT 
-            pelsis.*,
-            popel.jenis_penilaian, popel.jenis_pelanggaran, popel.bobot, 
-            ptk.nama
+            pelanggaran.tanggal,
+            pelanggaran.keterangan,
+            popel.jenis_penilaian,
+            popel.jenis_pelanggaran,
+            popel.bobot, 
+            ptk.nama as nama_ptk,
+            jabatan.nama_jabatan,
+            siswa.nama as nama_siswa,
+            siswa.nisn,
+            semester.nama_semester,
+            walikelas.nama as nama_walikelas,
+            rombel.nama_rombel,
+            jurusan.nama_jurusan
         FROM
-            pelanggaran_siswa pelsis
+            pelanggaran_siswa pelanggaran
         LEFT JOIN
-            poin_pelanggaran popel ON popel.poin_id = pelsis.poin_id
+            poin_pelanggaran popel ON popel.id_poin = pelanggaran.id_poin
         LEFT JOIN
-            ptk ptk ON ptk.ptk_id_dapodik = pelsis.ptk_id_dapodik
+            ptk ptk ON ptk.id_ptk = pelanggaran.id_ptk
+        LEFT JOIN
+            siswa ON siswa.id_siswa = pelanggaran.id_siswa
+        LEFT JOIN
+            anggota_rombel ON anggota_rombel.id_siswa = pelanggaran.id_siswa
+        LEFT JOIN
+            rombel ON rombel.id_rombel = anggota_rombel.id_rombel
+        LEFT JOIN
+            semester ON semester.id_semester = pelanggaran.id_semester
+            AND anggota_rombel.id_semester = pelanggaran.id_semester
+        LEFT JOIN
+            jurusan ON jurusan.id_jurusan = rombel.id_jurusan
+        LEFT JOIN
+            ptk walikelas ON walikelas.id_ptk = rombel.id_ptk_wali
+        LEFT JOIN
+            jabatan_ptk jabatan ON jabatan.id_jabatan = ptk.id_jabatan
         ORDER BY
-            pelsis.pelanggaran_id
-        ASC
+            pelanggaran.tanggal
+        DESC
         `
       );
       res.json(result.rows);
     } catch (error) {
       console.error("Error fetching ptk:", error.message);
-      res.status(500).json({ error: "Internal Server Error" });
+      res.status(500).json({ error: "Internal Server Error " + error.message });
     }
     },
 
-    //mengambil seluruh data pelanggaran_siswa BY ID
-    async getById(req, res) {
-
-        const { id } = req.params;
-
-        if (isNaN(id)) {
-        return res.status(400).json({ error: "ID harus berupa angka" });
-        }
-
+    //mengambil seluruh data pelanggaran_siswa BY Filter
+    async getFiltered(req, res) {
         try {
-        const result = await pool.query(
-            `
-            SELECT 
-                pelsis.*,
-                popel.jenis_penilaian, popel.jenis_pelanggaran, popel_bobot, 
-                ptk.nama,
-            FROM
-                pelanggaran_siswa pelsis
-            LEFT JOIN
-                poin_pelanggaran popel ON popel.poin_id = pelsis.poin_id
-            LEFT JOIN
-                ptk ptk ON ptk.ptk_id_dapodik = pelsis.ptk_id_dapodik
-            WHERE 
-                pelsis.pelanggaran_id = $1
-            ASC
-        `
-        [id]
-        );
+        const { id_siswa, id_semester} = req.query;
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: "Data pelanggaran tidak ditemukan" });
+        const whereConditions = [];
+        const queryParams = [];
+
+        if (id_siswa) {
+            queryParams.push(id_siswa);
+            whereConditions.push(`pelanggaran.id_siswa = $${queryParams.length}`);
         }
 
-        res.json(result.rows[0]);
+        if (id_semester) {
+            queryParams.push(id_semester);
+            whereConditions.push(`pelanggaran.id_semester = $${queryParams.length}`);
+        }
+        const whereClause = whereConditions.length > 0 
+            ? `WHERE ${whereConditions.join(" AND ")}` 
+            : "";
+
+        const query = `
+            SELECT 
+                pelanggaran.id_pelanggaran,
+                pelanggaran.tanggal,
+                pelanggaran.keterangan,
+                popel.jenis_penilaian,
+                popel.jenis_pelanggaran,
+                popel.bobot, 
+                ptk.nama AS nama_ptk,
+                siswa.nama AS nama_siswa,
+                siswa.nisn,
+                semester.nama_semester,
+                walikelas.nama AS nama_walikelas,
+                rombel.nama_rombel,
+                jurusan.nama_jurusan
+            FROM
+                pelanggaran_siswa pelanggaran
+            LEFT JOIN
+                poin_pelanggaran popel ON popel.id_poin = pelanggaran.id_poin
+            LEFT JOIN
+                ptk ptk ON ptk.id_ptk = pelanggaran.id_ptk
+            LEFT JOIN
+                siswa ON siswa.id_siswa = pelanggaran.id_siswa
+            LEFT JOIN
+                anggota_rombel ON anggota_rombel.id_siswa = siswa.id_siswa
+            LEFT JOIN
+                rombel ON rombel.id_rombel = anggota_rombel.id_rombel
+                    AND rombel.id_semester = pelanggaran.id_semester
+            LEFT JOIN
+                semester ON semester.id_semester = pelanggaran.id_semester
+            LEFT JOIN
+                jurusan ON jurusan.id_jurusan = rombel.id_jurusan
+            LEFT JOIN
+                ptk walikelas ON walikelas.id_ptk = rombel.id_ptk_wali
+            ${whereClause}
+            ORDER BY
+                pelanggaran.tanggal DESC;
+        `;
+
+        const result = await pool.query(query, queryParams);
+
+        res.json({
+            success: true,
+            total: result.rows.length,
+            data: result.rows
+        });
+
         } catch (error) {
-        console.error("Error fetching pelanggaran siswa by ID:", error.message);
-        res.status(500).json({ error: "Internal Server Error" });
+        console.error("Error fetching filtered pelanggaran siswa:", error.message);
+        res.status(500).json({ error: "Internal Server Error: " + error.message });
         }
     },
 
     // Memperbaharui data pelanggaran_siswa
     async update(req, res) {
         const { id } = req.params;
-        const { tanggal, keterangan,jenis_penilaian, bobot, jenis_pelanggaran, status } = req.body;
+        const { id_ptk, id_poin, id_semester, tanggal, keterangan} = req.body;
 
         if (isNaN(id)) {
         return res.status(400).json({ error: "ID harus berupa angka" });
         }
-
-        if (
-        typeof tanggal  !== "date"||
-        !keterangan ||
-        !jenis_penilaian ||
-        typeof bobot !== "number" ||
-        !jenis_pelanggaran ||
-        !status
-        ) {
-        
+        // Validasi input
+        if (!tanggal || !keterangan || !id_ptk || !id_poin || !id_semester) {   
+            
         return res.status(400).json({
             error:
             "Data pelanggaran harus di isi dengan benar!",
@@ -131,12 +183,12 @@ module.exports = {
             `UPDATE 
                 pelanggaran_siswa
             SET 
-                tanggal = $1, keterangan = $2, jenis_penilaian = $3, bobot = $4, jenis_pelanggaran = $5, status = $6
+                id_ptk = $1, id_poin = $2, id_semester = $3, tanggal = $4, keterangan = $5
             WHERE 
-                pelanggaran_id = $7
+                id_pelanggaran = $6 
             RETURNING *`,
             
-            [tanggal, keterangan, jenis_penilaian, bobot, jenis_pelanggaran, status, id]
+            [tanggal, keterangan, id_ptk, id_poin, id_semester, id]
         );
 
         if (result.rows.length === 0) {
@@ -161,7 +213,7 @@ module.exports = {
             `DELETE FROM 
                 pelanggaran_siswa 
             WHERE 
-                pelanggaran_id = $1`,
+                id_pelanggaran = $1`,
             [id]);
 
         if ( result.rowCount === 0 ){
