@@ -6,20 +6,14 @@ module.exports = {
     try {
       const result = await pool.query(
         `SELECT 
-          p.ptk_id, p.nama, p.nuptk, p.nip, p.email,
-          a.agama_id_str AS agama,
-          jn.jenis_ptk_id_str AS jenis,
-          jb.jabatan_ptk_id_str AS jabatan
+          p.id_ptk, p.nama, p.nuptk, p.email,
+          jb.nama_jabatan AS jabatan
         FROM 
           ptk p
         LEFT JOIN
-          agama a ON a.agama_id = p.agama_id
-        LEFT JOIN
-          jenis_ptk jn ON jn.jenis_ptk_id = p.jenis_ptk_id
-        LEFT JOIN
-          jabatan_ptk jb ON jb.jabatan_ptk_id = p.jabatan_ptk_id
+          jabatan_ptk jb ON jb.id_jabatan = p.id_jabatan
         ORDER BY 
-          ptk_id
+          id_ptk
         ASC`
       );
       res.json(result.rows);
@@ -32,31 +26,25 @@ module.exports = {
   //mengambil seluruh data ptk menggunakan filter
   async getFiltered(req, res) {
     try {
-      const {  nip , nuptk, email, search} = req.query;
+      const {   jabatan , nuptk, email, search} = req.query;
 
       let query = `
         SELECT 
-          p.ptk_id, p.nama, p.nuptk, p.nip, p.email,
-          a.agama_id_str AS agama,
-          jn.jenis_ptk_id_str AS jenis,
-          jb.jabatan_ptk_id_str AS jabatan
+          p.id_ptk, p.nama, p.nuptk, p.email,
+          jb.nama_jabatan AS jabatan
         FROM 
           ptk p
         LEFT JOIN
-          agama a ON a.agama_id = p.agama_id
-        LEFT JOIN
-          jenis_ptk jn ON jn.jenis_ptk_id = p.jenis_ptk_id
-        LEFT JOIN
-          jabatan_ptk jb ON jb.jabatan_ptk_id = p.jabatan_ptk_id
+          jabatan_ptk jb ON jb.id_jabatan = p.id_jabatan
         WHERE
-          ptk_id 1=1
+          p.id_ptk = 1
         `;
       let params = [];
       let index = 1;
 
-      if (nip) {
-        query += ` AND p.nip = $${index}`;
-        params.push(nip);
+      if (jabatan) {
+        query += ` AND jb.nama_jabatan = $${index}`;
+        params.push(jabatan);
         index++;
       }
 
@@ -78,7 +66,7 @@ module.exports = {
         index++;
       }
 
-      query += " ORDER BY ptk_id ASC";
+      query += " ORDER BY id_ptk ASC";
 
       const result = await pool.query(query, params);
 
@@ -106,20 +94,14 @@ module.exports = {
       const result = await pool.query(
         `
         SELECT 
-          p.ptk_id, p.nama, p.nuptk, p.nip, p.email,
-          a.agama_id_str AS agama,
-          jn.jenis_ptk_id_str AS jenis,
-          jb.jabatan_ptk_id_str AS jabatan
+          p.id_ptk, p.nama, p.nuptk, p.email,
+          jb.nama_jabatan AS jabatan
         FROM 
           ptk p
         LEFT JOIN
-          agama a ON a.agama_id = p.agama_id
-        LEFT JOIN
-          jenis_ptk jn ON jn.jenis_ptk_id = p.jenis_ptk_id
-        LEFT JOIN
-          jabatan_ptk jb ON jb.jabatan_ptk_id = p.jabatan_ptk_id
+          jabatan_ptk jb ON jb.id_jabatan = p.id_jabatan
         WHERE
-          ptk_id = $1
+          p.id_ptk = $1
         `,
         [id]
       );
