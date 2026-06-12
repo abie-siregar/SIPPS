@@ -4,6 +4,7 @@ const ptkController = require("../controllers/ptkController");
 
 router.get("/", ptkController.getAll);
 router.post("/:id", ptkController.getById);
+router.get("/filter", ptkController.getFiltered);
 
 
 

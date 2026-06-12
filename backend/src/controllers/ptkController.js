@@ -13,7 +13,7 @@ module.exports = {
         LEFT JOIN
           jabatan_ptk jb ON jb.id_jabatan = p.id_jabatan
         ORDER BY 
-          id_ptk
+          p.nama
         ASC`
       );
       res.json(result.rows);
@@ -26,7 +26,7 @@ module.exports = {
   //mengambil seluruh data ptk menggunakan filter
   async getFiltered(req, res) {
     try {
-      const {   jabatan , nuptk, email, search} = req.query;
+      const {jabatan , nuptk, email, search} = req.query;
 
       let query = `
         SELECT 
@@ -37,14 +37,14 @@ module.exports = {
         LEFT JOIN
           jabatan_ptk jb ON jb.id_jabatan = p.id_jabatan
         WHERE
-          p.id_ptk = 1
+          1=1
         `;
       let params = [];
       let index = 1;
 
       if (jabatan) {
-        query += ` AND jb.nama_jabatan = $${index}`;
-        params.push(jabatan);
+        query += ` AND jb.nama_jabatan ILIKE $${index}`;
+        params.push(`%${jabatan}%`);
         index++;
       }
 
@@ -61,12 +61,12 @@ module.exports = {
       }
 
       if (search) {
-        query += ` AND (p.nama ILIKE $${index}`;
+        query += ` AND p.nama ILIKE $${index}`;
         params.push(`%${search}%`);
         index++;
       }
 
-      query += " ORDER BY id_ptk ASC";
+      query += " ORDER BY p.nama ASC";
 
       const result = await pool.query(query, params);
 
@@ -74,21 +74,25 @@ module.exports = {
         return res.status(404).json({ message: "Data PTK tidak ditemukan" });
       }
 
-      res.json(result.rows[0]);
-    }
+      res.json({
+        success: true,
+        total: result.rows.length,
+        data: result.rows
+      });
+    } 
     catch (error) {
       console.error("Gagal mengambil data PTK", error);
-      res.status(500).json({error : "Internal Server Error" });
+      res.status(500).json({error : "Internal Server Error " + error.message });
     }
   },
 
-//mengambil seluruh data ptk menggunakan id
+//mengambil data ptk menggunakan id
   async getById(req, res) {
     const { id } = req.params;
 
-    if (isNaN(id)) {
-      return res.status(400).json({ error: "ID harus berupa angka" });
-    }
+    // if (isNaN(id)) {
+    //   return res.status(400).json({ error: "ID harus berupa angka" });
+    // }
 
     try {
       const result = await pool.query(
