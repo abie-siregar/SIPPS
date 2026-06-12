@@ -97,7 +97,7 @@ module.exports = {
     try {
       const result = await pool.query(
         `UPDATE poin_pelanggaran
-         SET jenis_penilaian = $1, jenis_pelanggaran = $2, bobot = $3 is_active = $4
+         SET jenis_penilaian = $1, jenis_pelanggaran = $2, bobot = $3, is_active = $4
          WHERE id_poin = $5
          RETURNING *`,
         [jenis_penilaian, jenis_pelanggaran, bobot, is_active, id_poin]

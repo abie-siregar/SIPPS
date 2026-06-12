@@ -36,11 +36,12 @@ import { AuthProvider } from "./context/AuthContext";
 
 export default function App() {
   return (
-    <Router>
-      <ScrollToTop />
-      <Routes>
-        {/* Default route */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+    <AuthProvider>
+      <Router>
+        <ScrollToTop />
+        <Routes>
+          {/* Default route */}
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
         {/* Auth routes (tanpa layout) */}
         <Route path="/login" element={<Login />} />
@@ -50,9 +51,7 @@ export default function App() {
         {/* Routes yang memakai AppLayout */}
         <Route
           element={
-            <AuthProvider>
-              <AppLayout />
-            </AuthProvider>
+            <AppLayout />
           }
         >
           {/* Dashboard (dengan proteksi login) */}
@@ -69,7 +68,7 @@ export default function App() {
           <Route
             path="/data-poin-pelanggaran"
             element={
-              <ProtectedRoute roles={["Admin", "BK", "Wali Kelas", "Siswa"]}>
+              <ProtectedRoute roles={["Admin", "BK", "Guru", "Wali Kelas", "Tenaga Kependidikan", "Siswa"]}>
                 <DataPoinPelanggaran />
               </ProtectedRoute>
             }
@@ -77,7 +76,7 @@ export default function App() {
           <Route
             path="/data-poin-pelanggaran/tambah"
             element={
-              <ProtectedRoute roles={["Admin", "BK", "Wali Kelas"]}>
+              <ProtectedRoute roles={["Admin"]}>
                 <TambahPelanggaran />
               </ProtectedRoute>
             }
@@ -185,5 +184,6 @@ export default function App() {
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
+    </AuthProvider>
   );
 }

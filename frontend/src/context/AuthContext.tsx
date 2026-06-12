@@ -36,7 +36,12 @@ const fetchUser = async () => {
   };
 
   useEffect(() => {
-    fetchUser();
+    const token = localStorage.getItem("token");
+    if (token) {
+      fetchUser();
+    } else {
+      setLoading(false); // no token → skip profile fetch, stay unauthenticated
+    }
   }, []);
 
   const refreshUser = async () => {

@@ -30,6 +30,7 @@ interface DataTableProps<T extends object> {
   filterColumns?: (keyof T)[];
   paginated?: boolean;
   defaultItemsPerPage?: number;
+  extraActions?: React.ReactNode; // buttons rendered next to Filter in the toolbar
 }
 
 export default function DataTable<T extends object>({
@@ -41,6 +42,7 @@ export default function DataTable<T extends object>({
   filterColumns,
   paginated = true,
   defaultItemsPerPage,
+  extraActions,
 }: DataTableProps<T>) {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -198,16 +200,20 @@ export default function DataTable<T extends object>({
             className="max-w-xs"
           />
         )}
-        {filterable && (
-          <Button
-            type="button"
-            variant="primary"
-            size="sm"
-            onClick={() => setShowFilterForm(true)}
-          >
-            🔍 Filter
-          </Button>
-        )}
+        {/* Group Filter + extraActions (e.g. Tambah) side by side */}
+        <div className="flex items-center gap-2">
+          {filterable && (
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              onClick={() => setShowFilterForm(true)}
+            >
+              🔍 Filter
+            </Button>
+          )}
+          {extraActions}
+        </div>
       </div>
 
       {/* Table */}
@@ -295,6 +301,7 @@ export default function DataTable<T extends object>({
           <FilterForm
             dropdownFilters={dropdownFilters}
             rangeFilters={rangeFilters}
+            initialValues={filters}
             onApply={(f) => setFilters(f)}
             onClose={() => setShowFilterForm(false)}
           />

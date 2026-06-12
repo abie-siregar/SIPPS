@@ -9,9 +9,9 @@ router.get("/", poinPelanggaranController.getList);
 router.get("/:id_poin", poinPelanggaranController.getById);
 router.put(
   "/:id_poin",
-  isRoles(["Admin", "BK"]),
+  isRoles(["Admin"]),
   poinPelanggaranController.update
 );
-router.delete("/:id", isRoles(["Admin"]), poinPelanggaranController.delete);
+router.delete("/:id_poin", isRoles(["Admin"]), poinPelanggaranController.delete);
 
 module.exports = router;

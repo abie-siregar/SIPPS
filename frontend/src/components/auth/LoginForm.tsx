@@ -8,6 +8,7 @@ import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
 import Button from "../ui/button/Button";
 import axios from "../../api/axios";
+import { useAuth } from "../../context/AuthContext";
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -16,6 +17,7 @@ export default function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { refreshUser } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,7 +33,9 @@ export default function LoginForm() {
 
       if (res.status === 200 && data.token) {
         localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user)); // ditambahkan 290902025
+        localStorage.setItem("user", JSON.stringify(data.user));
+        // Fetch profile to hydrate AuthContext state (role, etc.) before navigating
+        await refreshUser();
         navigate("/dashboard");
       } else {
         setError(data.message || "Login gagal");
@@ -55,7 +59,7 @@ export default function LoginForm() {
               Login
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Enter your email/username and password to login!
+              Masukkan username dan password untuk login!
             </p>
           </div>
 
@@ -69,10 +73,10 @@ export default function LoginForm() {
             <div className="space-y-6">
               <div>
                 <Label>
-                  Email <span className="text-error-500">*</span>
+                  Username <span className="text-error-500">*</span>
                 </Label>
                 <Input
-                  placeholder="info@gmail.com"
+                  placeholder="Masukkan username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                 />

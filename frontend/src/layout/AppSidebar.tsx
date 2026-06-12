@@ -56,13 +56,13 @@ const navItems: NavItem[] = [
   {
     name: "Manajemen Data",
     icon: <TableIcon />,
-    roles: ["Admin", "BK", "Wali Kelas"],
+    roles: ["Admin", "BK", "Guru", "Wali Kelas", "Tenaga Kependidikan", "Siswa"],
     subItems: [
       {
         name: "Data Poin Pelanggaran",
         path: "/data-poin-pelanggaran",
         pro: false,
-        roles: ["Admin", "BK"],
+        roles: ["Admin", "BK", "Guru", "Wali Kelas", "Tenaga Kependidikan", "Siswa"],
       },
       {
         name: "Data Pendidik dan Tenaga Kependidikan",

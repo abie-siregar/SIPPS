@@ -22,8 +22,9 @@ export interface RangeFilter {
 }
 
 interface FilterFormProps {
-  dropdownFilters?: DropdownFilter[]; // bisa banyak dropdown
-  rangeFilters?: RangeFilter[]; // bisa banyak range slider
+  dropdownFilters?: DropdownFilter[];
+  rangeFilters?: RangeFilter[];
+  initialValues?: { [key: string]: any }; // currently applied filter values
   onApply: (filters: {
     [key: string]: string | number | [number, number];
   }) => void;
@@ -33,6 +34,7 @@ interface FilterFormProps {
 const FilterForm: React.FC<FilterFormProps> = ({
   dropdownFilters = [],
   rangeFilters = [],
+  initialValues = {},
   onApply,
   onClose,
 }) => {
@@ -47,19 +49,21 @@ const FilterForm: React.FC<FilterFormProps> = ({
   useEffect(() => {
     setIsVisible(true);
 
-    // inisialisasi default values
+    // Seed from initialValues (last applied), fallback to defaults
     const initialDropdown: { [key: string]: string | number } = {};
     dropdownFilters.forEach((f) => {
-      initialDropdown[f.key] = "all";
+      initialDropdown[f.key] = initialValues[f.key] ?? "all";
     });
     setDropdownValues(initialDropdown);
 
     const initialRanges: { [key: string]: [number, number] } = {};
     rangeFilters.forEach((r) => {
-      initialRanges[r.key] = [r.min, r.max];
+      initialRanges[r.key] = initialValues[r.key] ?? [r.min, r.max];
     });
     setRangeValues(initialRanges);
   }, [dropdownFilters, rangeFilters]);
+  // NOTE: intentionally not depending on initialValues to avoid re-running on
+  // every parent render — we only want to seed on mount.
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
