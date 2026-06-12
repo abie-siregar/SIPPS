@@ -31,7 +31,7 @@ module.exports = {
         });
         } catch (error) {
         console.error("Gagal menambahkan data pelanggaran siswa :", error.message);
-        res.status(500).json({ error: "Internal Server Error" });
+        res.status(500).json({ error: "Internal Server Error " + error.message });
         }
     },
 
@@ -41,6 +41,7 @@ module.exports = {
       const result = await pool.query(
         `
         SELECT 
+            distinct on (pelanggaran.tanggal, siswa.id_siswa, pelanggaran.keterangan)
             pelanggaran.tanggal,
             pelanggaran.keterangan,
             popel.jenis_penilaian,
@@ -51,7 +52,7 @@ module.exports = {
             siswa.nama as nama_siswa,
             siswa.nisn,
             semester.nama_semester,
-            walikelas.nama as nama_walikelas,
+            walikelas.nama as walikelas,
             rombel.nama_rombel,
             jurusan.nama_jurusan
         FROM
@@ -59,7 +60,7 @@ module.exports = {
         LEFT JOIN
             poin_pelanggaran popel ON popel.id_poin = pelanggaran.id_poin
         LEFT JOIN
-            ptk ptk ON ptk.id_ptk = pelanggaran.id_ptk
+            ptk ON ptk.id_ptk = pelanggaran.id_ptk
         LEFT JOIN
             siswa ON siswa.id_siswa = pelanggaran.id_siswa
         LEFT JOIN
@@ -68,7 +69,6 @@ module.exports = {
             rombel ON rombel.id_rombel = anggota_rombel.id_rombel
         LEFT JOIN
             semester ON semester.id_semester = pelanggaran.id_semester
-            AND anggota_rombel.id_semester = pelanggaran.id_semester
         LEFT JOIN
             jurusan ON jurusan.id_jurusan = rombel.id_jurusan
         LEFT JOIN
@@ -77,7 +77,7 @@ module.exports = {
             jabatan_ptk jabatan ON jabatan.id_jabatan = ptk.id_jabatan
         ORDER BY
             pelanggaran.tanggal
-        DESC
+        DESC, siswa.id_siswa
         `
       );
       res.json(result.rows);
@@ -110,41 +110,44 @@ module.exports = {
 
         const query = `
             SELECT 
-                pelanggaran.id_pelanggaran,
-                pelanggaran.tanggal,
-                pelanggaran.keterangan,
-                popel.jenis_penilaian,
-                popel.jenis_pelanggaran,
-                popel.bobot, 
-                ptk.nama AS nama_ptk,
-                siswa.nama AS nama_siswa,
-                siswa.nisn,
-                semester.nama_semester,
-                walikelas.nama AS nama_walikelas,
-                rombel.nama_rombel,
-                jurusan.nama_jurusan
-            FROM
-                pelanggaran_siswa pelanggaran
-            LEFT JOIN
-                poin_pelanggaran popel ON popel.id_poin = pelanggaran.id_poin
-            LEFT JOIN
-                ptk ptk ON ptk.id_ptk = pelanggaran.id_ptk
-            LEFT JOIN
-                siswa ON siswa.id_siswa = pelanggaran.id_siswa
-            LEFT JOIN
-                anggota_rombel ON anggota_rombel.id_siswa = siswa.id_siswa
-            LEFT JOIN
-                rombel ON rombel.id_rombel = anggota_rombel.id_rombel
-                    AND rombel.id_semester = pelanggaran.id_semester
-            LEFT JOIN
-                semester ON semester.id_semester = pelanggaran.id_semester
-            LEFT JOIN
-                jurusan ON jurusan.id_jurusan = rombel.id_jurusan
-            LEFT JOIN
-                ptk walikelas ON walikelas.id_ptk = rombel.id_ptk_wali
+            distinct on (pelanggaran.tanggal, siswa.id_siswa, pelanggaran.keterangan)
+            pelanggaran.tanggal,
+            pelanggaran.keterangan,
+            popel.jenis_penilaian,
+            popel.jenis_pelanggaran,
+            popel.bobot, 
+            ptk.nama as nama_ptk,
+            jabatan.nama_jabatan,
+            siswa.nama as nama_siswa,
+            siswa.nisn,
+            semester.nama_semester,
+            walikelas.nama as walikelas,
+            rombel.nama_rombel,
+            jurusan.nama_jurusan
+        FROM
+            pelanggaran_siswa pelanggaran
+        LEFT JOIN
+            poin_pelanggaran popel ON popel.id_poin = pelanggaran.id_poin
+        LEFT JOIN
+            ptk ON ptk.id_ptk = pelanggaran.id_ptk
+        LEFT JOIN
+            siswa ON siswa.id_siswa = pelanggaran.id_siswa
+        LEFT JOIN
+            anggota_rombel ON anggota_rombel.id_siswa = pelanggaran.id_siswa
+        LEFT JOIN
+            rombel ON rombel.id_rombel = anggota_rombel.id_rombel
+        LEFT JOIN
+            semester ON semester.id_semester = pelanggaran.id_semester
+        LEFT JOIN
+            jurusan ON jurusan.id_jurusan = rombel.id_jurusan
+        LEFT JOIN
+            ptk walikelas ON walikelas.id_ptk = rombel.id_ptk_wali
+        LEFT JOIN
+            jabatan_ptk jabatan ON jabatan.id_jabatan = ptk.id_jabatan
             ${whereClause}
-            ORDER BY
-                pelanggaran.tanggal DESC;
+        ORDER BY
+            pelanggaran.tanggal
+        DESC, siswa.id_siswa
         `;
 
         const result = await pool.query(query, queryParams);
@@ -183,12 +186,12 @@ module.exports = {
             `UPDATE 
                 pelanggaran_siswa
             SET 
-                id_ptk = $1, id_poin = $2, id_semester = $3, tanggal = $4, keterangan = $5
+                id_ptk = $1, id_poin = $2, id_semester = $3, tanggal = $4, keterangan = $5, updated_at = CURRENT_TIMESTAMP
             WHERE 
                 id_pelanggaran = $6 
             RETURNING *`,
             
-            [tanggal, keterangan, id_ptk, id_poin, id_semester, id]
+            [ id_ptk, id_poin, id_semester, tanggal, keterangan, id]
         );
 
         if (result.rows.length === 0) {
@@ -201,7 +204,7 @@ module.exports = {
         });
         } catch (error) {
         console.error("Error updating data pelanggaran:", error.message);
-        res.status(500).json({ error: "Internal Server Error" });
+        res.status(500).json({ error: "Internal Server Error " + error.message });
         }
     },
 

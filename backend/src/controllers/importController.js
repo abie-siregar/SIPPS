@@ -87,9 +87,9 @@ module.exports = {
         const id_rombel = rombel.rombongan_belajar_id;
         const nama_rombel = rombel.nama;
         const id_tingkat = rombel.tingkat_pendidikan_id;
-        const nama_tingkat = rombel.tingkat_pendidikan_id_str
+        const nama_tingkat = rombel.tingkat_pendidikan_id_str;
         const id_jurusan = rombel.jurusan_id;
-        const nama_jurusan = rombel.jurusan_id_str
+        const nama_jurusan = rombel.jurusan_id_str;
         const id_ptk_wali = rombel.ptk_id;
         const id_semester = rombel.semester_id;
         const id_anggota_rombel = rombel.anggota_rombel_id;
@@ -156,13 +156,30 @@ module.exports = {
           id_ptk_wali || null 
         ]);
 
-        if (rombel.peserta_didik_id) {
-          await client.query(
-            `insert into anggota_rombel (id_anggota_rombel, id_siswa, id_rombel, id_semester)
-             values ($1, $2, $3, $4)
-             on conflict (id_anggota_rombel) DO NOTHING;`,
-            [id_anggota_rombel, id_siswa, id_rombel, id_semester]
-          );
+        if (rombel.anggota_rombel && Array.isArray(rombel.anggota_rombel)) {
+          for (const anggota of rombel.anggota_rombel) {
+            const id_anggota_rombel = anggota.anggota_rombel_id;
+            const id_siswa = anggota.peserta_didik_id;
+
+            if (id_anggota_rombel && id_siswa && id_rombel && id_semester) {
+                await client.query(
+                `INSERT INTO siswa (id_siswa) 
+                VALUES ($1) 
+                ON CONFLICT (id_siswa) DO NOTHING;`,
+                [id_siswa]);
+
+              await client.query(
+                `INSERT INTO anggota_rombel (id_anggota_rombel, id_rombel, id_siswa, id_semester)
+                VALUES ($1, $2, $3, $4)
+                ON CONFLICT (id_anggota_rombel) 
+                DO UPDATE SET
+                    id_rombel = EXCLUDED.id_rombel,
+                    id_siswa = EXCLUDED.id_siswa,
+                    id_semester = EXCLUDED.id_semester;`,
+                [id_anggota_rombel, id_rombel, id_siswa, id_semester]
+              );
+            }
+          }
         }
         results.push(resultRombel.rows[0]);
       }
