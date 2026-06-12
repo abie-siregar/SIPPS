@@ -2,13 +2,17 @@ import React, { useEffect, useState } from "react";
 import axios from "../../../api/axios";
 import Button from "../../../components/ui/button/Button";
 import Toast from "../../../components/ui/alert/Toast";
-import { PelanggaranSiswa } from "./DataPelanggaranSiswa";
 import SearchableSelect from "../../../components/form/SearchableSelect";
 
-interface EditPopupProps {
+interface TambahPopupProps {
   show: boolean;
   onClose: (didSave?: boolean) => void;
-  row: PelanggaranSiswa;
+}
+
+interface Siswa {
+  id_siswa: number;
+  nama: string;
+  rombel?: string;
 }
 
 interface PoinPelanggaran {
@@ -27,22 +31,28 @@ interface Semester {
   nama_semester: string;
 }
 
-const EditDataPelanggaranSiswa: React.FC<EditPopupProps> = ({
+const TambahDataPelanggaranSiswa: React.FC<TambahPopupProps> = ({
   show,
   onClose,
-  row,
 }) => {
+  const [siswaList, setSiswaList] = useState<Siswa[]>([]);
   const [poinList, setPoinList] = useState<PoinPelanggaran[]>([]);
   const [ptkList, setPtkList] = useState<PTK[]>([]);
   const [semesterList, setSemesterList] = useState<Semester[]>([]);
 
+  const [idSiswa, setIdSiswa] = useState("");
   const [idPoin, setIdPoin] = useState("");
   const [idPtk, setIdPtk] = useState("");
   const [idSemester, setIdSemester] = useState("");
-  const [tanggal, setTanggal] = useState("");
+  const [tanggal, setTanggal] = useState(() => {
+    const today = new Date();
+    const offset = today.getTimezoneOffset();
+    const localToday = new Date(today.getTime() - offset * 60 * 1000);
+    return localToday.toISOString().split("T")[0];
+  });
   const [keterangan, setKeterangan] = useState("");
 
-  const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [toast, setToast] = useState<{
     show: boolean;
@@ -53,62 +63,63 @@ const EditDataPelanggaranSiswa: React.FC<EditPopupProps> = ({
   const showToast = (variant: "success" | "error", message: string) =>
     setToast({ show: true, variant, message });
 
-  // Fetch dropdown data and set defaults on open
+  // Fetch dropdown data
   useEffect(() => {
     if (show) {
       const loadData = async () => {
         try {
-          const [resPoin, resPtk, resSemester] = await Promise.all([
+          const [resSiswa, resPoin, resPtk, resSemester] = await Promise.all([
+            axios.get("/siswa"),
             axios.get("/poin-pelanggaran"),
             axios.get("/ptk"),
             axios.get("/pelanggaran-siswa/semesters"),
           ]);
 
+          setSiswaList(resSiswa.data?.data || resSiswa.data || []);
           setPoinList(resPoin.data?.data || resPoin.data || []);
           setPtkList(resPtk.data?.data || resPtk.data || []);
           setSemesterList(resSemester.data?.data || resSemester.data || []);
+
+          const siswaData = resSiswa.data?.data || resSiswa.data || [];
+          const poinData = resPoin.data?.data || resPoin.data || [];
+          const ptkData = resPtk.data?.data || resPtk.data || [];
+          const semesterData = resSemester.data?.data || resSemester.data || [];
+
+          if (siswaData.length > 0) setIdSiswa((siswaData[0].id_siswa || siswaData[0].id).toString());
+          if (poinData.length > 0) setIdPoin(poinData[0].id_poin.toString());
+          if (ptkData.length > 0) setIdPtk(ptkData[0].id_ptk.toString());
+          if (semesterData.length > 0) setIdSemester(semesterData[0].id_semester.toString());
         } catch (err) {
-          console.error("Gagal memuat data pendukung edit:", err);
+          console.error("Gagal memuat dropdown data:", err);
           showToast("error", "Gagal memuat data pendukung form.");
         }
       };
 
       loadData();
-
-      // Initialize form from row
-      setIdPoin(row.id_poin?.toString() || "");
-      setIdPtk(row.id_ptk?.toString() || "");
-      setIdSemester(row.id_semester?.toString() || "");
-      
-      // Date formatting for input type="date"
-      if (row.tanggal) {
-        const d = new Date(row.tanggal);
-        const offset = d.getTimezoneOffset();
-        const localD = new Date(d.getTime() - offset * 60 * 1000);
-        setTanggal(localD.toISOString().split("T")[0]);
-      } else {
-        setTanggal("");
-      }
-
-      setKeterangan(row.keterangan || "");
+      setKeterangan("");
+      const today = new Date();
+      const offset = today.getTimezoneOffset();
+      const localToday = new Date(today.getTime() - offset * 60 * 1000);
+      setTanggal(localToday.toISOString().split("T")[0]);
       setToast({ show: false, variant: "success", message: "" });
       setTimeout(() => setIsVisible(true), 10);
     } else {
       setIsVisible(false);
     }
-  }, [show, row]);
+  }, [show]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!idPoin || !idPtk || !idSemester || !tanggal || !keterangan) {
-      showToast("error", "Semua field wajib diisi.");
+    if (!idSiswa || !idPoin || !idPtk || !idSemester || !tanggal || !keterangan) {
+      showToast("error", "Semua field form wajib diisi.");
       return;
     }
 
     try {
-      setSubmitting(true);
-      await axios.put(`/pelanggaran-siswa/${row.id_pelanggaran}`, {
+      setLoading(true);
+      await axios.post("/pelanggaran-siswa", {
+        id_siswa: idSiswa,
         id_poin: Number(idPoin),
         id_ptk: idPtk,
         id_semester: idSemester,
@@ -120,11 +131,11 @@ const EditDataPelanggaranSiswa: React.FC<EditPopupProps> = ({
       setTimeout(() => onClose(true), 300);
     } catch (err: any) {
       const msg =
-        err?.response?.data?.error || "Gagal mengupdate data pelanggaran.";
+        err?.response?.data?.error || "Gagal menambahkan data pelanggaran.";
       showToast("error", msg);
       console.error(err);
     } finally {
-      setSubmitting(false);
+      setLoading(false);
     }
   };
 
@@ -134,6 +145,13 @@ const EditDataPelanggaranSiswa: React.FC<EditPopupProps> = ({
   };
 
   // Maps for SearchableSelect options
+  const siswaOptions = (siswaList || [])
+    .filter((s) => s && (s.id_siswa !== undefined && s.id_siswa !== null || (s as any).id !== undefined && (s as any).id !== null))
+    .map((s) => ({
+      value: (s.id_siswa || (s as any).id).toString(),
+      label: `${s.nama || ""} ${s.rombel ? `(${s.rombel})` : ""}`,
+    }));
+
   const poinOptions = (poinList || [])
     .filter((p) => p && p.id_poin !== undefined && p.id_poin !== null)
     .map((p) => ({
@@ -159,7 +177,6 @@ const EditDataPelanggaranSiswa: React.FC<EditPopupProps> = ({
 
   return (
     <>
-      {/* Toast notification */}
       <Toast
         show={toast.show}
         variant={toast.variant}
@@ -167,7 +184,6 @@ const EditDataPelanggaranSiswa: React.FC<EditPopupProps> = ({
         onClose={() => setToast((t) => ({ ...t, show: false }))}
       />
 
-      {/* Overlay */}
       <div
         className={`fixed inset-0 bg-black/40 z-40 transition-opacity duration-300 ${
           isVisible ? "opacity-100" : "opacity-0"
@@ -175,7 +191,6 @@ const EditDataPelanggaranSiswa: React.FC<EditPopupProps> = ({
         onClick={handleClose}
       />
 
-      {/* Popup */}
       <div
         className={`fixed inset-0 flex items-center justify-center z-50 p-4 transition-all duration-300 transform ${
           isVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-6"
@@ -183,20 +198,20 @@ const EditDataPelanggaranSiswa: React.FC<EditPopupProps> = ({
       >
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-xl p-6 relative max-h-[90vh] overflow-y-auto">
           <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white border-b pb-2">
-            Edit Pelanggaran Siswa
+            Tambah Pelanggaran Siswa
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Nama Siswa (Read Only) */}
+            {/* Siswa */}
             <div>
-              <label className="block text-sm mb-1 font-medium text-gray-500 dark:text-gray-400">
-                Nama Siswa
+              <label className="block text-sm mb-1 font-medium text-gray-700 dark:text-white/90">
+                Pilih Siswa
               </label>
-              <input
-                type="text"
-                value={row.nama_siswa || "-"}
-                disabled
-                className="w-full bg-gray-100 border px-3 py-2 rounded dark:bg-gray-700/50 dark:border-gray-600 dark:text-gray-300 font-semibold text-sm"
+              <SearchableSelect
+                options={siswaOptions}
+                value={idSiswa}
+                onChange={setIdSiswa}
+                placeholder="-- Cari & Pilih Siswa --"
               />
             </div>
 
@@ -262,6 +277,7 @@ const EditDataPelanggaranSiswa: React.FC<EditPopupProps> = ({
                 value={keterangan}
                 onChange={(e) => setKeterangan(e.target.value)}
                 rows={3}
+                placeholder="Tulis kronologi atau keterangan tambahan..."
                 className="w-full border px-3 py-2 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white text-sm"
                 required
               />
@@ -271,8 +287,8 @@ const EditDataPelanggaranSiswa: React.FC<EditPopupProps> = ({
               <Button type="button" size="sm" variant="outline" onClick={handleClose}>
                 Batal
               </Button>
-              <Button type="submit" variant="primary" size="sm" disabled={submitting}>
-                {submitting ? "Menyimpan..." : "Simpan"}
+              <Button type="submit" variant="primary" size="sm" disabled={loading}>
+                {loading ? "Menyimpan..." : "Simpan"}
               </Button>
             </div>
           </form>
@@ -282,4 +298,4 @@ const EditDataPelanggaranSiswa: React.FC<EditPopupProps> = ({
   );
 };
 
-export default EditDataPelanggaranSiswa;
+export default TambahDataPelanggaranSiswa;

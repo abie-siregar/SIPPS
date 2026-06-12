@@ -4,10 +4,11 @@ const pelanggaranSiswaController = require("../controllers/pelanggaranSiswaContr
 const isRoles = require("../middlewares/isRoles");
 
 // semua route sudah otomatis terproteksi lewat index.js
-router.post("/", isRoles(["Admin", "BK"]), pelanggaranSiswaController.create);
+router.post("/", isRoles(["Admin"]), pelanggaranSiswaController.create);
 router.get("/", pelanggaranSiswaController.getAll);
 router.get("/filter", pelanggaranSiswaController.getFiltered);
-router.put("/:id", isRoles(["Admin", "BK"]), pelanggaranSiswaController.update);
-router.delete("/:id", isRoles(["Admin", "BK"]), pelanggaranSiswaController.delete);
+router.get("/semesters", pelanggaranSiswaController.getSemesters);
+router.put("/:id", isRoles(["Admin"]), pelanggaranSiswaController.update);
+router.delete("/:id", isRoles(["Admin"]), pelanggaranSiswaController.delete);
 
 module.exports = router;

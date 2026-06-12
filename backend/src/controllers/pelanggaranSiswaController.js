@@ -42,6 +42,11 @@ module.exports = {
         `
         SELECT 
             distinct on (pelanggaran.tanggal, siswa.id_siswa, pelanggaran.keterangan)
+            pelanggaran.id_pelanggaran,
+            pelanggaran.id_siswa,
+            pelanggaran.id_poin,
+            pelanggaran.id_ptk,
+            pelanggaran.id_semester,
             pelanggaran.tanggal,
             pelanggaran.keterangan,
             popel.jenis_penilaian,
@@ -111,6 +116,11 @@ module.exports = {
         const query = `
             SELECT 
             distinct on (pelanggaran.tanggal, siswa.id_siswa, pelanggaran.keterangan)
+            pelanggaran.id_pelanggaran,
+            pelanggaran.id_siswa,
+            pelanggaran.id_poin,
+            pelanggaran.id_ptk,
+            pelanggaran.id_semester,
             pelanggaran.tanggal,
             pelanggaran.keterangan,
             popel.jenis_penilaian,
@@ -227,6 +237,16 @@ module.exports = {
         })
         } catch (error) {
         res.status(500).json({error: error.message});
+        }
+    },
+
+    // mengambil data semester
+    async getSemesters(req, res) {
+        try {
+            const result = await pool.query("SELECT * FROM semester ORDER BY id_semester DESC");
+            res.json(result.rows);
+        } catch (error) {
+            res.status(500).json({ error: "Internal Server Error: " + error.message });
         }
     }
 };
