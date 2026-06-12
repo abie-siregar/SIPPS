@@ -31,7 +31,7 @@ module.exports = {
         });
         } catch (error) {
         console.error("Gagal menambahkan data pelanggaran siswa :", error.message);
-        res.status(500).json({ error: "Internal Server Error" });
+        res.status(500).json({ error: "Internal Server Error " + error.message });
         }
     },
 
@@ -51,7 +51,7 @@ module.exports = {
             siswa.nama as nama_siswa,
             siswa.nisn,
             semester.nama_semester,
-            walikelas.nama as nama_walikelas,
+            ptk.nama as Walikelas,
             rombel.nama_rombel,
             jurusan.nama_jurusan
         FROM
@@ -64,15 +64,15 @@ module.exports = {
             siswa ON siswa.id_siswa = pelanggaran.id_siswa
         LEFT JOIN
             anggota_rombel ON anggota_rombel.id_siswa = pelanggaran.id_siswa
+            AND anggota_rombel.id_semester = pelanggaran.id_semester
         LEFT JOIN
             rombel ON rombel.id_rombel = anggota_rombel.id_rombel
         LEFT JOIN
             semester ON semester.id_semester = pelanggaran.id_semester
-            AND anggota_rombel.id_semester = pelanggaran.id_semester
         LEFT JOIN
             jurusan ON jurusan.id_jurusan = rombel.id_jurusan
         LEFT JOIN
-            ptk walikelas ON walikelas.id_ptk = rombel.id_ptk_wali
+            ptk walikelas ON ptk.id_ptk = rombel.id_ptk_wali
         LEFT JOIN
             jabatan_ptk jabatan ON jabatan.id_jabatan = ptk.id_jabatan
         ORDER BY
