@@ -106,83 +106,64 @@ module.exports = {
         } else {
           nama_semester = rombel.semester_id || `Semester ${id_semester}`;
         }
+        if (id_tingkat) await client.query(`INSERT INTO tingkat_pendidikan (id_tingkat, nama_tingkat) VALUES ($1, $2) ON CONFLICT (id_tingkat) DO NOTHING;`, [id_tingkat, nama_tingkat]);
+        if (id_jurusan) await client.query(`INSERT INTO jurusan (id_jurusan, nama_jurusan) VALUES ($1, $2) ON CONFLICT (id_jurusan) DO NOTHING;`, [id_jurusan, nama_jurusan]);
+        if (id_semester) await client.query(`INSERT INTO semester (id_semester, nama_semester) VALUES ($1, $2) ON CONFLICT (id_semester) DO NOTHING;`, [id_semester, nama_semester]);
 
-          if (id_tingkat) {
-            await client.query(
-              `
-              INSERT INTO tingkat_pendidikan (id_tingkat, nama_tingkat)
-              VALUES ($1, $2) ON CONFLICT (id_tingkat) DO NOTHING;`,
-              [id_tingkat, nama_tingkat]
-            );
-          }
+        const queryRombel = `
+        INSERT INTO rombel (id_rombel, nama_rombel, id_tingkat, id_jurusan, id_ptk_wali) 
+        VALUES ($1, $2, $3, $4, $5)
+        ON CONFLICT (id_rombel) DO UPDATE SET
+          nama_rombel = EXCLUDED.nama_rombel,
+          id_tingkat = EXCLUDED.id_tingkat,
+          id_jurusan = EXCLUDED.id_jurusan,
+          id_ptk_wali = EXCLUDED.id_ptk_wali
+        RETURNING *;
+      `;
+      
+      const resultRombel = await client.query(queryRombel, [id_rombel, nama_rombel, id_tingkat, id_jurusan, id_ptk_wali || null]);
+      results.push(resultRombel.rows[0]);
 
-          if (id_jurusan) {
-            await client.query(
-              `
-              INSERT INTO jurusan (id_jurusan, nama_jurusan)
-              VALUES ($1, $2) ON CONFLICT (id_jurusan) DO NOTHING;`,
-              [id_jurusan, nama_jurusan]
-            );
-          }
-
-          if (id_semester) {
-            await client.query(
-              `
-              INSERT INTO semester (id_semester, nama_semester)
-              VALUES ($1, $2) ON CONFLICT (id_semester) DO NOTHING;`, 
-              [id_semester, nama_semester]
-            );
-          }
+        if (rombel.anggota_rombel && Array.isArray(rombel.anggota_rombel)&& rombel.anggota_rombel.length > 0 ) {
+          const id_siswa = rombel.anggota_rombel.map(a => [a.peserta_didik_id]).filter(id => id[0]);
         
-            const queryRombel = `
-              INSERT INTO rombel (
-                id_rombel, nama_rombel, id_tingkat, id_jurusan, id_ptk_wali
-              ) 
-              VALUES ($1, $2, $3, $4, $5)
-              ON CONFLICT (id_rombel) 
-              DO UPDATE SET
-                nama_rombel = EXCLUDED.nama_rombel,
-                id_tingkat = EXCLUDED.id_tingkat,
-                id_jurusan = EXCLUDED.id_jurusan,
-                id_ptk_wali = EXCLUDED.id_ptk_wali
-              RETURNING *;
-            `;
-
-        const resultRombel = await client.query(queryRombel, [ 
-          id_rombel,
-          nama_rombel,
-          id_tingkat,
-          id_jurusan,
-          id_ptk_wali || null 
-        ]);
-
-        if (rombel.anggota_rombel && Array.isArray(rombel.anggota_rombel)) {
-          for (const anggota of rombel.anggota_rombel) {
-            const id_anggota_rombel = anggota.anggota_rombel_id;
-            const id_siswa = anggota.peserta_didik_id;
-
-            if (id_anggota_rombel && id_siswa && id_rombel && id_semester) {
-                await client.query(
-                `INSERT INTO siswa (id_siswa) 
-                VALUES ($1) 
-                ON CONFLICT (id_siswa) DO NOTHING;`,
-                [id_siswa]);
-
-              await client.query(
-                `INSERT INTO anggota_rombel (id_anggota_rombel, id_rombel, id_siswa, id_semester)
-                VALUES ($1, $2, $3, $4)
-                ON CONFLICT (id_anggota_rombel) 
-                DO UPDATE SET
-                    id_rombel = EXCLUDED.id_rombel,
-                    id_siswa = EXCLUDED.id_siswa,
-                    id_semester = EXCLUDED.id_semester;`,
-                [id_anggota_rombel, id_rombel, id_siswa, id_semester]
-              );
-            }
+          if (id_siswa.length > 0) {
+            await client.query(`
+            INSERT INTO siswa (id_siswa)
+            SELECT * FROM UNNEST($1::uuid[])
+            ON CONFLICT (id_siswa) DO NOTHING;
+          `, [id_siswa.flat()]);
+          } 
+          
+        const anggotaValues = [];
+        for (const anggota of rombel.anggota_belajar || rombel.anggota_rombel) {
+          if (anggota.anggota_rombel_id && anggota.peserta_didik_id && id_rombel && id_semester) {
+            anggotaValues.push([
+              anggota.anggota_rombel_id,
+              id_rombel,
+              anggota.peserta_didik_id,
+              id_semester
+            ]);
           }
         }
-        results.push(resultRombel.rows[0]);
+
+        if (anggotaValues.length > 0) {
+          await client.query(`
+            INSERT INTO anggota_rombel (id_anggota_rombel, id_rombel, id_siswa, id_semester)
+            SELECT * FROM UNNEST($1::uuid[], $2::uuid[], $3::uuid[], $4::varchar[])
+            ON CONFLICT (id_siswa, id_semester) 
+            DO UPDATE SET
+              id_anggota_rombel = EXCLUDED.id_anggota_rombel,
+              id_rombel = EXCLUDED.id_rombel;
+          `, [
+            anggotaValues.map(v => v[0]),
+            anggotaValues.map(v => v[1]),
+            anggotaValues.map(v => v[2]),
+            anggotaValues.map(v => v[3])
+          ]);
+        }
       }
+    }
 
       await client.query("COMMIT");
 
