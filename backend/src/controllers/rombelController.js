@@ -7,22 +7,29 @@ module.exports = {
   try {
     const result = await pool.query(
       `SELECT 
-        r.*,
-        r.nama AS nama_rombel,
-        t.tingkat_id_str,
-        j.jurusan_id_str,
-        p.nama AS wali_kelas
+        rombel.nama_rombel as rombel,
+        tingkat.nama_tingkat as tingkat,
+        jurusan.nama_jurusan as jurusan,
+        walikelas.nama as walikelas,
+        COUNT(anggota.id_siswa)::integer as jumlah_siswa
       FROM 
-        rombel r
+        rombel rombel
       LEFT JOIN
-        tingkat t ON t.tingkat_id = r.tingkat_id
+        tingkat_pendidikan tingkat on rombel.id_tingkat = tingkat.id_tingkat
       LEFT JOIN
-        jurusan j ON j.jurusan_id = r.jurusan_id
+        jurusan jurusan on jurusan.id_jurusan = rombel.id_jurusan
       LEFT JOIN
-        ptk p ON p.ptk_id_dapodik = r.ptk_id_dapodik
-      ORDER BY 
-        rombel_id
-      ASC`
+        ptk walikelas on walikelas.id_ptk = rombel.id_ptk_wali
+      LEFT join
+        anggota_rombel anggota on rombel.id_rombel = anggota.id_rombel
+      GROUP BY 
+          rombel.nama_rombel,
+          tingkat.nama_tingkat,
+          jurusan.nama_jurusan,
+          walikelas.nama
+        ORDER by
+         nama_rombel
+        ASC`
     );
     res.json(result.rows);
   } catch (error) {
@@ -34,47 +41,64 @@ module.exports = {
   //mengambil seluruh data rombel menggunakan filter
   async getFiltered(req, res) {
     try {
-      const { tingkat_id, jurusan_id, search} = req.query;
+      const { tingkat, jurusan, search} = req.query;
 
       let query = 
       `SELECT 
-        r.*,
-        t.tingkat_id_str,
-        j.jurusan_id_str,
-        p.nama
+        rombel.nama_rombel as rombel,
+        tingkat.nama_tingkat as tingkat,
+        jurusan.nama_jurusan as jurusan,
+        walikelas.nama as walikelas,
+        COUNT(anggota.id_siswa)::integer as jumlah_siswa
       FROM 
-        rombel r
+        rombel rombel
       LEFT JOIN
-        tingkat t ON t.tingkat_id = r.tingkat_id
+        tingkat_pendidikan tingkat on rombel.id_tingkat = tingkat.id_tingkat
       LEFT JOIN
-        jurusan j ON j.jurusan_id = r.jurusan_id
+        jurusan jurusan on jurusan.id_jurusan = rombel.id_jurusan
       LEFT JOIN
-        ptk p ON p.ptk_id_dapodik = r.ptk_id_dapodik
+        ptk walikelas on walikelas.id_ptk = rombel.id_ptk_wali
+      LEFT join
+        anggota_rombel anggota on rombel.id_rombel = anggota.id_rombel
       WHERE 
-        rombel_id
-      ASC`;
+        1=1  
+      `;
       let params = [];
       let index = 1;
 
-      if (tingkat_id) {
-        query += ` AND tingkat_id = $${index}`;
-        params.push(tingkat_id);
+      if (tingkat) {
+        query += ` AND tingkat.id_tingkat = $${index}`;
+        params.push(tingkat);
         index++;
       }
 
-      if (jurusan_id) {
-        query += ` AND jurusan_id = $${index}`;
-        params.push(jurusan_id);
-        index++;
+      if (jurusan) {
+        query += ` AND REPLACE(LOWER(jurusan.nama_jurusan), ' ', '') ILIKE $${index}`;
+          params.push(`%${jurusan.toLowerCase().replace(/\s+/g, '')}%`);
+          index++;
       }
 
       if (search) {
-        query += ` AND (nama ILIKE $${index} OR ptk_id_dapodik ILIKE $${index})`;
-        params.push(`%${search}%`);
+        query += ` AND (
+          REPLACE(LOWER(tingkat.nama_tingkat), ' ', '') ILIKE $${index} OR 
+          REPLACE(LOWER(jurusan.nama_jurusan), ' ', '') ILIKE $${index} OR 
+          REPLACE(LOWER(rombel.nama_rombel), ' ', '') ILIKE $${index})`;
+        params.push(`%${search.toLowerCase().replace(/\s+/g, '')}%`);
         index++;
       }
 
-      query += " ORDER BY rombel_id ASC ";
+      query += `
+      GROUP BY 
+        rombel.nama_rombel,
+        tingkat.nama_tingkat,
+        jurusan.nama_jurusan,
+        walikelas.nama,
+        tingkat.id_tingkat
+      ORDER BY 
+        tingkat.id_tingkat ASC, 
+        jurusan.nama_jurusan ASC, 
+        rombel.nama_rombel ASC
+    `;
 
       const result = await pool.query(query, params);
 
@@ -82,65 +106,69 @@ module.exports = {
         return res.status(404).json({ message: "Data tidak ditemukan" });
       }
 
-      res.json(result.rows[0]);
+      res.json({
+        success: true,
+        total: result.rows.length,
+        data: result.rows
+      });
     }
     catch (error) {
       console.error("Gagal mengambil data rombel", error);
-      res.status(500).json({error : "Internal Server Error" });
+      res.status(500).json({error : "Internal Server Error " + error.message});
     }
   },
 
-  //update untuk data rombel
-  async update(req, res) {
-    const { rombel_id } = req.params;
-    const { nama, ptk_id_dapodik, tingkat_id, jurusan_id  } = req.body;
+  // //update untuk data rombel
+  // async update(req, res) {
+  //   const { rombel_id } = req.params;
+  //   const { nama, ptk_id_dapodik, tingkat_id, jurusan_id  } = req.body;
 
-    if (isNaN(parseInt(rombel_id))) {
-      return res.status(400).json({ error: "ID harus berupa angka" });
-    }
+  //   if (isNaN(parseInt(rombel_id))) {
+  //     return res.status(400).json({ error: "ID harus berupa angka" });
+  //   }
 
-    try {
-      const query = `
-        WITH updated AS (
-          UPDATE 
-            rombel 
-          SET 
-            nama = $1, 
-            ptk_id_dapodik = $2, 
-            tingkat_id = $3, 
-            jurusan_id = $4
-          WHERE rombel_id = $5
-          RETURNING *)
-        SELECT 
-          u.rombel_id,
-          u.nama,
-          p.nama,
-          t.tingkat_id_str,
-          j.jurusan_id_str,
-        FROM
-          updated u
-        LEFT JOIN
-          ptk p ON p.ptk_id_dapodik = u.ptk_id_dapodik
-          tingkat t ON t.tingkat_id = u.tingkat_id
-          jurusan j ON j.jurusan_id = u.jurusan_id;
+  //   try {
+  //     const query = `
+  //       WITH updated AS (
+  //         UPDATE 
+  //           rombel 
+  //         SET 
+  //           nama = $1, 
+  //           ptk_id_dapodik = $2, 
+  //           tingkat_id = $3, 
+  //           jurusan_id = $4
+  //         WHERE rombel_id = $5
+  //         RETURNING *)
+  //       SELECT 
+  //         u.rombel_id,
+  //         u.nama,
+  //         p.nama,
+  //         t.tingkat_id_str,
+  //         j.jurusan_id_str,
+  //       FROM
+  //         updated u
+  //       LEFT JOIN
+  //         ptk p ON p.ptk_id_dapodik = u.ptk_id_dapodik
+  //         tingkat t ON t.tingkat_id = u.tingkat_id
+  //         jurusan j ON j.jurusan_id = u.jurusan_id;
 
-      `;
-      const values = [nama, ptk_id_dapodik, tingkat_id, jurusan_id, rombel_id];
+  //     `;
+  //     const values = [nama, ptk_id_dapodik, tingkat_id, jurusan_id, rombel_id];
 
-      const result = await pool.query(query, values);
+  //     const result = await pool.query(query, values);
 
-      if (result.rows.length === 0) {
-        return res.status(404).json({ error: "Data rombel tidak ditemukan" });
-      }
+  //     if (result.rows.length === 0) {
+  //       return res.status(404).json({ error: "Data rombel tidak ditemukan" });
+  //     }
 
-      res.json({
-        message: "Data rombel berhasil diperbarui",
-        data: result.rows[0],
-      });
-    } catch (error) {
-      console.error("Gagal memperbarui data rombel:", error);
-      res.status(500).json({ error: "Internal Server Error" });
-    }
-  },
+  //     res.json({
+  //       message: "Data rombel berhasil diperbarui",
+  //       data: result.rows[0],
+  //     });
+  //   } catch (error) {
+  //     console.error("Gagal memperbarui data rombel:", error);
+  //     res.status(500).json({ error: "Internal Server Error" });
+  //   }
+  // },
   
 };

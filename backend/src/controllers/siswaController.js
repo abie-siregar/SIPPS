@@ -6,18 +6,30 @@ module.exports = {
     try {
       const result = await pool.query(
         `SELECT 
-          s.*,
-          a.agama_id_str,
-          smt.semester_id_str,
-          r.nama AS rombel
+          siswa.nama as nama,
+          siswa.nisn as nisn,
+          siswa.alamat as alamat,
+          siswa.no_telp as no_telp,
+          siswa.email as email,
+          agama.nama_agama AS agama,
+          tingkat.nama_tingkat AS tingkat,
+          rombel.nama_rombel AS rombel,
+          walikelas.nama as walikelas,
+          jurusan.nama_jurusan AS jurusan
         FROM 
-          siswa s
+          siswa
         LEFT JOIN
-          agama a ON a.agama_id = s.agama_id
+          agama ON siswa.id_agama = agama.id_agama
         LEFT JOIN
-          semester smt ON smt.semester_id = s.semester_id
+         anggota_rombel ON siswa.id_siswa = anggota_rombel.id_siswa
         LEFT JOIN
-          rombel r ON r.rombel_id_dapodik = s.rombel_id_dapodik
+          rombel ON anggota_rombel.id_rombel = rombel.id_rombel
+        LEFT JOIN
+         ptk walikelas ON rombel.id_ptk_wali = walikelas.id_ptk
+        LEFT JOIN
+          tingkat_pendidikan tingkat ON rombel.id_tingkat = tingkat.id_tingkat
+        LEFT JOIN
+          jurusan ON rombel.id_jurusan = jurusan.id_jurusan
         ORDER BY 
           rombel
         ASC`
@@ -32,89 +44,125 @@ module.exports = {
   //mengambil seluruh data siswa menggunakan filter
   async getFiltered(req, res) {
     try {
-      const { nisn, rombel, search} = req.query;
+      const {nisn, rombel, walikelas, search} = req.query;
 
       let query = `
         SELECT 
-          s.*,
-          a.agama_id_str,
-          smt.semester_id_str,
-          r.nama
+        DISTINCT ON (siswa.nama, siswa.id_siswa)
+          siswa.nama as nama_siswa,
+          siswa.nisn as nisn,
+          siswa.alamat as alamat,
+          siswa.no_telp as no_telp,
+          siswa.email as email,
+          agama.nama_agama AS nama_agama,
+          rombel.nama_rombel AS rombel,
+          walikelas.nama as walikelas,
+          tingkat.nama_tingkat AS tingkat_kelas,
+          jurusan.nama_jurusan AS jurusan
         FROM 
-          siswa s
+          siswa
         LEFT JOIN
-          agama a ON s.agama_id = s.agama_id
+          agama ON siswa.id_agama = agama.id_agama
         LEFT JOIN
-          semester smt ON s.semester_id = s.semester_id
+         anggota_rombel ON siswa.id_siswa = anggota_rombel.id_siswa
         LEFT JOIN
-          rombel r ON s.rombel_id_dapodik = s.rombel_id_dapodik
-        WHERE 
-          siswa_id 1=1
-        `;
+          rombel ON anggota_rombel.id_rombel = rombel.id_rombel
+        LEFT JOIN
+         ptk walikelas ON rombel.id_ptk_wali = walikelas.id_ptk
+        LEFT JOIN
+          tingkat_pendidikan tingkat ON rombel.id_tingkat = tingkat.id_tingkat
+        LEFT JOIN
+          jurusan ON rombel.id_jurusan = jurusan.id_jurusan
+        WHERE
+          1=1
+      `;
       let params = [];
       let index = 1;
 
       if (nisn) {
-        query += ` AND nisn = $${index}`;
-        params.push(nisn);
+        query += ` AND siswa.nisn ILIKE $${index}`;
+        params.push(`%${nisn}%`);
         index++;
       }
 
       if (rombel) {
-        query += ` AND rombel_id_dapodik = $${index}`;
-        params.push(rombel);
+        query += ` AND rombel.nama_rombel ILIKE $${index}`;
+        params.push(`%${rombel}%`);
+        index++;
+      }
+
+      if (walikelas) {
+        query += ` AND walikelas.nama ILIKE $${index}`;
+        params.push(`%${walikelas}%`);
         index++;
       }
 
       if (search) {
-        query += ` AND (nama ILIKE $${index}`;
+        query += ` AND (siswa.nama ILIKE $${index} OR siswa.nisn ILIKE $${index})`;
         params.push(`%${search}%`);
         index++;
       }
 
-      query += " ORDER BY siswa_id ASC";
+      query += " ORDER BY siswa.nama ASC, siswa.id_siswa";
 
       const result = await pool.query(query, params);
 
       if (result.rows.length === 0) {
-        return res.status(404).json({ message: "Data siswa tidak ditemukan" });
+        return res.status(404).json({ message: "Data tidak ditemukan" });
       }
 
-      res.json(result.rows[0]);
+      res.json({
+            success: true,
+            total: result.rows.length,
+            data: result.rows
+        });
     }
     catch (error) {
-      console.error("Gagal mengambil data siswa", error);
-      res.status(500).json({error : "Internal Server Error" });
+      console.error("Error fetching filtered data siswa", error.message);
+      res.status(500).json({error : "Internal Server Error" + error.message   });
     }
   },
 
   //mengambil seluruh data siswa menggunakan id
   async getById(req, res) {
-    const { siswa_id } = req.params;
+    const { id } = req.params;
 
-    if (isNaN(siswa_id)) {
-      return res.status(400).json({ error: "ID harus berupa angka" });
-    }
+    // if (isNaN(siswa_id)) {
+    //   return res.status(400).json({ error: "ID harus berupa angka" });
+    // }
 
     try {
       const result = await pool.query(
         `
-        SELECT 
-          s.*,
-          a.agama_id_str,
-          smt.semester_id_str,
-          r.nama
+        SELECT
+          DISTINCT ON (siswa.id_siswa)
+          siswa.nama as nama_siswa,
+          siswa.nisn as nisn,
+          siswa.alamat as alamat,
+          siswa.no_telp as no_telp,
+          siswa.email as email,
+          agama.nama_agama AS nama_agama,
+          rombel.nama_rombel AS rombel,
+          walikelas.nama as walikelas,
+          tingkat.nama_tingkat AS tingkat_kelas,
+          jurusan.nama_jurusan AS jurusan
         FROM 
-          siswa s
+          siswa
         LEFT JOIN
-          agama a ON s.agama_id = s.agama_id
+          agama ON siswa.id_agama = agama.id_agama
         LEFT JOIN
-          semester smt ON s.semester_id = s.semester_id
+         anggota_rombel ON siswa.id_siswa = anggota_rombel.id_siswa
         LEFT JOIN
-          rombel r ON s.rombel_id_dapodik = s.rombel_id_dapodik
+          rombel ON anggota_rombel.id_rombel = rombel.id_rombel
+        LEFT JOIN
+         ptk walikelas ON rombel.id_ptk_wali = walikelas.id_ptk
+        LEFT JOIN
+          tingkat_pendidikan tingkat ON rombel.id_tingkat = tingkat.id_tingkat
+        LEFT JOIN
+          jurusan ON rombel.id_jurusan = jurusan.id_jurusan
         WHERE 
-          siswa_id = $1`,
-        [siswa_id]
+          siswa.id_siswa = $1`,
+        [id]
       );
 
       if (result.rows.length === 0) {
