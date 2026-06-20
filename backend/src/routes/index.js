@@ -13,12 +13,13 @@ const userRoutes = require("./users");
 const pelanggaranRoutes = require("./pelanggaranSiswa");
 const importRoutes = require("./import");
 const generateRoutes = require("./generate");
+const sanksiRoutes = require("./sanksi");
 
-// 🔓 Auth routes (tidak perlu token)
+//  Auth routes (tidak perlu token)
 router.post("/auth/login", authController.login);
 router.post("/register", authController.register);
 
-// 🔒 Protected routes (butuh token)
+//  Protected routes (butuh token)
 router.use("/poin-pelanggaran", authenticate, poinPelanggaranRoutes);
 router.use(
   "/rombel",
@@ -32,6 +33,7 @@ router.use("/user", authenticate, isRoles(["Admin"]), userRoutes);
 router.use("/pelanggaran-siswa", authenticate, pelanggaranRoutes);
 router.use("/import", authenticate, isRoles(["Admin"]), importRoutes);
 router.use("/generate", authenticate, isRoles(["Admin"]), generateRoutes);
+router.use("/sanksi", authenticate, isRoles(["Admin"]), sanksiRoutes);
 router.get("/auth/profile", authenticate, authController.profile);
 
 module.exports = router;
