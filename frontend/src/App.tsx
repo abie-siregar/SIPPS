@@ -31,6 +31,7 @@ import PTK from "./pages/ManajemenData/PTK/DataPTK";
 import Siswa from "./pages/ManajemenData/Siswa/DataSiswa";
 import UserProfile from "./components/UserProfile";
 import DataUsers from "./pages/ManajemenData/Users/DataUsers";
+import DataSanksi from "./pages/ManajemenData/Sanksi/DataSanksi";
 import SignUp from "./pages/AuthPages/SignUp";
 import { AuthProvider } from "./context/AuthContext";
 
@@ -112,6 +113,14 @@ export default function App() {
             element={
               <ProtectedRoute roles={["Admin"]}>
                 <DataUsers />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/data-sanksi"
+            element={
+              <ProtectedRoute roles={["Admin", "BK", "Guru", "Wali Kelas", "Tenaga Kependidikan", "Siswa"]}>
+                <DataSanksi />
               </ProtectedRoute>
             }
           />

@@ -88,6 +88,12 @@ const navItems: NavItem[] = [
         pro: false,
         roles: ["Admin"],
       },
+      {
+        name: "Data Sanksi",
+        path: "/data-sanksi",
+        pro: false,
+        roles: ["Admin", "BK", "Guru", "Wali Kelas", "Tenaga Kependidikan", "Siswa"],
+      },
     ],
   },
   {

@@ -1,5 +1,4 @@
 import { useEffect, useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "../../../api/axios";
 
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
@@ -8,36 +7,29 @@ import PageMeta from "../../../components/common/PageMeta";
 import Button from "../../../components/ui/button/Button";
 import { PencilIcon, TrashBinIcon } from "../../../icons";
 import DataTable, { Column } from "../../../components/ui/table/DataTable";
-import EditDataPoinPelanggaran from "./EditDataPoinPelanggaran";
+import AddEditSanksiModal, { Sanksi } from "./AddEditSanksiModal";
+import FilterSanksiModal from "./FilterSanksiModal";
 import Toast from "../../../components/ui/alert/Toast";
 import ConfirmDialog from "../../../components/ui/modal/ConfirmDialog";
 import { useAuth } from "../../../context/AuthContext";
-import FilterPoinPelanggaranModal from "./FilterPoinPelanggaranModal";
 
-export interface Pelanggaran {
-  id_poin: number;
-  jenis_penilaian: string;
-  bobot: number;
-  jenis_pelanggaran: string;
-  is_active: boolean;
-}
-
-const PoinPelanggaran = () => {
+const DataSanksi = () => {
   const { user } = useAuth();
   const isAdmin = user?.role === "Admin";
 
-  const [data, setData] = useState<Pelanggaran[]>([]);
+  const [data, setData] = useState<Sanksi[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showEditPopup, setShowEditPopup] = useState(false);
-  const [selectedRow, setSelectedRow] = useState<Pelanggaran | null>(null);
-  const navigate = useNavigate();
 
-  // Custom filter state
+  // Modal states
+  const [showAddEditModal, setShowAddEditModal] = useState(false);
+  const [selectedRow, setSelectedRow] = useState<Sanksi | null>(null);
+
+  // Filter states
   const [showFilterModal, setShowFilterModal] = useState(false);
-  const [selectedJenisPenilaian, setSelectedJenisPenilaian] = useState<string[]>([]);
-  const [minBobot, setMinBobot] = useState<number | "">("");
-  const [maxBobot, setMaxBobot] = useState<number | "">("");
+  const [minPoin, setMinPoin] = useState<number | "">("");
+  const [maxPoin, setMaxPoin] = useState<number | "">("");
 
+  // Toast and Confirm states
   const [toast, setToast] = useState<{
     show: boolean;
     variant: "success" | "error";
@@ -46,18 +38,19 @@ const PoinPelanggaran = () => {
 
   const [confirmDelete, setConfirmDelete] = useState<{
     show: boolean;
-    row: Pelanggaran | null;
+    row: Sanksi | null;
   }>({ show: false, row: null });
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/poin-pelanggaran");
-      setData(res.data.data);
+      const res = await axios.get("/sanksi");
+      const fetchedData = res.data.data || res.data || [];
+      setData(Array.isArray(fetchedData) ? fetchedData : []);
     } catch (error) {
-      console.error("Gagal mengambil data:", error);
+      console.error("Gagal mengambil data sanksi:", error);
+      setData([]);
     } finally {
-      setData((prev) => (Array.isArray(prev) ? prev : []));
       setLoading(false);
     }
   };
@@ -66,12 +59,17 @@ const PoinPelanggaran = () => {
     fetchData();
   }, []);
 
-  const handleEdit = (row: Pelanggaran) => {
-    setSelectedRow(row);
-    setShowEditPopup(true);
+  const handleAdd = () => {
+    setSelectedRow(null);
+    setShowAddEditModal(true);
   };
 
-  const handleDeleteClick = (row: Pelanggaran) => {
+  const handleEdit = (row: Sanksi) => {
+    setSelectedRow(row);
+    setShowAddEditModal(true);
+  };
+
+  const handleDeleteClick = (row: Sanksi) => {
     setConfirmDelete({ show: true, row });
   };
 
@@ -80,82 +78,60 @@ const PoinPelanggaran = () => {
     if (!row) return;
     setConfirmDelete({ show: false, row: null });
     try {
-      await axios.delete(`/poin-pelanggaran/${row.id_poin}`);
+      await axios.delete(`/sanksi/${row.id_master_sanksi}`);
       fetchData();
       setToast({
         show: true,
         variant: "success",
-        message: `Data "${row.jenis_pelanggaran}" berhasil dihapus.`,
+        message: `Data sanksi "${row.nama_sanksi}" berhasil dihapus.`,
       });
     } catch (err: any) {
-      const msg = err?.response?.data?.error || "Gagal menghapus data.";
+      const msg = err?.response?.data?.error || "Gagal menghapus data sanksi.";
       setToast({ show: true, variant: "error", message: msg });
     }
   };
 
   // Compute local filteredData
   const filteredData = useMemo(() => {
-    const safeData = Array.isArray(data) ? data : [];
-    return safeData.filter((row) => {
-      // 1. Jenis Penilaian (multiple select)
-      if (
-        selectedJenisPenilaian.length > 0 &&
-        !selectedJenisPenilaian.includes(row.jenis_penilaian)
-      ) {
+    return data.filter((row) => {
+      if (minPoin !== "" && row.batas_poin < Number(minPoin)) {
         return false;
       }
-      // 2. Bobot range
-      if (minBobot !== "" && row.bobot < Number(minBobot)) {
-        return false;
-      }
-      if (maxBobot !== "" && row.bobot > Number(maxBobot)) {
+      if (maxPoin !== "" && row.batas_poin > Number(maxPoin)) {
         return false;
       }
       return true;
     });
-  }, [data, selectedJenisPenilaian, minBobot, maxBobot]);
+  }, [data, minPoin, maxPoin]);
 
   const filterValues = useMemo(
     () => ({
-      selectedJenisPenilaian,
-      minBobot,
-      maxBobot,
+      minPoin,
+      maxPoin,
     }),
-    [selectedJenisPenilaian, minBobot, maxBobot]
+    [minPoin, maxPoin]
   );
 
   const handleApplyFilters = (filters: typeof filterValues) => {
-    setSelectedJenisPenilaian(filters.selectedJenisPenilaian);
-    setMinBobot(filters.minBobot);
-    setMaxBobot(filters.maxBobot);
+    setMinPoin(filters.minPoin);
+    setMaxPoin(filters.maxPoin);
   };
 
-  const columns: Column<Pelanggaran>[] = [
+  const columns: Column<Sanksi>[] = [
     {
       header: "No",
-      accessor: "id_poin",
+      accessor: "id_master_sanksi",
       render: (_row, rowIndex) => (rowIndex ?? 0) + 1,
       className: "text-center w-16",
     },
-    { header: "Jenis Penilaian", accessor: "jenis_penilaian" },
-    { header: "Bobot", accessor: "bobot", className: "text-center w-24" },
-    {
-      header: "Jenis Pelanggaran",
-      accessor: "jenis_pelanggaran",
-      className: "text-start",
-    },
-    {
-      header: "Status",
-      accessor: "is_active",
-      render: (row) => (row.is_active ? "Aktif" : "Tidak Aktif"),
-      className: "text-center w-32",
-    },
+    { header: "Nama Sanksi", accessor: "nama_sanksi" },
+    { header: "Batas Poin", accessor: "batas_poin", className: "text-center w-32" },
   ];
 
   if (isAdmin) {
     columns.push({
       header: "Aksi",
-      accessor: "id_poin",
+      accessor: "id_master_sanksi",
       render: (row) => (
         <div className="flex items-center justify-center gap-2">
           <Button
@@ -177,25 +153,24 @@ const PoinPelanggaran = () => {
           </Button>
         </div>
       ),
-      className: "text-center",
+      className: "text-center w-48",
     });
   }
 
   // Active filter badge count
   const activeFiltersCount = useMemo(() => {
     let count = 0;
-    if (selectedJenisPenilaian.length > 0) count++;
-    if (minBobot !== "" || maxBobot !== "") count++;
+    if (minPoin !== "" || maxPoin !== "") count++;
     return count;
-  }, [selectedJenisPenilaian, minBobot, maxBobot]);
+  }, [minPoin, maxPoin]);
 
   return (
     <>
       <PageMeta
-        title="Data Pelanggaran | Dashboard SMKN 1 Batam"
-        description="Halaman menampilkan tabel data pelanggaran siswa"
+        title="Data Sanksi | Dashboard SMKN 1 Batam"
+        description="Halaman menampilkan tabel data sanksi"
       />
-      <PageBreadcrumb pageTitle="Data Poin Pelanggaran" />
+      <PageBreadcrumb pageTitle="Data Sanksi" />
 
       {/* Toast notification */}
       <Toast
@@ -209,24 +184,42 @@ const PoinPelanggaran = () => {
       <ConfirmDialog
         show={confirmDelete.show}
         variant="danger"
-        title="Hapus Data?"
-        message={`Anda yakin ingin menghapus "${confirmDelete.row?.jenis_pelanggaran}"? Tindakan ini tidak dapat dibatalkan.`}
+        title="Hapus Data Sanksi?"
+        message={`Anda yakin ingin menghapus sanksi "${confirmDelete.row?.nama_sanksi}"? Tindakan ini tidak dapat dibatalkan.`}
         confirmLabel="Ya, Hapus"
         cancelLabel="Batal"
         onConfirm={handleDeleteConfirm}
         onCancel={() => setConfirmDelete({ show: false, row: null })}
       />
 
-      {/* Custom Filter Modal */}
-      <FilterPoinPelanggaranModal
+      {/* Filter Modal */}
+      <FilterSanksiModal
         show={showFilterModal}
         onClose={() => setShowFilterModal(false)}
         onApply={handleApplyFilters}
         initialValues={filterValues}
       />
 
+      {/* Add / Edit Modal */}
+      <AddEditSanksiModal
+        show={showAddEditModal}
+        onClose={(didSave) => {
+          setShowAddEditModal(false);
+          setSelectedRow(null);
+          if (didSave) {
+            fetchData();
+            setToast({
+              show: true,
+              variant: "success",
+              message: "Data sanksi berhasil disimpan!",
+            });
+          }
+        }}
+        row={selectedRow}
+      />
+
       <div className="space-y-6">
-        <ComponentCard title="Tabel Poin Pelanggaran">
+        <ComponentCard title="Tabel Data Sanksi">
           {loading ? (
             <p className="text-center dark:text-gray-400">Loading...</p>
           ) : (
@@ -256,7 +249,7 @@ const PoinPelanggaran = () => {
                     <Button
                       size="sm"
                       variant="primary"
-                      onClick={() => navigate("/data-poin-pelanggaran/tambah")}
+                      onClick={handleAdd}
                     >
                       + Tambah
                     </Button>
@@ -267,28 +260,8 @@ const PoinPelanggaran = () => {
           )}
         </ComponentCard>
       </div>
-
-      {/* Popup Edit */}
-      {selectedRow && (
-        <EditDataPoinPelanggaran
-          show={showEditPopup}
-          onClose={(didSave) => {
-            setShowEditPopup(false);
-            setSelectedRow(null);
-            fetchData();
-            if (didSave) {
-              setToast({
-                show: true,
-                variant: "success",
-                message: "Data poin pelanggaran berhasil diperbarui!",
-              });
-            }
-          }}
-          row={selectedRow}
-        />
-      )}
     </>
   );
 };
 
-export default PoinPelanggaran;
+export default DataSanksi;
