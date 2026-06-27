@@ -80,6 +80,7 @@ module.exports = {
     try {
       const result = await pool.query(
         `SELECT
+            id_plotting,
             ptk.nama as nama,
             rombel.nama_rombel as rombel,
             semester.nama_semester as semester
