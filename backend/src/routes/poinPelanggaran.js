@@ -7,11 +7,10 @@ const isRoles = require("../middlewares/isRoles");
 router.post("/", isRoles(["Admin"]), poinPelanggaranController.create);
 router.get("/", poinPelanggaranController.getList);
 router.get("/:id_poin", poinPelanggaranController.getById);
-router.put(
+router.put("/:id_poin", isRoles(["Admin"]), poinPelanggaranController.update);
+router.delete(
   "/:id_poin",
   isRoles(["Admin"]),
-  poinPelanggaranController.update
+  poinPelanggaranController.delete,
 );
-router.delete("/:id_poin", isRoles(["Admin"]), poinPelanggaranController.delete);
-
 module.exports = router;

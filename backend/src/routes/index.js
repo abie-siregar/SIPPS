@@ -15,6 +15,7 @@ const importRoutes = require("./import");
 const generateRoutes = require("./generate");
 const sanksiRoutes = require("./sanksi");
 const plottingRoutes = require("./plotting");
+const pembinaanRoutes = require("./pembinaanSiswa");
 
 //  Auth routes (tidak perlu token)
 router.post("/auth/login", authController.login);
@@ -26,16 +27,17 @@ router.use(
   "/rombel",
   authenticate,
   isRoles(["Admin", "BK", "Wali Kelas"]),
-  rombelRoutes
+  rombelRoutes,
 );
 router.use("/siswa", authenticate, siswaRoutes);
 router.use("/ptk", authenticate, isRoles(["Admin"]), ptkRoutes);
 router.use("/user", authenticate, isRoles(["Admin"]), userRoutes);
 router.use("/pelanggaran-siswa", authenticate, pelanggaranRoutes);
+router.use("/pembinaan", authenticate, pembinaanRoutes);
 router.use("/import", authenticate, isRoles(["Admin"]), importRoutes);
 router.use("/generate", authenticate, isRoles(["Admin"]), generateRoutes);
 router.use("/sanksi", authenticate, isRoles(["Admin"]), sanksiRoutes);
-router.use("/plotting", authenticate,isRoles(["Admin"]), plottingRoutes);
+router.use("/plotting", authenticate, isRoles(["Admin"]), plottingRoutes);
 router.get("/auth/profile", authenticate, authController.profile);
 
 module.exports = router;

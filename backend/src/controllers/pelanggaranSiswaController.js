@@ -6,7 +6,6 @@ module.exports = {
     const { id_siswa, id_ptk, id_semester, id_poin, tanggal, keterangan } =
       req.body;
 
-    // Validasi input
     if (
       !tanggal ||
       !keterangan ||
@@ -21,8 +20,11 @@ module.exports = {
       });
     }
 
+    const client = await pool.connect();
     try {
-      const result = await pool.query(
+      await client.query("BEGIN");
+
+      const result = await client.query(
         `INSERT INTO 
                 pelanggaran_siswa (id_siswa, id_poin, id_ptk, id_semester, tanggal, keterangan)
             VALUES 
@@ -31,16 +33,364 @@ module.exports = {
         [id_siswa, id_poin, id_ptk, id_semester, tanggal, keterangan],
       );
 
+      const poinDb = await client.query(
+        `SELECT
+          bobot
+         FROM
+          poin_pelanggaran 
+         WHERE
+          id_poin = $1`,
+        [id_poin],
+      );
+
+      if (poinDb.rows.length === 0) {
+        throw new Error("Master Poin tidak ditemukan");
+      }
+
+      const bobotBaru = poinDb.rows[0].bobot;
+
+      const rombelDb = await client.query(
+        `SELECT
+          id_rombel
+          FROM
+            anggota_rombel
+          WHERE
+          id_siswa = $1`,
+        [id_siswa],
+      );
+      if (rombelDb.rows.length === 0) {
+        throw new Error("Siswa belum terdaftar di rombel mana pun.");
+      }
+      const id_rombel = rombelDb.rows[0].id_rombel;
+
+      const updateSaldoDb = await client.query(
+        `UPDATE anggota_rombel 
+       SET saldo_poin = COALESCE(saldo_poin, 0) + $1
+       WHERE id_siswa = $2 AND id_rombel = $3
+       RETURNING saldo_poin`,
+        [bobotBaru, id_siswa, id_rombel],
+      );
+      const totalPoinSekarang = updateSaldoDb.rows[0].saldo_poin;
+
+      const sanksiDb = await client.query(
+        `SELECT id_master_sanksi, nama_sanksi FROM master_sanksi
+       WHERE batas_poin <= $1
+       ORDER BY batas_poin DESC LIMIT 1`,
+        [totalPoinSekarang],
+      );
+      if (sanksiDb.rows.length > 0) {
+        const { id_master_sanksi, nama_sanksi } = sanksiDb.rows[0];
+
+        const checkSanksiSiswa = await client.query(
+          `SELECT id_sanksi_siswa FROM sanksi_siswa 
+         WHERE id_siswa = $1 AND id_master_sanksi = $2 AND id_semester = $3`,
+          [id_siswa, id_master_sanksi, id_semester],
+        );
+
+        if (checkSanksiSiswa.rows.length === 0) {
+          const insertSanksiDb = await client.query(
+            `INSERT INTO sanksi_siswa (id_siswa, id_master_sanksi, id_semester, tanggal, keterangan, status)
+           VALUES ($1, $2, $3, NOW(), $4, 'BARU')
+           RETURNING id_sanksi_siswa`,
+            [
+              id_siswa,
+              id_master_sanksi,
+              id_semester,
+              `Otomatis: Akumulasi poin mencapai ${totalPoinSekarang} (Sanksi: ${nama_sanksi})`,
+            ],
+          );
+          const id_sanksi_siswa_baru = insertSanksiDb.rows[0].id_sanksi_siswa;
+
+          const bkDb = await client.query(
+            `SELECT
+                id_ptk_bk
+              FROM 
+                plotting_bk 
+              WHERE 
+                id_rombel = $1 LIMIT 1`,
+            [id_rombel],
+          );
+          const id_ptk_pendamping = bkDb.rows[0]?.id_ptk_bk || id_ptk;
+
+          await client.query(
+            `INSERT INTO progres_pembinaan (id_sanksi_siswa, tanggal, tahap_pembinaan, catatan_perkembangan, id_ptk_pendamping)
+           VALUES ($1, NOW(), 'TAHAP_1', 'Sanksi otomatis terbit. Menunggu tindak lanjut pendamping.', $2)`,
+            [id_sanksi_siswa_baru, id_ptk_pendamping],
+          );
+
+          const waliDb = await client.query(
+            `SELECT
+              u.id_user
+            FROM
+              rombel r
+            INNER JOIN 
+              users u ON u.id_ptk = r.id_ptk_wali
+            WHERE
+              r.id_rombel = $1`,
+            [id_rombel],
+          );
+
+          const id_user_wali = waliDb.rows[0]?.id_user;
+
+          const bkUserDb = await client.query(
+            `SELECT 
+             u.id_user 
+           FROM plotting_bk pbk
+           INNER JOIN users u ON u.id_ptk = pbk.id_ptk_bk
+           WHERE pbk.id_rombel = $1 
+           LIMIT 1`,
+            [id_rombel],
+          );
+          const id_user_bk = bkUserDb.rows[0]?.id_user;
+
+          const pesanNotif = `Siswa bimbingan resmi mendapat sanksi: ${nama_sanksi} (${totalPoinSekarang} Poin).`;
+
+          if (id_user_wali) {
+            await client.query(
+              `INSERT INTO notifikasi (id_user, judul, pesan, is_read, created_at) VALUES ($1, $2, 'SANKSI', false, NOW())`,
+              [id_user_wali, pesanNotif],
+            );
+          }
+          if (id_user_bk) {
+            await client.query(
+              `INSERT INTO notifikasi (id_user, judul, pesan, is_read, created_at) VALUES ($1, $2, 'SANKSI', false, NOW())`,
+              [id_user_bk, pesanNotif],
+            );
+          }
+        }
+      }
+
+      await client.query("COMMIT");
+
       res.status(201).json({
         message: "Data pelanggaran siswa berhasil ditambahkan",
         data: result.rows[0],
       });
     } catch (error) {
+      await client.query("ROLLBACK");
       console.error(
         "Gagal menambahkan data pelanggaran siswa :",
         error.message,
       );
       res.status(500).json({ error: "Internal Server Error " + error.message });
+    } finally {
+      client.release();
+    }
+  },
+
+  // Memperbaharui data pelanggaran_siswa
+  async update(req, res) {
+    const { id } = req.params;
+    const { id_ptk, id_poin, id_semester, tanggal, keterangan } = req.body;
+
+    if (!tanggal || !keterangan || !id_ptk || !id_poin || !id_semester) {
+      return res.status(400).json({
+        error: "Data pelanggaran harus di isi dengan benar!",
+      });
+    }
+
+    const client = await pool.connect();
+
+    try {
+      await client.query("BEGIN");
+
+      const pelanggaranLamaDb = await client.query(
+        `SELECT id_siswa, id_poin FROM pelanggaran_siswa WHERE id_pelanggaran = $1`,
+        [id],
+      );
+
+      if (pelanggaranLamaDb.rows.length === 0) {
+        return res
+          .status(404)
+          .json({ error: "Data pelanggaran tidak ditemukan" });
+      }
+
+      const id_siswa = pelanggaranLamaDb.rows[0].id_siswa;
+      const idPoinLama = pelanggaranLamaDb.rows[0].id_poin;
+
+      const bobotLamaDb = await client.query(
+        `SELECT bobot FROM poin_pelanggaran WHERE id_poin = $1`,
+        [idPoinLama],
+      );
+      const bobotBaruDb = await client.query(
+        `SELECT bobot FROM poin_pelanggaran WHERE id_poin = $1`,
+        [id_poin],
+      );
+
+      if (bobotBaruDb.rows.length === 0) {
+        throw new Error("Master Poin baru tidak ditemukan");
+      }
+
+      const bobotLama = bobotLamaDb.rows[0]?.bobot || 0;
+      const bobotBaru = bobotBaruDb.rows[0]?.bobot || 0;
+      const selisihPoin = bobotBaru - bobotLama;
+
+      const result = await client.query(
+        `UPDATE pelanggaran_siswa
+       SET id_ptk = $1, id_poin = $2, id_semester = $3, tanggal = $4, keterangan = $5, updated_at = CURRENT_TIMESTAMP
+       WHERE id_pelanggaran = $6 
+       RETURNING *`,
+        [id_ptk, id_poin, id_semester, tanggal, keterangan, id],
+      );
+
+      const updateSaldoDb = await client.query(
+        `UPDATE anggota_rombel 
+       SET saldo_poin = GREATEST(COALESCE(saldo_poin, 0) + $1, 0)
+       WHERE id_siswa = $2
+       RETURNING saldo_poin, id_rombel`,
+        [selisihPoin, id_siswa],
+      );
+
+      if (updateSaldoDb.rows.length === 0) {
+        throw new Error("Data rombel siswa tidak ditemukan.");
+      }
+
+      const totalPoinSekarang = updateSaldoDb.rows[0].saldo_poin;
+      const id_rombel = updateSaldoDb.rows[0].id_rombel;
+
+      const sanksiDb = await client.query(
+        `SELECT id_master_sanksi, nama_sanksi FROM master_sanksi
+       WHERE batas_poin <= $1
+       ORDER BY batas_poin DESC LIMIT 1`,
+        [totalPoinSekarang],
+      );
+
+      if (sanksiDb.rows.length > 0) {
+        const { id_master_sanksi, nama_sanksi } = sanksiDb.rows[0];
+
+        const checkSanksiSiswa = await client.query(
+          `SELECT id_sanksi_siswa FROM sanksi_siswa 
+         WHERE id_siswa = $1 AND id_master_sanksi = $2 AND id_semester = $3`,
+          [id_siswa, id_master_sanksi, id_semester],
+        );
+
+        if (checkSanksiSiswa.rows.length === 0) {
+          const insertSanksiDb = await client.query(
+            `INSERT INTO sanksi_siswa (id_siswa, id_master_sanksi, id_semester, tanggal, keterangan, status)
+           VALUES ($1, $2, $3, NOW(), $4, 'BARU')
+           RETURNING id_sanksi_siswa`,
+            [
+              id_siswa,
+              id_master_sanksi,
+              id_semester,
+              `Otomatis (Update): Akumulasi penyesuaian poin mencapai ${totalPoinSekarang} (Sanksi: ${nama_sanksi})`,
+            ],
+          );
+          const id_sanksi_siswa_baru = insertSanksiDb.rows[0].id_sanksi_siswa;
+
+          const bkDb = await client.query(
+            `SELECT id_ptk_bk FROM plotting_bk WHERE id_rombel = $1 LIMIT 1`,
+            [id_rombel],
+          );
+          const id_ptk_pendamping = bkDb.rows[0]?.id_ptk_bk || id_ptk;
+
+          await client.query(
+            `INSERT INTO progres_pembinaan (id_sanksi_siswa, tanggal, tahap_pembinaan, catatan_perkembangan, id_ptk_pendamping)
+           VALUES ($1, NOW(), 'TAHAP_1', 'Sanksi otomatis terbit akibat penyesuaian data.', $2)`,
+            [id_sanksi_siswa_baru, id_ptk_pendamping],
+          );
+
+          const waliDb = await client.query(
+            `SELECT u.id_user FROM rombel r
+           INNER JOIN users u ON u.id_ptk = r.id_ptk_wali
+           WHERE r.id_rombel = $1`,
+            [id_rombel],
+          );
+          const id_user_wali = waliDb.rows[0]?.id_user;
+
+          const bkUserDb = await client.query(
+            `SELECT u.id_user FROM plotting_bk pbk
+           INNER JOIN users u ON u.id_ptk = pbk.id_ptk_bk
+           WHERE pbk.id_rombel = $1 LIMIT 1`,
+            [id_rombel],
+          );
+          const id_user_bk = bkUserDb.rows[0]?.id_user;
+
+          const pesanNotif = `Penyesuaian data: Siswa bimbingan mendapat sanksi ${nama_sanksi} (${totalPoinSekarang} Poin).`;
+
+          if (id_user_wali) {
+            await client.query(
+              `INSERT INTO notifikasi (id_user, pesan, tipe, is_read, created_at) VALUES ($1, $2, 'SANKSI', false, NOW())`,
+              [id_user_wali, pesanNotif],
+            );
+          }
+          if (id_user_bk) {
+            await client.query(
+              `INSERT INTO notifikasi (id_user, pesan, tipe, is_read, created_at) VALUES ($1, $2, 'SANKSI', false, NOW())`,
+              [id_user_bk, pesanNotif],
+            );
+          }
+        }
+      }
+
+      await client.query("COMMIT");
+
+      res.json({
+        message: "Data berhasil diupdate dan saldo poin disesuaikan",
+        data: result.rows[0],
+      });
+    } catch (error) {
+      await client.query("ROLLBACK");
+      console.error("Error updating data pelanggaran:", error.message);
+      res.status(500).json({ error: "Internal Server Error " + error.message });
+    } finally {
+      client.release();
+    }
+  },
+
+  //menghapus data pelanggaran_siswa
+  async delete(req, res) {
+    const { id } = req.params;
+    const client = await pool.connect();
+
+    try {
+      await client.query("BEGIN");
+
+      const pelanggaranDb = await client.query(
+        `SELECT id_siswa, id_poin FROM pelanggaran_siswa WHERE id_pelanggaran = $1`,
+        [id],
+      );
+
+      if (pelanggaranDb.rows.length === 0) {
+        return res
+          .status(404)
+          .json({ message: "Data pelanggaran tidak ditemukan" });
+      }
+
+      const { id_siswa, id_poin } = pelanggaranDb.rows[0];
+
+      const poinDb = await client.query(
+        `SELECT bobot FROM poin_pelanggaran WHERE id_poin = $1`,
+        [id_poin],
+      );
+      const bobotDihapus = poinDb.rows[0]?.bobot || 0;
+
+      await client.query(
+        `DELETE FROM pelanggaran_siswa WHERE id_pelanggaran = $1`,
+        [id],
+      );
+
+      await client.query(
+        `UPDATE anggota_rombel 
+       SET saldo_poin = GREATEST(COALESCE(saldo_poin, 0) - $1, 0)
+       WHERE id_siswa = $2`,
+        [bobotDihapus, id_siswa],
+      );
+
+      await client.query("COMMIT");
+
+      res.json({
+        message:
+          "Data Pelanggaran Berhasil dihapus dan saldo poin siswa telah dikurangi",
+      });
+    } catch (error) {
+      await client.query("ROLLBACK");
+      console.error("Error deleting data pelanggaran:", error.message);
+      res
+        .status(500)
+        .json({ error: "Internal Server Error: " + error.message });
+    } finally {
+      client.release();
     }
   },
 
@@ -219,73 +569,6 @@ module.exports = {
       res
         .status(500)
         .json({ error: "Internal Server Error: " + error.message });
-    }
-  },
-
-  // Memperbaharui data pelanggaran_siswa
-  async update(req, res) {
-    const { id } = req.params;
-    const { id_ptk, id_poin, id_semester, tanggal, keterangan } = req.body;
-
-    if (isNaN(id)) {
-      return res.status(400).json({ error: "ID harus berupa angka" });
-    }
-    // Validasi input
-    if (!tanggal || !keterangan || !id_ptk || !id_poin || !id_semester) {
-      return res.status(400).json({
-        error: "Data pelanggaran harus di isi dengan benar!",
-      });
-    }
-
-    try {
-      const result = await pool.query(
-        `UPDATE 
-                pelanggaran_siswa
-            SET 
-                id_ptk = $1, id_poin = $2, id_semester = $3, tanggal = $4, keterangan = $5, updated_at = CURRENT_TIMESTAMP
-            WHERE 
-                id_pelanggaran = $6 
-            RETURNING *`,
-
-        [id_ptk, id_poin, id_semester, tanggal, keterangan, id],
-      );
-
-      if (result.rows.length === 0) {
-        return res.status(404).json({ error: "Data tidak ditemukan" });
-      }
-
-      res.json({
-        message: "Data berhasil diupdate",
-        data: result.rows[0],
-      });
-    } catch (error) {
-      console.error("Error updating data pelanggaran:", error.message);
-      res.status(500).json({ error: "Internal Server Error " + error.message });
-    }
-  },
-
-  //menghapus data pelanggaran_siswa
-  async delete(req, res) {
-    try {
-      const { id } = req.params;
-      const result = await pool.query(
-        `DELETE FROM 
-                pelanggaran_siswa 
-            WHERE 
-                id_pelanggaran = $1`,
-        [id],
-      );
-
-      if (result.rowCount === 0) {
-        return res
-          .status(404)
-          .json({ message: "Data pelanggaran tidak ditemukan" });
-      }
-      res.json({
-        message: "Data Pelanggaran Berhasil dihapus",
-      });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
     }
   },
 
