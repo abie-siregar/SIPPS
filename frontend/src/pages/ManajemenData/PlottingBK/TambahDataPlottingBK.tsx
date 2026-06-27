@@ -114,7 +114,7 @@ const TambahDataPlottingBK: React.FC<TambahPopupProps> = ({ show, onClose }) => 
       setLoading(true);
       await axios.post("/plotting", {
         id_ptk_bk: idPtkBk,
-        id_rombel: Number(idRombel),
+        id_rombel: idRombel,
         id_semester: idSemester,
       });
 

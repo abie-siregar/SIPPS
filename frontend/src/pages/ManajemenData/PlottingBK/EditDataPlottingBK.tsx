@@ -111,7 +111,7 @@ const EditDataPlottingBK: React.FC<EditPopupProps> = ({ show, onClose, row }) =>
       setLoading(true);
       await axios.put(`/plotting/${row.id_plotting}`, {
         id_ptk_bk: idPtkBk,
-        id_rombel: Number(idRombel),
+        id_rombel: idRombel,
         id_semester: idSemester,
       });
 
