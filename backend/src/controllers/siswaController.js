@@ -4,8 +4,25 @@ module.exports = {
   //mengambil seluruh data siswa
   async getAll(req, res) {
     try {
-      const result = await pool.query(
-        `SELECT 
+      const id_user_dari_token = req.user?.id;
+
+      const userDb = await pool.query(
+        `SELECT id_role, id_ptk FROM users WHERE id_user = $1`,
+        [id_user_dari_token],
+      );
+
+      const id_role = userDb.rows[0].id_role;
+      const id_ptk = userDb.rows[0].id_ptk;
+      const role = {
+        admin: 1,
+        wali_kelas: 103,
+        BK: 102,
+      };
+
+      let queryParams = [];
+
+      let queryText = `SELECT 
+          siswa.id_siswa as id_siswa,
           siswa.nama as nama,
           siswa.nisn as nisn,
           siswa.alamat as alamat,
@@ -15,7 +32,8 @@ module.exports = {
           tingkat.nama_tingkat AS tingkat,
           rombel.nama_rombel AS rombel,
           walikelas.nama as walikelas,
-          jurusan.nama_jurusan AS jurusan
+          jurusan.nama_jurusan AS jurusan,
+          COALESCE(anggota_rombel.saldo_poin, 0) AS total_poin
         FROM 
           siswa
         LEFT JOIN
@@ -30,10 +48,22 @@ module.exports = {
           tingkat_pendidikan tingkat ON rombel.id_tingkat = tingkat.id_tingkat
         LEFT JOIN
           jurusan ON rombel.id_jurusan = jurusan.id_jurusan
-        ORDER BY 
-          rombel
-        ASC`
-      );
+        `;
+
+      if (id_role === role.BK) {
+        queryText += ` INNER JOIN plotting_bk pbk ON rombel.id_rombel = pbk.id_rombel WHERE pbk.id_ptk_bk = $1 `;
+        queryParams.push(id_ptk);
+      } else if (id_role === role.wali_kelas) {
+        queryText += ` WHERE rombel.id_ptk_wali = $1 `;
+
+        queryParams.push(id_ptk);
+      }
+
+      queryText += ` GROUP BY siswa.id_siswa, agama.nama_agama, walikelas.nama, rombel.id_rombel, rombel.nama_rombel, tingkat.nama_tingkat, jurusan.nama_jurusan, anggota_rombel.saldo_poin
+        ORDER BY rombel.nama_rombel ASC`;
+
+      const result = await pool.query(queryText, queryParams);
+
       res.json(result.rows);
     } catch (error) {
       console.error("Error fetching siswa:", error.message);
@@ -44,7 +74,21 @@ module.exports = {
   //mengambil seluruh data siswa menggunakan filter
   async getFiltered(req, res) {
     try {
-      const {nisn, rombel, walikelas, search} = req.query;
+      const { nisn, rombel, walikelas, search } = req.query;
+      const id_user_dari_token = req.user?.id;
+
+      const userDb = await pool.query(
+        `SELECT id_role, id_ptk FROM users WHERE id_user = $1`,
+        [id_user_dari_token],
+      );
+
+      const id_role = userDb.rows[0].id_role;
+      const id_ptk = userDb.rows[0].id_ptk;
+      const role = {
+        admin: 1,
+        wali_kelas: 103,
+        BK: 102,
+      };
 
       let query = `
         SELECT 
@@ -58,7 +102,8 @@ module.exports = {
           rombel.nama_rombel AS rombel,
           walikelas.nama as walikelas,
           tingkat.nama_tingkat AS tingkat_kelas,
-          jurusan.nama_jurusan AS jurusan
+          jurusan.nama_jurusan AS jurusan,
+          COALESCE(anggota_rombel.saldo_poin, 0) AS total_poin
         FROM 
           siswa
         LEFT JOIN
@@ -103,6 +148,19 @@ module.exports = {
         index++;
       }
 
+      if (id_role === role.BK) {
+        query += ` AND EXISTS (
+        SELECT 1 FROM plotting_bk pbk 
+        WHERE pbk.id_rombel = rombel.id_rombel AND pbk.id_ptk_bk = $${index}
+      ) `;
+        params.push(id_ptk);
+        index++;
+      } else if (id_role === role.wali_kelas) {
+        query += ` AND rombel.id_ptk_wali = $${index} `;
+        params.push(id_ptk);
+        index++;
+      }
+
       query += " ORDER BY siswa.nama ASC, siswa.id_siswa";
 
       const result = await pool.query(query, params);
@@ -112,40 +170,50 @@ module.exports = {
       }
 
       res.json({
-            success: true,
-            total: result.rows.length,
-            data: result.rows
-        });
-    }
-    catch (error) {
+        success: true,
+        total: result.rows.length,
+        data: result.rows,
+      });
+    } catch (error) {
       console.error("Error fetching filtered data siswa", error.message);
-      res.status(500).json({error : "Internal Server Error" + error.message   });
+      res.status(500).json({ error: "Internal Server Error" + error.message });
     }
   },
 
   //mengambil seluruh data siswa menggunakan id
   async getById(req, res) {
     const { id } = req.params;
+    const id_user_dari_token = req.user?.id;
 
-    // if (isNaN(siswa_id)) {
-    //   return res.status(400).json({ error: "ID harus berupa angka" });
-    // }
+    const userDb = await pool.query(
+      `SELECT id_role, id_ptk FROM users WHERE id_user = $1`,
+      [id_user_dari_token],
+    );
+
+    const id_role = userDb.rows[0].id_role;
+    const id_ptk = userDb.rows[0].id_ptk;
+    const role = {
+      admin: 1,
+      wali_kelas: 103,
+      BK: 102,
+    };
 
     try {
-      const result = await pool.query(
-        `
+      let queryText = `
         SELECT
           DISTINCT ON (siswa.id_siswa)
-          siswa.nama as nama_siswa,
+          siswa.id_siswa as id_siswa,
+          siswa.nama as nama,
           siswa.nisn as nisn,
           siswa.alamat as alamat,
           siswa.no_telp as no_telp,
           siswa.email as email,
-          agama.nama_agama AS nama_agama,
+          agama.nama_agama AS agama,
+          tingkat.nama_tingkat AS tingkat,
           rombel.nama_rombel AS rombel,
           walikelas.nama as walikelas,
-          tingkat.nama_tingkat AS tingkat_kelas,
-          jurusan.nama_jurusan AS jurusan
+          jurusan.nama_jurusan AS jurusan,
+          COALESCE(anggota_rombel.saldo_poin, 0) AS total_poin
         FROM 
           siswa
         LEFT JOIN
@@ -161,19 +229,31 @@ module.exports = {
         LEFT JOIN
           jurusan ON rombel.id_jurusan = jurusan.id_jurusan
         WHERE 
-          siswa.id_siswa = $1`,
-        [id]
-      );
+          siswa.id_siswa = $1`;
+      let queryParams = [id];
 
-      if (result.rows.length === 0) {
-        return res.status(404).json({ error: "Data siswa tidak ditemukan" });
+      if (id_role === role.BK) {
+        queryText += ` AND EXISTS (
+        SELECT 1 FROM plotting_bk pbk 
+        WHERE pbk.id_rombel = rombel.id_rombel AND pbk.id_ptk_bk = $2
+      ) `;
+        queryParams.push(id_ptk);
+      } else if (id_role === role.wali_kelas) {
+        queryText += ` AND rombel.id_ptk_wali = $2 `;
+        queryParams.push(id_ptk);
       }
 
+      const result = await pool.query(queryText, queryParams);
+
+      if (result.rows.length === 0) {
+        return res.status(403).json({
+          error: "Anda tidak memiliki akses",
+        });
+      }
       res.json(result.rows[0]);
     } catch (error) {
       console.error("Error fetching siswa by Id:", error.message);
       res.status(500).json({ error: "Internal Server Error" });
     }
   },
-
 };

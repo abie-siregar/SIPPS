@@ -1,12 +1,27 @@
 const pool = require("../../config/database");
 
 module.exports = {
-
   //mengambil seluruh rombel
   async getAll(req, res) {
-  try {
-    const result = await pool.query(
-      `SELECT 
+    try {
+      const id = req.user?.id;
+
+      const userDb = await pool.query(
+        `SELECT id_role, id_ptk FROM users WHERE id_user = $1`,
+        [id],
+      );
+
+      if (userDb.rows.length === 0) {
+        return res.status(404).json({ error: "User tidak ditemukan" });
+      }
+
+      const id_role = userDb.rows[0].id_role;
+      const id_ptk = userDb.rows[0].id_ptk;
+      const role = { admin: 1, wali_kelas: 103, BK: 102 };
+
+      let queryParams = [];
+
+      let queryText = `SELECT 
         rombel.nama_rombel as rombel,
         tingkat.nama_tingkat as tingkat,
         jurusan.nama_jurusan as jurusan,
@@ -22,29 +37,62 @@ module.exports = {
         ptk walikelas on walikelas.id_ptk = rombel.id_ptk_wali
       LEFT join
         anggota_rombel anggota on rombel.id_rombel = anggota.id_rombel
+      `;
+
+      if (id_role === role.BK) {
+        queryText += `
+        INNER JOIN plotting_bk pbk ON rombel.id_rombel = pbk.id_rombel
+        WHERE pbk.id_ptk_bk = $1
+      `;
+        queryParams.push(id_ptk);
+      } else if (id_role === role.wali_kelas) {
+        queryText += `
+        WHERE rombel.id_ptk_wali = $1
+      `;
+        queryParams.push(id_ptk);
+      }
+
+      queryText += `
       GROUP BY 
-          rombel.nama_rombel,
-          tingkat.nama_tingkat,
-          jurusan.nama_jurusan,
-          walikelas.nama
-        ORDER by
-         nama_rombel
-        ASC`
-    );
-    res.json(result.rows);
-  } catch (error) {
-    console.error("Error Fetching rombel", error.message);
-    res.status(500).json({error: "Internal Server Error"})
-  }
+        rombel.id_rombel,
+        rombel.nama_rombel,
+        tingkat.nama_tingkat,
+        jurusan.nama_jurusan,
+        walikelas.nama
+      ORDER BY
+        rombel.nama_rombel ASC
+    `;
+
+      const result = await pool.query(queryText, queryParams);
+
+      res.json(result.rows);
+    } catch (error) {
+      console.error("Error Fetching rombel", error.message);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
   },
 
   //mengambil seluruh data rombel menggunakan filter
   async getFiltered(req, res) {
     try {
-      const { tingkat, jurusan, search} = req.query;
+      const { tingkat, jurusan, search } = req.query;
+      const id = req.user?.id;
 
-      let query = 
-      `SELECT 
+      const userDb = await pool.query(
+        `SELECT id_role, id_ptk FROM users WHERE id_user = $1`,
+        [id],
+      );
+
+      if (userDb.rows.length === 0) {
+        return res.status(404).json({ error: "User tidak ditemukan" });
+      }
+
+      const id_role = userDb.rows[0].id_role;
+      const id_ptk = userDb.rows[0].id_ptk;
+      const role = { admin: 1, wali_kelas: 103, BK: 102 };
+
+      let query = `SELECT 
+        rombel.id_rombel,
         rombel.nama_rombel as rombel,
         tingkat.nama_tingkat as tingkat,
         jurusan.nama_jurusan as jurusan,
@@ -63,6 +111,7 @@ module.exports = {
       WHERE 
         1=1  
       `;
+
       let params = [];
       let index = 1;
 
@@ -74,8 +123,8 @@ module.exports = {
 
       if (jurusan) {
         query += ` AND REPLACE(LOWER(jurusan.nama_jurusan), ' ', '') ILIKE $${index}`;
-          params.push(`%${jurusan.toLowerCase().replace(/\s+/g, '')}%`);
-          index++;
+        params.push(`%${jurusan.toLowerCase().replace(/\s+/g, "")}%`);
+        index++;
       }
 
       if (search) {
@@ -83,12 +132,25 @@ module.exports = {
           REPLACE(LOWER(tingkat.nama_tingkat), ' ', '') ILIKE $${index} OR 
           REPLACE(LOWER(jurusan.nama_jurusan), ' ', '') ILIKE $${index} OR 
           REPLACE(LOWER(rombel.nama_rombel), ' ', '') ILIKE $${index})`;
-        params.push(`%${search.toLowerCase().replace(/\s+/g, '')}%`);
+        params.push(`%${search.toLowerCase().replace(/\s+/g, "")}%`);
+        index++;
+      }
+      if (id_role === role.BK) {
+        query += ` AND EXISTS (
+        SELECT 1 FROM plotting_bk pbk 
+        WHERE pbk.id_rombel = rombel.id_rombel AND pbk.id_ptk_bk = $${index}
+      ) `;
+        params.push(id_ptk);
+        index++;
+      } else if (id_role === role.wali_kelas) {
+        query += ` AND rombel.id_ptk_wali = $${index} `;
+        params.push(id_ptk);
         index++;
       }
 
       query += `
-      GROUP BY 
+      GROUP BY
+        rombel.id_rombel,
         rombel.nama_rombel,
         tingkat.nama_tingkat,
         jurusan.nama_jurusan,
@@ -109,66 +171,11 @@ module.exports = {
       res.json({
         success: true,
         total: result.rows.length,
-        data: result.rows
+        data: result.rows,
       });
-    }
-    catch (error) {
+    } catch (error) {
       console.error("Gagal mengambil data rombel", error);
-      res.status(500).json({error : "Internal Server Error " + error.message});
+      res.status(500).json({ error: "Internal Server Error " + error.message });
     }
   },
-
-  // //update untuk data rombel
-  // async update(req, res) {
-  //   const { rombel_id } = req.params;
-  //   const { nama, ptk_id_dapodik, tingkat_id, jurusan_id  } = req.body;
-
-  //   if (isNaN(parseInt(rombel_id))) {
-  //     return res.status(400).json({ error: "ID harus berupa angka" });
-  //   }
-
-  //   try {
-  //     const query = `
-  //       WITH updated AS (
-  //         UPDATE 
-  //           rombel 
-  //         SET 
-  //           nama = $1, 
-  //           ptk_id_dapodik = $2, 
-  //           tingkat_id = $3, 
-  //           jurusan_id = $4
-  //         WHERE rombel_id = $5
-  //         RETURNING *)
-  //       SELECT 
-  //         u.rombel_id,
-  //         u.nama,
-  //         p.nama,
-  //         t.tingkat_id_str,
-  //         j.jurusan_id_str,
-  //       FROM
-  //         updated u
-  //       LEFT JOIN
-  //         ptk p ON p.ptk_id_dapodik = u.ptk_id_dapodik
-  //         tingkat t ON t.tingkat_id = u.tingkat_id
-  //         jurusan j ON j.jurusan_id = u.jurusan_id;
-
-  //     `;
-  //     const values = [nama, ptk_id_dapodik, tingkat_id, jurusan_id, rombel_id];
-
-  //     const result = await pool.query(query, values);
-
-  //     if (result.rows.length === 0) {
-  //       return res.status(404).json({ error: "Data rombel tidak ditemukan" });
-  //     }
-
-  //     res.json({
-  //       message: "Data rombel berhasil diperbarui",
-  //       data: result.rows[0],
-  //     });
-  //   } catch (error) {
-  //     console.error("Gagal memperbarui data rombel:", error);
-  //     res.status(500).json({ error: "Internal Server Error" });
-  //   }
-  // },
-  
 };

@@ -277,7 +277,11 @@ module.exports = {
       const rawData = fs.readFileSync(filePath, "utf-8");
       const dapodikData = JSON.parse(rawData);
 
-      const dataRombel = Array.isArray(dapodikData) ? dapodikData : dapodikData.rows;
+      const dataRombelRaw = Array.isArray(dapodikData)
+        ? dapodikData
+        : dapodikData.rows;
+
+      const dataRombel = dataRombelRaw.filter(rombel => Number(rombel.jenis_rombel) === 1);
 
       await client.query("BEGIN");
 
@@ -554,141 +558,161 @@ module.exports = {
   //     client.release();
   //   }
   // }
-  async importSiswa(req, res) {
-    const client = await pool.connect();
-    try {
-      const filePath = path.join(__dirname, "../data/getPesertaDidik.json");
-      const rawData = fs.readFileSync(filePath, "utf-8");
-      const dapodikData = JSON.parse(rawData);
+    async importSiswa(req, res) {
+      const client = await pool.connect();
+      try {
+        const filePath = path.join(__dirname, "../data/getPesertaDidik.json");
+        const rawData = fs.readFileSync(filePath, "utf-8");
+        const dapodikData = JSON.parse(rawData);
 
-      const dataSiswa = Array.isArray(dapodikData) ? dapodikData : dapodikData.rows;
-      
-      await client.query("BEGIN");
+        const dataSiswa = Array.isArray(dapodikData) ? dapodikData : dapodikData.rows;
+        
+        await client.query("BEGIN");
 
-      // -----------------------------------------------------------------
-      // LANGKAH 1: Ambil semua data orang tua yang ada saat ini untuk caching massal
-      // -----------------------------------------------------------------
-      const semuaOrtu = await client.query("SELECT id_orangtua, nama_ayah, nama_ibu, nama_wali FROM orangtua_wali");
-      const ortuCacheMap = {};
-      
-      semuaOrtu.rows.forEach(row => {
-        const k = `${row.nama_ayah || ''}|${row.nama_ibu || ''}|${row.nama_wali || ''}`.toLowerCase().trim();
-        ortuCacheMap[k] = row.id_orangtua;
-      });
-
-      // -----------------------------------------------------------------
-      // LANGKAH 2: Deteksi & Kumpulkan Orang Tua Baru yang Belum Ada di DB
-      // -----------------------------------------------------------------
-      const ortuBaru_Ayah = [];
-      const ortuBaru_Ibu = [];
-      const ortuBaru_Wali = [];
-      const ortuBaruSet = new Set(); // Mencegah duplikasi ortu baru di dalam file JSON itu sendiri
-
-      for (const siswa of dataSiswa) {
-        const nama_ayah = siswa.nama_ayah ? siswa.nama_ayah.trim() : "";
-        const nama_ibu = siswa.nama_ibu ? siswa.nama_ibu.trim() : "";
-        const nama_wali = siswa.nama_wali ? siswa.nama_wali.trim() : "";
-        const ortuKey = `${nama_ayah}|${nama_ibu}|${nama_wali}`.toLowerCase();
-
-        if (!ortuCacheMap[ortuKey] && !ortuBaruSet.has(ortuKey)) {
-          ortuBaruSet.add(ortuKey);
-          ortuBaru_Ayah.push(nama_ayah);
-          ortuBaru_Ibu.push(nama_ibu);
-          ortuBaru_Wali.push(nama_wali);
-        }
-      }
-
-      // Jika ada orang tua baru, insert sekaligus dalam 1 query massal
-      if (ortuBaru_Ayah.length > 0) {
-        const insertOrtuMassal = await client.query(
-          `INSERT INTO orangtua_wali (nama_ayah, nama_ibu, nama_wali)
-           SELECT * FROM UNNEST($1::text[], $2::text[], $3::text[])
-           ON CONFLICT DO NOTHING
-           RETURNING id_orangtua, nama_ayah, nama_ibu, nama_wali`,
-          [ortuBaru_Ayah, ortuBaru_Ibu, ortuBaru_Wali]
-        );
-
-        // Masukkan data orang tua yang baru di-insert ke dalam cache
-        insertOrtuMassal.rows.forEach(row => {
+        // -----------------------------------------------------------------
+        // LANGKAH 1: Ambil semua data orang tua yang ada saat ini untuk caching massal
+        // -----------------------------------------------------------------
+        const semuaOrtu = await client.query("SELECT id_orangtua, nama_ayah, nama_ibu, nama_wali FROM orangtua_wali");
+        const ortuCacheMap = {};
+        
+        semuaOrtu.rows.forEach(row => {
           const k = `${row.nama_ayah || ''}|${row.nama_ibu || ''}|${row.nama_wali || ''}`.toLowerCase().trim();
           ortuCacheMap[k] = row.id_orangtua;
         });
+
+        // -----------------------------------------------------------------
+        // LANGKAH 2: Deteksi & Kumpulkan Orang Tua Baru yang Belum Ada di DB
+        // -----------------------------------------------------------------
+        const ortuBaru_Ayah = [];
+        const ortuBaru_Ibu = [];
+        const ortuBaru_Wali = [];
+        const ortuBaru_NoTelp = [];
+        const ortuBaru_NoTelpRumah = [];
+        const ortuBaruSet = new Set(); // Mencegah duplikasi ortu baru di dalam file JSON itu sendiri
+
+        for (const siswa of dataSiswa) {
+          const nama_ayah = siswa.nama_ayah ? siswa.nama_ayah.trim() : "";
+          const nama_ibu = siswa.nama_ibu ? siswa.nama_ibu.trim() : "";
+          const nama_wali = siswa.nama_wali ? siswa.nama_wali.trim() : "";
+          const ortuKey = `${nama_ayah}|${nama_ibu}|${nama_wali}`.toLowerCase();
+
+          const hpOrtu = siswa.nomor_telepon_seluler ? String(siswa.nomor_telepon_seluler).trim() : null;
+          const tlpRumahOrtu = siswa.nomor_telepon_rumah ? String(siswa.nomor_telepon_rumah).trim() : null;
+
+          if (!ortuCacheMap[ortuKey] && !ortuBaruSet.has(ortuKey)) {
+            ortuBaruSet.add(ortuKey);
+            ortuBaru_Ayah.push(nama_ayah);
+            ortuBaru_Ibu.push(nama_ibu);
+            ortuBaru_Wali.push(nama_wali);
+            ortuBaru_NoTelp.push(hpOrtu);
+            ortuBaru_NoTelpRumah.push(tlpRumahOrtu);
+          }
+        }
+
+        // Jika ada orang tua baru, insert sekaligus dalam 1 query massal
+        if (ortuBaru_Ayah.length > 0) {
+          const insertOrtuMassal = await client.query(
+            `INSERT INTO orangtua_wali (nama_ayah, nama_ibu, nama_wali, no_telp, no_telp_rumah)
+            SELECT * FROM UNNEST($1::text[], $2::text[], $3::text[], $4::varchar[], $5::varchar[])
+            ON CONFLICT DO NOTHING
+            RETURNING id_orangtua, nama_ayah, nama_ibu, nama_wali`,
+            [ortuBaru_Ayah, ortuBaru_Ibu, ortuBaru_Wali, ortuBaru_NoTelp, ortuBaru_NoTelpRumah]
+          );
+
+          // Masukkan data orang tua yang baru di-insert ke dalam cache
+          insertOrtuMassal.rows.forEach(row => {
+            const k = `${row.nama_ayah || ''}|${row.nama_ibu || ''}|${row.nama_wali || ''}`.toLowerCase().trim();
+            ortuCacheMap[k] = row.id_orangtua;
+          });
+        }
+
+        // -----------------------------------------------------------------
+        // LANGKAH 3: Siapkan Array Massal untuk Bulk Insert Data Siswa
+        // -----------------------------------------------------------------
+        const arr_id_siswa = [];
+        const arr_id_orangtua = [];
+        const arr_id_agama = [];
+        const arr_nipd = [];
+        const arr_nisn = [];
+        const arr_nama = [];
+        const arr_tempat_lahir = [];
+        const arr_tanggal_lahir = [];
+        const arr_email = [];
+        const arr_no_telp=[];
+
+        for (const siswa of dataSiswa) {
+          const nama_ayah = siswa.nama_ayah ? siswa.nama_ayah.trim() : "";
+          const nama_ibu = siswa.nama_ibu ? siswa.nama_ibu.trim() : "";
+          const nama_wali = siswa.nama_wali ? siswa.nama_wali.trim() : "";
+          const ortuKey = `${nama_ayah}|${nama_ibu}|${nama_wali}`.toLowerCase();
+          
+          const id_orangtua = ortuCacheMap[ortuKey] || null;
+
+          const rawPhone = siswa.nomor_telepon_rumah || siswa.nomor_telepon_seluler;
+          const no_telp = rawPhone ? String(rawPhone).trim() : null;
+
+          let emailSiswa = siswa.email ? siswa.email.trim() : "";
+          if (!emailSiswa && siswa.nisn) {
+            emailSiswa = `${siswa.nisn.trim()}@sipps`;
+          } else if (!emailSiswa) {
+            emailSiswa = null;
+          }
+          
+          arr_id_siswa.push(siswa.peserta_didik_id);
+          arr_id_orangtua.push(id_orangtua);
+          arr_id_agama.push(siswa.agama_id || null);
+          arr_nipd.push(siswa.nipd || null);
+          arr_nisn.push(siswa.nisn || null);
+          arr_nama.push(siswa.nama);
+          arr_tempat_lahir.push(siswa.tempat_lahir || null);
+          arr_tanggal_lahir.push(siswa.tanggal_lahir || null);
+          arr_email.push(emailSiswa || null);
+          arr_no_telp.push(no_telp);
+        }
+
+        // -----------------------------------------------------------------
+        // LANGKAH 4: Eksekusi 1 Query Tunggal untuk Ribuan Data Siswa
+        // -----------------------------------------------------------------
+        const querySiswaMassal = `
+          INSERT INTO siswa (
+            id_siswa, id_orangtua, id_agama, nipd, nisn, nama, tempat_lahir, tanggal_lahir, no_telp, email
+          )
+          SELECT * FROM UNNEST(
+            $1::uuid[], $2::uuid[], $3::integer[], $4::varchar[], $5::varchar[], $6::varchar[], $7::varchar[], $8::date[], $9::varchar[], $10::varchar[]
+          )
+          ON CONFLICT (id_siswa) DO UPDATE SET
+            id_orangtua = EXCLUDED.id_orangtua,
+            id_agama = EXCLUDED.id_agama,
+            nipd = EXCLUDED.nipd,
+            nisn = EXCLUDED.nisn,
+            nama = EXCLUDED.nama,
+            tempat_lahir = EXCLUDED.tempat_lahir,
+            tanggal_lahir = EXCLUDED.tanggal_lahir,
+            no_telp = EXCLUDED.no_telp,
+            email = EXCLUDED.email
+          RETURNING *;
+        `;
+
+        const resultSiswa = await client.query(querySiswaMassal, [
+          arr_id_siswa, arr_id_orangtua, arr_id_agama, arr_nipd, arr_nisn, arr_nama, arr_tempat_lahir, arr_tanggal_lahir, arr_no_telp, arr_email
+        ]);
+
+        await client.query("COMMIT");
+
+        res.status(200).json({
+          success: true,
+          message: "Data Dapodik Berhasil di Import",
+          count: resultSiswa.rows.length
+        });
+
+      } catch (error) {
+        await client.query("ROLLBACK");
+        console.error("Gagal Import Data:", error);
+        res.status(500).json({ error: "Gagal Import Data Dapodik: " + error.message });
+      } finally {
+        client.release();
       }
-
-      // -----------------------------------------------------------------
-      // LANGKAH 3: Siapkan Array Massal untuk Bulk Insert Data Siswa
-      // -----------------------------------------------------------------
-      const arr_id_siswa = [];
-      const arr_id_orangtua = [];
-      const arr_id_agama = [];
-      const arr_nipd = [];
-      const arr_nisn = [];
-      const arr_nama = [];
-      const arr_tempat_lahir = [];
-      const arr_tanggal_lahir = [];
-      const arr_email = [];
-
-      for (const siswa of dataSiswa) {
-        const nama_ayah = siswa.nama_ayah ? siswa.nama_ayah.trim() : "";
-        const nama_ibu = siswa.nama_ibu ? siswa.nama_ibu.trim() : "";
-        const nama_wali = siswa.nama_wali ? siswa.nama_wali.trim() : "";
-        const ortuKey = `${nama_ayah}|${nama_ibu}|${nama_wali}`.toLowerCase();
-        
-        const id_orangtua = ortuCacheMap[ortuKey] || null;
-
-        arr_id_siswa.push(siswa.peserta_didik_id);
-        arr_id_orangtua.push(id_orangtua);
-        arr_id_agama.push(siswa.agama_id || null);
-        arr_nipd.push(siswa.nipd || null);
-        arr_nisn.push(siswa.nisn || null);
-        arr_nama.push(siswa.nama);
-        arr_tempat_lahir.push(siswa.tempat_lahir || null);
-        arr_tanggal_lahir.push(siswa.tanggal_lahir || null);
-        arr_email.push(siswa.email || null);
-      }
-
-      // -----------------------------------------------------------------
-      // LANGKAH 4: Eksekusi 1 Query Tunggal untuk Ribuan Data Siswa
-      // -----------------------------------------------------------------
-      const querySiswaMassal = `
-        INSERT INTO siswa (
-          id_siswa, id_orangtua, id_agama, nipd, nisn, nama, tempat_lahir, tanggal_lahir, email
-        )
-        SELECT * FROM UNNEST(
-          $1::uuid[], $2::uuid[], $3::integer[], $4::varchar[], $5::varchar[], $6::varchar[], $7::varchar[], $8::date[], $9::varchar[]
-        )
-        ON CONFLICT (id_siswa) DO UPDATE SET
-          id_orangtua = EXCLUDED.id_orangtua,
-          id_agama = EXCLUDED.id_agama,
-          nipd = EXCLUDED.nipd,
-          nisn = EXCLUDED.nisn,
-          nama = EXCLUDED.nama,
-          tempat_lahir = EXCLUDED.tempat_lahir,
-          tanggal_lahir = EXCLUDED.tanggal_lahir,
-          email = EXCLUDED.email
-        RETURNING *;
-      `;
-
-      const resultSiswa = await client.query(querySiswaMassal, [
-        arr_id_siswa, arr_id_orangtua, arr_id_agama, arr_nipd, arr_nisn, arr_nama, arr_tempat_lahir, arr_tanggal_lahir, arr_email
-      ]);
-
-      await client.query("COMMIT");
-
-      res.status(200).json({
-        success: true,
-        message: "Data Dapodik Berhasil di Import",
-        count: resultSiswa.rows.length
-      });
-
-    } catch (error) {
-      await client.query("ROLLBACK");
-      console.error("Gagal Import Data:", error);
-      res.status(500).json({ error: "Gagal Import Data Dapodik: " + error.message });
-    } finally {
-      client.release();
-    }
-}
+  }
   ,
 
   // async importPengguna(req, res) {

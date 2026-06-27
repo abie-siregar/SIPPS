@@ -75,9 +75,11 @@ module.exports = {
       const rawData = fs.readFileSync(filePath, "utf-8");
       const dapodikData = JSON.parse(rawData);
 
-      const dataRombel = Array.isArray(dapodikData)
+      const dataRombelRaw = Array.isArray(dapodikData)
         ? dapodikData
         : dapodikData.rows;
+
+      const dataRombel = dataRombelRaw.filter(rombel => Number(rombel.jenis_rombel) === 1);
 
       const results = [];
 
@@ -108,7 +110,7 @@ module.exports = {
         }
         if (id_tingkat) await client.query(`INSERT INTO tingkat_pendidikan (id_tingkat, nama_tingkat) VALUES ($1, $2) ON CONFLICT (id_tingkat) DO NOTHING;`, [id_tingkat, nama_tingkat]);
         if (id_jurusan) await client.query(`INSERT INTO jurusan (id_jurusan, nama_jurusan) VALUES ($1, $2) ON CONFLICT (id_jurusan) DO NOTHING;`, [id_jurusan, nama_jurusan]);
-        if (id_semester) await client.query(`INSERT INTO semester (id_semester, nama_semester) VALUES ($1, $2) ON CONFLICT (id_semester) DO NOTHING;`, [id_semester, nama_semester]);
+        if (id_semester) await client.query(`INSERT INTO semester (id_semester, nama_semester) VALUES ($1::integer, $2) ON CONFLICT (id_semester) DO NOTHING;`, [parseInt(id_semester), nama_semester]);
 
         const queryRombel = `
         INSERT INTO rombel (id_rombel, nama_rombel, id_tingkat, id_jurusan, id_ptk_wali) 
@@ -142,7 +144,7 @@ module.exports = {
               anggota.anggota_rombel_id,
               id_rombel,
               anggota.peserta_didik_id,
-              id_semester
+              parseInt(id_semester)
             ]);
           }
         }
@@ -150,7 +152,7 @@ module.exports = {
         if (anggotaValues.length > 0) {
           await client.query(`
             INSERT INTO anggota_rombel (id_anggota_rombel, id_rombel, id_siswa, id_semester)
-            SELECT * FROM UNNEST($1::uuid[], $2::uuid[], $3::uuid[], $4::varchar[])
+            SELECT * FROM UNNEST($1::uuid[], $2::uuid[], $3::uuid[], $4::integer[])
             ON CONFLICT (id_siswa, id_semester) 
             DO UPDATE SET
               id_anggota_rombel = EXCLUDED.id_anggota_rombel,
@@ -188,9 +190,17 @@ module.exports = {
       const filePath = path.join(__dirname, "../data/getPesertaDidik.json");
       const rawData = fs.readFileSync(filePath, "utf-8");
       const dapodikData = JSON.parse(rawData);
-
-      const dataSiswa = Array.isArray(dapodikData) ? dapodikData : dapodikData.rows;
       
+      const rawDataSiswa = Array.isArray(dapodikData) ? dapodikData : dapodikData.rows;
+      
+      const uniqueSiswaMap = new Map();
+      for (const s of rawDataSiswa) {
+        if (s.peserta_didik_id && !uniqueSiswaMap.has(s.peserta_didik_id)) {
+          uniqueSiswaMap.set(s.peserta_didik_id, s);
+        }
+      }
+      
+      const dataSiswa = Array.from(uniqueSiswaMap.values());      
       const results = [];
 
       const ortuCacheMap = {};
@@ -333,8 +343,8 @@ module.exports = {
 
         const email = pengguna.username ? pengguna.username.trim() : null;
         const alamat = pengguna.alamat ? pengguna.alamat.trim() : null;
-        const nomor_hp = pengguna.no_hp || pengguna.no_telp ;
-        const no_telp = pengguna.nomor_hp ? String(nomor_hp).trim() : null;
+        const no_telepon = pengguna.no_telepon || pengguna.no_hp ;
+        const no_telp = pengguna.no_telepon ? String(no_telepon).trim() : null;
         
         const resultSiswa = await client.query(querySiswa, [
           pengguna.peserta_didik_id,
@@ -357,8 +367,8 @@ module.exports = {
                 `;
 
         const email = pengguna.username ? pengguna.username.trim() : null;
-        const nomor_hp = pengguna.no_hp || pengguna.no_telp ;
-        const no_telp = pengguna.no_hp ? String(pengguna.no_hp).trim() : null;
+        const no_telepon = pengguna.no_telepon || pengguna.no_hp ;
+        const no_telp = pengguna.no_telepon ? String(pengguna.no_telepon).trim() : null;
         
         const resultPtk = await client.query(queryPtk, [
           pengguna.ptk_id,

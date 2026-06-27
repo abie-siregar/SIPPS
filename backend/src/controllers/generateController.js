@@ -66,6 +66,7 @@ module.exports= {
         $1 AS password,
         true as is_active
       FROM siswa s
+      WHERE s.nisn IS NOT NULL AND s.nisn != ''
       ON CONFLICT (username) DO NOTHING
       RETURNING *;
     `;

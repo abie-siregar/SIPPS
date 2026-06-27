@@ -18,7 +18,7 @@ module.exports = {
         FROM users u
         LEFT JOIN roles r ON r.id_role = u.id_role
         WHERE u.username = $1`,
-        [username]
+        [username],
       );
 
       if (result.rows.length === 0) {
@@ -41,7 +41,7 @@ module.exports = {
           role: user.nama_role,
         },
         process.env.JWT_SECRET_KEY || "secret",
-        { expiresIn: "1d" }
+        { expiresIn: "1d" },
       );
 
       res.json({
@@ -50,7 +50,7 @@ module.exports = {
         user: {
           id: user.id_user,
           username: user.username,
-          role: user.nama_role
+          role: user.nama_role,
         },
       });
     } catch (error) {
@@ -62,13 +62,13 @@ module.exports = {
   //Register
   async register(req, res) {
     try {
-      const { username, password, id_role} = req.body;
+      const { username, password, id_role } = req.body;
       const hashedPassword = await bcrypt.hash(password, 10);
 
       const defaultRole = 3;
 
       const assignedRole = id_role || defaultRole;
-      
+
       const result = await pool.query(
         `
         INSERT INTO 
@@ -80,7 +80,7 @@ module.exports = {
             id_user, 
             username
         `,
-        [username, hashedPassword, assignedRole]
+        [username, hashedPassword, assignedRole],
       );
 
       res
@@ -98,15 +98,23 @@ module.exports = {
       const { username } = req.user;
       const result = await pool.query(
         `SELECT
-          u.id_user, u.username,
-          r.nama_role AS role
+          u.id_user, 
+          u.username,
+          r.nama_role AS role,
+          COALESCE(siswa.nama, ptk.nama) AS nama,
+          COALESCE(siswa.email, ptk.email) AS email,
+          COALESCE(siswa.no_telp, ptk.no_telp) AS no_hp
         FROM 
           users u
         LEFT JOIN
           roles r ON r.id_role = u.id_role
+        LEFT JOIN
+          ptk ptk ON ptk.id_ptk = u.id_ptk
+        LEFT JOIN
+          siswa siswa ON siswa.id_siswa = u.id_siswa
         WHERE 
           u.username = $1`,
-        [username]
+        [username],
       );
 
       if (result.rows.length === 0)
