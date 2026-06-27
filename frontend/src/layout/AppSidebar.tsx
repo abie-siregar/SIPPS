@@ -94,6 +94,12 @@ const navItems: NavItem[] = [
         pro: false,
         roles: ["Admin", "BK", "Guru", "Wali Kelas", "Tenaga Kependidikan", "Siswa"],
       },
+      {
+        name: "Plotting BK",
+        path: "/plotting-bk",
+        pro: false,
+        roles: ["Admin"],
+      },
     ],
   },
   {
