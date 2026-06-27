@@ -22,6 +22,7 @@ module.exports = {
       let queryParams = [];
 
       let queryText = `SELECT 
+        rombel.id_rombel as id_rombel,
         rombel.nama_rombel as rombel,
         tingkat.nama_tingkat as tingkat,
         jurusan.nama_jurusan as jurusan,
