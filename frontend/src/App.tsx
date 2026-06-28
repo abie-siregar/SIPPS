@@ -34,6 +34,7 @@ import DataUsers from "./pages/ManajemenData/Users/DataUsers";
 import DataSanksi from "./pages/ManajemenData/Sanksi/DataSanksi";
 import SignUp from "./pages/AuthPages/SignUp";
 import { AuthProvider } from "./context/AuthContext";
+import DataPlottingBK from "./pages/ManajemenData/PlottingBK/DataPlottingBK";
 
 export default function App() {
   return (
@@ -121,6 +122,14 @@ export default function App() {
             element={
               <ProtectedRoute roles={["Admin", "BK", "Guru", "Wali Kelas", "Tenaga Kependidikan", "Siswa"]}>
                 <DataSanksi />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/plotting-bk"
+            element={
+              <ProtectedRoute roles={["Admin"]}>
+                <DataPlottingBK />
               </ProtectedRoute>
             }
           />

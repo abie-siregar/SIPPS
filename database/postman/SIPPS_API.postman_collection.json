@@ -55,7 +55,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"password123\"\n}"
+              "raw": "{\n  \"username\": \"suadmin\",\n  \"password\": \"suadmin\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/auth/login",
@@ -571,6 +571,82 @@
               "path": ["generate", "siswa"]
             },
             "description": "Membuat akun user untuk semua siswa menggunakan NISN sebagai username.\n\n**Password default:** `sipps@1234siswa`\n**Role:** 6 (Siswa)\n\nJika user sudah ada (conflict on username), tidak akan ada perubahan (`ON CONFLICT DO NOTHING`)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "📐 Plotting BK",
+      "description": "Manajemen plotting guru BK ke rombel per semester.\n\n**Auth required. Role: Admin only.**",
+      "item": [
+        {
+          "name": "Get All Plotting BK",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/plotting",
+              "host": ["{{base_url}}"],
+              "path": ["plotting"]
+            },
+            "description": "Mengambil seluruh data plotting guru BK dengan rombel dan semester."
+          }
+        },
+        {
+          "name": "Add Plotting BK",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_ptk_bk\": \"94191d4e-1234-5678-9abc-def012345678\",\n  \"id_rombel\": 1,\n  \"id_semester\": \"20231\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/plotting",
+              "host": ["{{base_url}}"],
+              "path": ["plotting"]
+            },
+            "description": "Menambahkan plotting guru BK terhadap rombel pada semester tertentu.\n\n**Body:**\n- `id_ptk_bk` (string/UUID, required): ID PTK Guru BK\n- `id_rombel` (number, required): ID Rombel\n- `id_semester` (number/string, required): ID Semester"
+          }
+        },
+        {
+          "name": "Update Plotting BK",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_ptk_bk\": \"94191d4e-1234-5678-9abc-def012345678\",\n  \"id_rombel\": 1,\n  \"id_semester\": \"20231\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/plotting/1",
+              "host": ["{{base_url}}"],
+              "path": ["plotting", "1"]
+            },
+            "description": "Mengubah data plotting guru BK berdasarkan ID plotting.\n\n**Body:**\n- `id_ptk_bk` (string/UUID, required): ID PTK Guru BK\n- `id_rombel` (number, required): ID Rombel\n- `id_semester` (number/string, required): ID Semester"
+          }
+        },
+        {
+          "name": "Delete Plotting BK",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/plotting/1",
+              "host": ["{{base_url}}"],
+              "path": ["plotting", "1"]
+            },
+            "description": "Menghapus data plotting guru BK berdasarkan ID."
           }
         }
       ]

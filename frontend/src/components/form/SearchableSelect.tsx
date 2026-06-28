@@ -102,7 +102,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({
           {filteredOptions.length > 0 ? (
             filteredOptions.map((option) => {
               if (!option || option.value === undefined || option.value === null) return null;
-              const isSelected = value !== undefined && value !== null && option.value.toString() === value.toString();
+              const isSelected = value !== undefined && value !== null && value !== "" && option.value.toString() === value.toString();
               return (
                 <div
                   key={option.value}
