@@ -47,7 +47,7 @@ export default function DataTable<T extends object>({
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(
-    defaultItemsPerPage ?? itemsPerPageOptions[0]
+    defaultItemsPerPage ?? itemsPerPageOptions[0],
   );
   const [filters, setFilters] = useState<{ [key: string]: any }>({});
   const [showFilterForm, setShowFilterForm] = useState(false);
@@ -66,7 +66,7 @@ export default function DataTable<T extends object>({
         data.some((row) => {
           const v = (row as any)[key];
           return typeof v === "string" || typeof v === "boolean";
-        })
+        }),
       )
       .map((key) => {
         const options = Array.from(
@@ -74,8 +74,8 @@ export default function DataTable<T extends object>({
             data
               .map((row) => (row as any)[key])
               .filter((v) => v !== undefined && v !== null)
-              .map(String)
-          )
+              .map(String),
+          ),
         ).sort();
         const col = columns.find((c) => c.accessor === key);
         return {
@@ -91,7 +91,7 @@ export default function DataTable<T extends object>({
     if (!filterable || !filterColumns) return [];
     return filterColumns
       .filter((key) =>
-        data.some((row) => typeof (row as any)[key] === "number")
+        data.some((row) => typeof (row as any)[key] === "number"),
       )
       .map((key) => {
         const numbers = data
@@ -117,7 +117,7 @@ export default function DataTable<T extends object>({
         rows = rows.filter(
           (r) =>
             String((r as any)[df.key]).toLowerCase() ===
-            String(value).toLowerCase()
+            String(value).toLowerCase(),
         );
       }
     });
@@ -127,7 +127,7 @@ export default function DataTable<T extends object>({
       if (range && Array.isArray(range) && range.length === 2) {
         rows = rows.filter(
           (r) =>
-            (r as any)[rf.key] >= range[0] && (r as any)[rf.key] <= range[1]
+            (r as any)[rf.key] >= range[0] && (r as any)[rf.key] <= range[1],
         );
       }
     });
@@ -138,8 +138,8 @@ export default function DataTable<T extends object>({
         columns.some((col) =>
           String((row as any)[col.accessor] ?? "")
             .toLowerCase()
-            .includes(q)
-        )
+            .includes(q),
+        ),
       );
     }
 
@@ -230,16 +230,16 @@ export default function DataTable<T extends object>({
                   }`}
                   onClick={() => handleSort(String(col.accessor))}
                 >
-                  <div className={`flex items-center gap-1 ${
-                        col.className?.includes("text-center")
-                          ? "justify-center"
-                          : "justify-start"
-                      }`}>
+                  <div
+                    className={`flex items-center gap-1 ${
+                      col.className?.includes("text-center")
+                        ? "justify-center"
+                        : "justify-start"
+                    }`}
+                  >
                     {col.header}
                     {sortConfig?.key === col.accessor && (
-                      <span>
-                        {sortConfig.direction === "asc" ? "🔼" : "🔽"}
-                      </span>
+                      <span>{sortConfig.direction === "asc" ? "↑" : "↓"}</span>
                     )}
                   </div>
                 </TableCell>

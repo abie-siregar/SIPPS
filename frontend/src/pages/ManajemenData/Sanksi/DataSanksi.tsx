@@ -109,7 +109,7 @@ const DataSanksi = () => {
       minPoin,
       maxPoin,
     }),
-    [minPoin, maxPoin]
+    [minPoin, maxPoin],
   );
 
   const handleApplyFilters = (filters: typeof filterValues) => {
@@ -125,7 +125,11 @@ const DataSanksi = () => {
       className: "text-center w-16",
     },
     { header: "Nama Sanksi", accessor: "nama_sanksi" },
-    { header: "Batas Poin", accessor: "batas_poin", className: "text-center w-32" },
+    {
+      header: "Batas Poin",
+      accessor: "batas_poin",
+      className: "text-center w-32",
+    },
   ];
 
   if (isAdmin) {
@@ -246,11 +250,7 @@ const DataSanksi = () => {
                     )}
                   </Button>
                   {isAdmin && (
-                    <Button
-                      size="sm"
-                      variant="primary"
-                      onClick={handleAdd}
-                    >
+                    <Button size="sm" variant="primary" onClick={handleAdd}>
                       + Tambah
                     </Button>
                   )}

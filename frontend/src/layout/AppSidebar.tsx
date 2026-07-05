@@ -56,13 +56,27 @@ const navItems: NavItem[] = [
   {
     name: "Manajemen Data",
     icon: <TableIcon />,
-    roles: ["Admin", "BK", "Guru", "Wali Kelas", "Tenaga Kependidikan", "Siswa"],
+    roles: [
+      "Admin",
+      "BK",
+      "Guru",
+      "Wali Kelas",
+      "Tenaga Kependidikan",
+      "Siswa",
+    ],
     subItems: [
       {
         name: "Data Poin Pelanggaran",
         path: "/data-poin-pelanggaran",
         pro: false,
-        roles: ["Admin", "BK", "Guru", "Wali Kelas", "Tenaga Kependidikan", "Siswa"],
+        roles: [
+          "Admin",
+          "BK",
+          "Guru",
+          "Wali Kelas",
+          "Tenaga Kependidikan",
+          "Siswa",
+        ],
       },
       {
         name: "Data Pendidik dan Tenaga Kependidikan",
@@ -92,7 +106,14 @@ const navItems: NavItem[] = [
         name: "Data Sanksi",
         path: "/data-sanksi",
         pro: false,
-        roles: ["Admin", "BK", "Guru", "Wali Kelas", "Tenaga Kependidikan", "Siswa"],
+        roles: [
+          "Admin",
+          "BK",
+          "Guru",
+          "Wali Kelas",
+          "Tenaga Kependidikan",
+          "Siswa",
+        ],
       },
       {
         name: "Plotting BK",
@@ -115,6 +136,43 @@ const navItems: NavItem[] = [
       },
     ],
   },
+  {
+    name: "Test Layout",
+    icon: <TableIcon />,
+    roles: ["Admin", "BK", "Wali Kelas", "Siswa"],
+    subItems: [
+      {
+        name: "Manajemen Data Poin dan Sanksi",
+        path: "/PoinSanksi",
+        pro: false,
+        roles: ["Admin", "BK", "Wali Kelas", "Siswa"],
+      },
+      {
+        name: "Manajemen Data User",
+        path: "/ManajemenDataUser",
+        pro: false,
+        roles: ["Admin", "BK", "Wali Kelas", "Siswa"],
+      },
+      {
+        name: "Manajemen Rombel dan Plotting BK",
+        path: "/ManajemenRombelPlotting",
+        pro: false,
+        roles: ["Admin", "BK", "Wali Kelas", "Siswa"],
+      },
+      {
+        name: "Manajemen Data Siswa",
+        path: "/ManajemenDataSiswa",
+        pro: false,
+        roles: ["Admin", "BK", "Wali Kelas", "Siswa"],
+      },
+      {
+        name: "Manajemen Pelanggaran dan Pembinaan",
+        path: "/ManajemenPelanggaranPembinaan",
+        pro: false,
+        roles: ["Admin", "BK", "Wali Kelas", "Siswa"],
+      },
+    ],
+  },
 ];
 
 const AppSidebar: React.FC = () => {
@@ -128,13 +186,13 @@ const AppSidebar: React.FC = () => {
   } | null>(null);
 
   const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>(
-    {}
+    {},
   );
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const isActive = useCallback(
     (path: string) => location.pathname === path,
-    [location.pathname]
+    [location.pathname],
   );
 
   useEffect(() => {
@@ -251,7 +309,7 @@ const AppSidebar: React.FC = () => {
                       {nav.subItems
                         .filter(
                           (sub) =>
-                            !sub.roles || sub.roles.includes(user?.role ?? "")
+                            !sub.roles || sub.roles.includes(user?.role ?? ""),
                         )
                         .map((subItem) => (
                           <li key={subItem.name}>
@@ -332,8 +390,8 @@ const AppSidebar: React.FC = () => {
           isExpanded || isMobileOpen
             ? "w-[290px]"
             : isHovered
-            ? "w-[290px]"
-            : "w-[90px]"
+              ? "w-[290px]"
+              : "w-[90px]"
         }
         ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
         lg:translate-x-0`}

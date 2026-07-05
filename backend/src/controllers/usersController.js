@@ -2,38 +2,14 @@ const pool = require("../../config/database");
 const bcrypt = require("bcrypt");
 
 module.exports = {
-  //Membuat User baru
-  async createUser(req, res) {
-    try {
-      const { username, id_role, password } = req.body;
-
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const defaultRole = 99;
-
-      const assignedRole =
-        id_role !== undefined && id_role !== null ? id_role : defaultRole;
-
-      const result = await pool.query(
-        "INSERT INTO users (username, id_role, password) VALUES ($1, $2, $3) RETURNING id_user, username",
-        [username, assignedRole, hashedPassword],
-      );
-
-      res
-        .status(201)
-        .json({ message: "User berhasil dibuat", user: result.rows[0] });
-    } catch (error) {
-      console.error("Register error:", error.message);
-      res.status(500).json({ error: "Internal Server Error" });
-    }
-  },
-
   // Mengambil seluruh Data User
   async getAllUser(req, res) {
     try {
       const result = await pool.query(
         `SELECT
                 u.id_user,
-                u.username, 
+                u.username,
+                r.id_role, 
                 r.nama_role,
                 COALESCE(siswa.nama, ptk.nama) AS nama
               FROM 
@@ -81,6 +57,31 @@ module.exports = {
       res.json(result.rows[0]);
     } catch (error) {
       res.status(500).json({ error: "Internal Server Error " + error.message });
+    }
+  },
+
+  //Membuat User baru
+  async createUser(req, res) {
+    try {
+      const { username, id_role, password } = req.body;
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const defaultRole = 99;
+
+      const assignedRole =
+        id_role !== undefined && id_role !== null ? id_role : defaultRole;
+
+      const result = await pool.query(
+        "INSERT INTO users (username, id_role, password) VALUES ($1, $2, $3) RETURNING id_user, username",
+        [username, assignedRole, hashedPassword],
+      );
+
+      res
+        .status(201)
+        .json({ message: "User berhasil dibuat", user: result.rows[0] });
+    } catch (error) {
+      console.error("Register error:", error.message);
+      res.status(500).json({ error: "Internal Server Error" });
     }
   },
 
@@ -145,12 +146,10 @@ module.exports = {
       });
     } catch (error) {
       console.error("Error pada fungsi updateUser:", error.message);
-      res
-        .status(500)
-        .json({
-          success: false,
-          error: "Internal Server Error " + error.message,
-        });
+      res.status(500).json({
+        success: false,
+        error: "Internal Server Error " + error.message,
+      });
     }
   },
 
