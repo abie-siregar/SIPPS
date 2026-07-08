@@ -7,7 +7,7 @@ import Toast from "../../../../components/ui/alert/Toast";
 interface EditPopupProps {
   show: boolean;
   onClose: (didSave?: boolean) => void;
-  row: Sanksi | null; // 🟢 Ubah ke union type dengan 'null'
+  row: Sanksi | null;
 }
 
 const EditSanksi: React.FC<EditPopupProps> = ({ show, onClose, row }) => {

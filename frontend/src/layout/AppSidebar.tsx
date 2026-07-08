@@ -151,19 +151,19 @@ const navItems: NavItem[] = [
         name: "Manajemen Data User",
         path: "/ManajemenDataUser",
         pro: false,
-        roles: ["Admin", "BK", "Wali Kelas", "Siswa"],
+        roles: ["Admin"],
       },
       {
         name: "Manajemen Rombel dan Plotting BK",
         path: "/ManajemenRombelPlotting",
         pro: false,
-        roles: ["Admin", "BK", "Wali Kelas", "Siswa"],
+        roles: ["Admin"],
       },
       {
         name: "Manajemen Data Siswa",
         path: "/ManajemenDataSiswa",
         pro: false,
-        roles: ["Admin", "BK", "Wali Kelas", "Siswa"],
+        roles: ["Admin", "BK", "Wali Kelas"],
       },
       {
         name: "Manajemen Pelanggaran dan Pembinaan",

@@ -7,12 +7,11 @@ import Button from "../../../../components/ui/button/Button";
 export interface Pembinaan {
   id_sanksi_siswa: number;
   id_siswa: string;
-  username: string;
   nama: string;
   nama_rombel: string;
   nama_sanksi: string;
   tanggal_sanksi: string;
-  status_sanksi: string; // "Proses" | "Selesai"
+  status_sanksi: string;
   tahap_akhir: string;
   id_progres: number;
 }
@@ -24,7 +23,7 @@ const DataPembinaan = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/pembinaan"); // Endpoint asli pembinaan
+      const res = await axios.get("/pembinaan");
       setData(res.data.data || res.data || []);
     } catch (err) {
       console.error("Gagal mengambil data pembinaan:", err);
@@ -37,7 +36,6 @@ const DataPembinaan = () => {
     fetchData();
   }, []);
 
-  // Fungsi untuk mengubah status sanksi (Contoh Aksi Terintegrasi)
   const handleSelesaikanPembinaan = async (idSanksoSiswa: number) => {
     if (
       window.confirm(
@@ -45,7 +43,6 @@ const DataPembinaan = () => {
       )
     ) {
       try {
-        // Ganti dengan endpoint patch/put update status pembinaan di backend Anda
         await axios.patch(`/pembinaan/${idSanksoSiswa}`, {
           status_sanksi: "Selesai",
         });

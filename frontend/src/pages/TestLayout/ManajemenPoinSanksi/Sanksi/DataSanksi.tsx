@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "../../../../api/axios";
 import DataTable, { Column } from "../../../../components/ui/table/DataTable";
 import Button from "../../../../components/ui/button/Button";
+import { useAuth } from "../../../../context/AuthContext";
 
 import TambahSanksiModal from "./TambahSanksiModal";
 import EditSanksiModal from "./EditSanksiModal";
@@ -14,6 +15,10 @@ export interface Sanksi {
 }
 
 const DataSanksi = () => {
+  const { user } = useAuth();
+  const userRole = user?.role;
+  const canModify = userRole === "Admin";
+
   const [data, setData] = useState<Sanksi[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -67,29 +72,33 @@ const DataSanksi = () => {
       accessor: "batas_poin",
       render: (row) => `${row.batas_poin} Pts`,
     },
-    {
-      header: "Aksi",
-      accessor: "id_poin",
-      className: "text-center w-40",
-      render: (row) => (
-        <div className="flex items-center justify-center gap-2">
-          <Button
-            variant="outline"
-            className="text-blue-600 border-blue-200 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-900/50 dark:hover:bg-blue-950/30"
-            onClick={() => handleOpenEdit(row)}
-          >
-            Edit
-          </Button>
-          <Button
-            variant="outline"
-            className="text-red-600 border-red-200 hover:bg-red-50 dark:text-red-400 dark:border-red-900/50 dark:hover:bg-red-950/30"
-            onClick={() => handleOpenHapus(row)}
-          >
-            Hapus
-          </Button>
-        </div>
-      ),
-    },
+    ...(canModify
+      ? [
+          {
+            header: "Aksi",
+            accessor: "id_poin",
+            className: "text-center w-40",
+            render: (row: Sanksi) => (
+              <div className="flex items-center justify-center gap-2">
+                <Button
+                  variant="outline"
+                  className="text-blue-600 border-blue-200 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-900/50 dark:hover:bg-blue-950/30"
+                  onClick={() => handleOpenEdit(row)}
+                >
+                  Edit
+                </Button>
+                <Button
+                  variant="outline"
+                  className="text-red-600 border-red-200 hover:bg-red-50 dark:text-red-400 dark:border-red-900/50 dark:hover:bg-red-950/30"
+                  onClick={() => handleOpenHapus(row)}
+                >
+                  Hapus
+                </Button>
+              </div>
+            ),
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -104,14 +113,18 @@ const DataSanksi = () => {
           data={data}
           searchable
           paginated
+          itemsPerPageOptions={[5, 10, 20, 50]}
+          defaultItemsPerPage={10}
           extraActions={
-            <Button
-              size="sm"
-              variant="primary"
-              onClick={() => setShowTambahModal(true)}
-            >
-              + Tambah Poin
-            </Button>
+            canModify ? (
+              <Button
+                size="sm"
+                variant="primary"
+                onClick={() => setShowTambahModal(true)}
+              >
+                + Tambah Poin
+              </Button>
+            ) : undefined
           }
         />
       )}

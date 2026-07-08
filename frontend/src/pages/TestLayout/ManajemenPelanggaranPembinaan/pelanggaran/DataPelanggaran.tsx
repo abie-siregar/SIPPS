@@ -3,10 +3,10 @@ import axios from "../../../../api/axios";
 import DataTable, { Column } from "../../../../components/ui/table/DataTable";
 import ComponentCard from "../../../../components/common/ComponentCard";
 import Button from "../../../../components/ui/button/Button";
+import { useAuth } from "../../../../context/AuthContext";
 
 import TambahPelanggaran from "./TambahPelanggaran";
 import DetailPelanggaranModal from "./DetailPelanggaranModal";
-// 🟢 1. Import Modal Hapus yang baru dibuat
 import HapusPelanggaranModal from "./HapusPelanggaranModal";
 
 export interface Pelanggaran {
@@ -31,6 +31,10 @@ export interface Pelanggaran {
 }
 
 const DataPelanggaran = () => {
+  const { user } = useAuth();
+  const userRole = user?.role;
+  const canModify = userRole === "Admin";
+
   const [data, setData] = useState<Pelanggaran[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -40,7 +44,6 @@ const DataPelanggaran = () => {
   const [selectedPelanggaran, setSelectedPelanggaran] =
     useState<Pelanggaran | null>(null);
 
-  // 🟢 2. State baru untuk mengontrol Modal Hapus
   const [showHapusModal, setShowHapusModal] = useState(false);
   const [pelanggaranToDelete, setPelanggaranToDelete] =
     useState<Pelanggaran | null>(null);
@@ -83,31 +86,34 @@ const DataPelanggaran = () => {
     { header: "Jenis Pelanggaran", accessor: "jenis_pelanggaran" },
     { header: "Bobot", accessor: "bobot", render: (row) => `${row.bobot} Pts` },
     { header: "Pelapor (PTK)", accessor: "nama_ptk" },
-    {
-      header: "Aksi",
-      accessor: "id_pelanggaran",
-      // 🟢 4. Ukuran lebar kolom aksi dinaikkan sedikit agar memuat 2 tombol sejajar
-      className: "text-center w-40",
-      render: (row) => (
-        <div className="flex items-center justify-center gap-2">
-          <Button
-            variant="outline"
-            className="text-blue-600 border-blue-200 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-900/50 dark:hover:bg-blue-950/30"
-            onClick={() => handleOpenDetail(row)}
-          >
-            Detail
-          </Button>
-          {/* 🟢 5. Tambahkan Tombol Hapus */}
-          <Button
-            variant="outline"
-            className="text-red-600 border-red-200 hover:bg-red-50 dark:text-red-400 dark:border-red-900/50 dark:hover:bg-red-950/30"
-            onClick={() => handleOpenHapus(row)}
-          >
-            Hapus
-          </Button>
-        </div>
-      ),
-    },
+    ...(canModify
+      ? [
+          {
+            header: "Aksi",
+            accessor: "id_pelanggaran",
+            className: "text-center w-40",
+            render: (row: Pelanggaran) => (
+              <div className="flex items-center justify-center gap-2">
+                <Button
+                  variant="outline"
+                  className="text-blue-600 border-blue-200 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-900/50 dark:hover:bg-blue-950/30"
+                  onClick={() => handleOpenDetail(row)}
+                >
+                  Detail
+                </Button>
+                {/* 🟢 5. Tambahkan Tombol Hapus */}
+                <Button
+                  variant="outline"
+                  className="text-red-600 border-red-200 hover:bg-red-50 dark:text-red-400 dark:border-red-900/50 dark:hover:bg-red-950/30"
+                  onClick={() => handleOpenHapus(row)}
+                >
+                  Hapus
+                </Button>
+              </div>
+            ),
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -124,13 +130,15 @@ const DataPelanggaran = () => {
             searchable
             paginated
             extraActions={
-              <Button
-                size="sm"
-                variant="primary"
-                onClick={() => setShowTambahModal(true)}
-              >
-                + Tambah Pelanggaran
-              </Button>
+              canModify ? (
+                <Button
+                  size="sm"
+                  variant="primary"
+                  onClick={() => setShowTambahModal(true)}
+                >
+                  + Tambah Pelanggaran
+                </Button>
+              ) : undefined
             }
           />
         )}

@@ -39,6 +39,7 @@ import ManajemenPoinSanksi from "./pages/TestLayout/ManajemenPoinSanksi/Manajeme
 import ManajemenDataUsers from "./pages/TestLayout/ManajemenUser/ManajemenDataUsers";
 import ManajemenRombelPlotting from "./pages/TestLayout/ManajemenRombelPlotting";
 import ManajemenDataSiswa from "./pages/TestLayout/ManajemenDataSiswa/ManajemenDataSiswa";
+import DataSiswa from "./pages/TestLayout/ManajemenDataSiswa/DataSiswa";
 import ManajemenPembinaanPelanggaran from "./pages/TestLayout/ManajemenPelanggaranPembinaan/ManajemenPelanggaranPembinaan";
 
 export default function App() {
@@ -182,7 +183,7 @@ export default function App() {
             <Route
               path="/ManajemenDataUser"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute roles={["Admin"]}>
                   <ManajemenDataUsers />
                 </ProtectedRoute>
               }
@@ -190,7 +191,7 @@ export default function App() {
             <Route
               path="/ManajemenRombelPlotting"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute roles={["Admin"]}>
                   <ManajemenRombelPlotting />
                 </ProtectedRoute>
               }
@@ -208,6 +209,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <ManajemenPembinaanPelanggaran />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/data-siswa/:id"
+              element={
+                <ProtectedRoute>
+                  <DataSiswa />
                 </ProtectedRoute>
               }
             />

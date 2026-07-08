@@ -4,7 +4,7 @@ import Button from "../../../components/ui/button/Button";
 import Toast from "../../../components/ui/alert/Toast";
 
 export interface Siswa {
-  id_siswa?: number | string; // Tambahkan field identifier unik siswa untuk hit API
+  id_siswa?: number | string;
   id?: number | string;
   nama: string;
   nisn: string;
@@ -20,7 +20,7 @@ export interface Siswa {
 
 interface SiswaDetailModalProps {
   show: boolean;
-  onClose: (didSave?: boolean) => void; // Izinkan boolean argumen untuk trigger refresh di parent
+  onClose: (didSave?: boolean) => void;
   siswa: Siswa | null;
 }
 
@@ -29,11 +29,10 @@ const SiswaDetailModal: React.FC<SiswaDetailModalProps> = ({
   onClose,
   siswa,
 }) => {
-  // 🟢 State Mode Kontrol (Mode Lihat vs Mode Edit)
   const [isEditMode, setIsEditMode] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
-  // 🟢 State Form Input lokal
   const [formValues, setFormValues] = useState<Siswa>({
     nama: "",
     nisn: "",
@@ -47,7 +46,6 @@ const SiswaDetailModal: React.FC<SiswaDetailModalProps> = ({
     jurusan: "",
   });
 
-  // State Toast Alert lokal di dalam modal
   const [toast, setToast] = useState<{
     show: boolean;
     variant: "success" | "error";
@@ -58,14 +56,24 @@ const SiswaDetailModal: React.FC<SiswaDetailModalProps> = ({
     message: "",
   });
 
-  // Sinkronisasi data form lokal saat modal menerima object data siswa baru
   useEffect(() => {
     if (show && siswa) {
       setFormValues({ ...siswa });
-      setIsEditMode(false); // Kembalikan default ke mode baca setiap dibuka baru
+      setIsEditMode(false);
       setToast({ show: false, variant: "success", message: "" });
+
+      setTimeout(() => setIsVisible(true), 50);
+    } else {
+      setIsVisible(false);
     }
   }, [show, siswa]);
+
+  const handleClose = (didSave: boolean = false) => {
+    setIsVisible(false);
+    setTimeout(() => {
+      onClose(didSave);
+    }, 300);
+  };
 
   if (!show || !siswa) return null;
 
@@ -79,7 +87,6 @@ const SiswaDetailModal: React.FC<SiswaDetailModalProps> = ({
   };
 
   const handleSaveSubmit = async () => {
-    // Validasi singkat data krusial sebelum kirim
     if (!formValues.nama.trim() || !formValues.nisn.trim()) {
       setToast({
         show: true,
@@ -92,8 +99,6 @@ const SiswaDetailModal: React.FC<SiswaDetailModalProps> = ({
     const targetId = siswa.id_siswa ?? siswa.id;
     try {
       setSubmitting(true);
-
-      // 🟢 API Hit update data siswa
       await axios.put(`/siswa/${targetId}`, formValues);
 
       setToast({
@@ -103,8 +108,7 @@ const SiswaDetailModal: React.FC<SiswaDetailModalProps> = ({
       });
       setIsEditMode(false);
 
-      // Beri sedikit delay visual sebelum memberi tahu parent untuk mereload datatable
-      setTimeout(() => onClose(true), 800);
+      setTimeout(() => handleClose(true), 800);
     } catch (error: any) {
       console.error(error);
       const errorMsg =
@@ -124,16 +128,29 @@ const SiswaDetailModal: React.FC<SiswaDetailModalProps> = ({
         onClose={() => setToast((t) => ({ ...t, show: false }))}
       />
 
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn">
-        <div className="w-full max-w-2xl overflow-hidden bg-white rounded-xl shadow-xl dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
+      {/* Backdrop dengan transisi opacity murni */}
+      <div
+        className={`fixed inset-0 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${
+          isVisible ? "opacity-100" : "opacity-0"
+        }`}
+        onClick={() => !submitting && handleClose(false)}
+      >
+        {/* Modal Container Box dengan transisi skala/scale */}
+        <div
+          className={`w-full max-w-2xl overflow-hidden bg-white rounded-xl shadow-xl dark:bg-gray-900 border border-gray-200 dark:border-gray-800 transition-all duration-300 transform ${
+            isVisible ? "opacity-100 scale-100" : "opacity-0 scale-95"
+          }`}
+          onClick={(e) => e.stopPropagation()} // Mencegah modal tertutup saat area form diklik
+        >
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-              {isEditMode ? "Biodata Siswa" : "Biodata Siswa"}
+              Biodata Siswa
             </h3>
             <button
-              onClick={() => onClose(false)}
-              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-xl font-semibold"
+              onClick={() => handleClose(false)} // 🟢 Diganti ke handleClose
+              disabled={submitting}
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-xl font-semibold disabled:opacity-50"
             >
               &times;
             </button>
@@ -153,7 +170,7 @@ const SiswaDetailModal: React.FC<SiswaDetailModalProps> = ({
                     name="nama"
                     value={formValues.nama}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-1.5 border rounded dark:bg-gray-800 dark:border-gray-700 dark:text-white font-bold text-lg"
+                    className="w-full px-3 py-1.5 border rounded dark:bg-gray-800 dark:border-gray-700 dark:text-white font-bold text-lg focus:ring-1 focus:ring-blue-500 outline-none"
                   />
                 ) : (
                   <p className="text-xl font-bold text-gray-900 dark:text-white">
@@ -172,7 +189,7 @@ const SiswaDetailModal: React.FC<SiswaDetailModalProps> = ({
                     name="nisn"
                     value={formValues.nisn}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-1.5 border rounded dark:bg-gray-800 dark:border-gray-700 dark:text-white font-mono text-sm"
+                    className="w-full px-3 py-1.5 border rounded dark:bg-gray-800 dark:border-gray-700 dark:text-white font-mono text-sm focus:ring-1 focus:ring-blue-500 outline-none"
                   />
                 ) : (
                   <p className="text-sm font-mono text-gray-700 dark:text-gray-300 font-medium">
@@ -190,7 +207,6 @@ const SiswaDetailModal: React.FC<SiswaDetailModalProps> = ({
                   Akademik
                 </h4>
 
-                {/* Field Kelas */}
                 <div>
                   <span className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
                     Kelas / Tingkat
@@ -210,7 +226,6 @@ const SiswaDetailModal: React.FC<SiswaDetailModalProps> = ({
                   )}
                 </div>
 
-                {/* Field Rombel */}
                 <div>
                   <span className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
                     Rombongan Belajar
@@ -230,7 +245,6 @@ const SiswaDetailModal: React.FC<SiswaDetailModalProps> = ({
                   )}
                 </div>
 
-                {/* Field Jurusan */}
                 <div>
                   <span className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
                     Jurusan
@@ -250,7 +264,6 @@ const SiswaDetailModal: React.FC<SiswaDetailModalProps> = ({
                   )}
                 </div>
 
-                {/* Field Wali Kelas */}
                 <div>
                   <span className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
                     Wali Kelas
@@ -277,7 +290,6 @@ const SiswaDetailModal: React.FC<SiswaDetailModalProps> = ({
                   Kontak & Agama
                 </h4>
 
-                {/* Field Email */}
                 <div>
                   <span className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
                     Email
@@ -297,7 +309,6 @@ const SiswaDetailModal: React.FC<SiswaDetailModalProps> = ({
                   )}
                 </div>
 
-                {/* Field No Telp */}
                 <div>
                   <span className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
                     No. Telepon
@@ -317,7 +328,6 @@ const SiswaDetailModal: React.FC<SiswaDetailModalProps> = ({
                   )}
                 </div>
 
-                {/* Field Agama */}
                 <div>
                   <span className="block text-xs text-gray-500 dark:text-gray-400 mb-1">
                     Agama
@@ -372,7 +382,6 @@ const SiswaDetailModal: React.FC<SiswaDetailModalProps> = ({
           <div className="flex justify-end gap-2 px-6 py-3 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/30">
             {isEditMode ? (
               <>
-                {/* Tampilan Tombol saat sedang Mengedit */}
                 <Button
                   size="sm"
                   variant="outline"
@@ -392,7 +401,6 @@ const SiswaDetailModal: React.FC<SiswaDetailModalProps> = ({
               </>
             ) : (
               <>
-                {/* Tampilan Tombol Utama (Default) */}
                 <Button
                   size="sm"
                   variant="primary"
@@ -403,7 +411,7 @@ const SiswaDetailModal: React.FC<SiswaDetailModalProps> = ({
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => onClose(false)}
+                  onClick={() => handleClose(false)} // 🟢 Diganti ke handleClose
                 >
                   Tutup
                 </Button>

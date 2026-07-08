@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom"; // 1. Import useNavigate
 import axios from "../../../api/axios";
 
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
@@ -10,6 +11,7 @@ import FilterSiswaModal from "../../ManajemenData/Siswa/FilterSiswaModal";
 import SiswaDetailModal, { Siswa } from "./SiswaDetailModal";
 
 const ManajemenDataSiswa = () => {
+  const navigate = useNavigate(); // 2. Inisialisasi hook navigate
   const [data, setData] = useState<Siswa[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -109,6 +111,14 @@ const ManajemenDataSiswa = () => {
     setShowDetailModal(true);
   };
 
+  // Handler untuk navigasi ke halaman DataSiswa penuh
+  const handleNavigateToDetail = (siswa: Siswa) => {
+    const targetId = siswa.id_siswa || siswa.id;
+    if (targetId) {
+      navigate(`/data-siswa/${targetId}`);
+    }
+  };
+
   const columns: Column<Siswa>[] = [
     {
       header: "No",
@@ -122,16 +132,29 @@ const ManajemenDataSiswa = () => {
     {
       header: "Aksi",
       accessor: "nama",
-      className: "w-28",
+      className: "w-48", // 3. Menyesuaikan lebar kolom aksi agar memuat 2 tombol
       render: (row) => (
-        <Button
-          size="sm"
-          variant="primary"
-          onClick={() => handleOpenDetail(row)}
-          className="border-blue-500 text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-950/30"
-        >
-          Detail
-        </Button>
+        <div className="flex gap-2">
+          {/* Tombol Pop-up Detail (Lama) */}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => handleOpenDetail(row)}
+            className="border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+          >
+            Detail
+          </Button>
+
+          {/* Tombol Navigasi Halaman Penuh (Baru) */}
+          <Button
+            size="sm"
+            variant="primary"
+            onClick={() => handleNavigateToDetail(row)}
+            className="border-blue-500 text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-950/30"
+          >
+            View Detail
+          </Button>
+        </div>
       ),
     },
   ];
@@ -163,7 +186,7 @@ const ManajemenDataSiswa = () => {
         availableJurusan={availableJurusan}
       />
 
-      {/* 🔮 Komponen Detail Modal yang sudah bersih dan dipisah */}
+      {/* Komponen Detail Modal */}
       <SiswaDetailModal
         show={showDetailModal}
         siswa={selectedSiswa}
