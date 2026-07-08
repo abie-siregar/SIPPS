@@ -483,6 +483,130 @@ module.exports = {
     }
   },
 
+  //mengambil data by id
+  async getById(req, res) {
+    try {
+      const userId = req.user?.id; // Diambil dari middleware autentikasi JWT
+      const { id: targetSiswaId } = req.params; // ID Siswa yang dikirim melalui URL parameter
+
+      if (!targetSiswaId) {
+        return res.status(400).json({ error: "ID Siswa wajib disertakan" });
+      }
+
+      // 1. Ambil data profil & role user yang sedang login
+      const userDb = await pool.query(
+        `SELECT id_role, id_ptk, id_orangtua FROM users WHERE id_user = $1`,
+        [userId],
+      );
+
+      if (userDb.rows.length === 0) {
+        return res.status(404).json({ error: "User tidak ditemukan" });
+      }
+
+      const { id_role, id_ptk, id_orangtua } = userDb.rows[0];
+
+      // Definisikan mapping ID Role sistem Anda
+      const role = { admin: 1, BK: 102, wali_kelas: 103, orang_tua: 104 };
+
+      // 2. VALIDASI KEPEMILIKAN DATA (SECURITY GATEKEEPER)
+
+      // JIKA ORANG TUA: Pastikan targetSiswaId adalah benar anaknya
+      if (id_role === role.orang_tua) {
+        const checkAnak = await pool.query(
+          `SELECT id_orangtua FROM orang_tua_wali WHERE id_orangtua = $1 AND id_siswa = $2`,
+          [id_orangtua, targetSiswaId],
+        );
+
+        if (checkAnak.rows.length === 0) {
+          return res.status(403).json({
+            error:
+              "Akses ditolak. Anda tidak memiliki izin untuk melihat riwayat siswa ini.",
+          });
+        }
+      }
+
+      // 3. BASE QUERY UTAMA (Mengambil data pelanggaran)
+      let queryParams = [targetSiswaId];
+      let paramIndex = 2;
+
+      let queryText = `
+        SELECT 
+            distinct on (pelanggaran.tanggal, siswa.id_siswa, pelanggaran.keterangan)
+            pelanggaran.id_pelanggaran,
+            pelanggaran.id_siswa,
+            pelanggaran.id_poin,
+            pelanggaran.id_ptk,
+            pelanggaran.id_semester,
+            pelanggaran.tanggal,
+            pelanggaran.keterangan,
+            popel.jenis_penilaian,
+            popel.jenis_pelanggaran,
+            popel.bobot as poin,
+            ptk.nama as nama_ptk,
+            jabatan.nama_jabatan,
+            siswa.nama as nama_siswa,
+            siswa.nisn,
+            semester.nama_semester,
+            walikelas.nama as walikelas,
+            rombel.nama_rombel,
+            jurusan.nama_jurusan
+        FROM
+            pelanggaran_siswa pelanggaran
+        LEFT JOIN
+            poin_pelanggaran popel ON popel.id_poin = pelanggaran.id_poin
+        LEFT JOIN
+            ptk ON ptk.id_ptk = pelanggaran.id_ptk
+        LEFT JOIN
+            siswa ON siswa.id_siswa = pelanggaran.id_siswa
+        LEFT JOIN
+            anggota_rombel ON anggota_rombel.id_siswa = pelanggaran.id_siswa
+        LEFT JOIN
+            rombel ON rombel.id_rombel = anggota_rombel.id_rombel
+        LEFT JOIN
+            semester ON semester.id_semester = pelanggaran.id_semester
+        LEFT JOIN
+            jurusan ON jurusan.id_jurusan = rombel.id_jurusan
+        LEFT JOIN
+            ptk walikelas ON walikelas.id_ptk = rombel.id_ptk_wali
+        LEFT JOIN
+            jabatan_ptk jabatan ON jabatan.id_jabatan = ptk.id_jabatan
+        WHERE 
+            pelanggaran.id_siswa = $1
+      `;
+
+      if (id_role === role.BK) {
+        queryText += `
+          AND rombel.id_rombel IN (
+            SELECT id_rombel FROM plotting_bk WHERE id_ptk_bk = $${paramIndex}
+          )
+        `;
+        queryParams.push(id_ptk);
+        paramIndex++;
+      } else if (id_role === role.wali_kelas) {
+        queryText += `
+          AND rombel.id_ptk_wali = $${paramIndex}
+        `;
+        queryParams.push(id_ptk);
+        paramIndex++;
+      }
+
+      queryText += `
+        ORDER BY
+          pelanggaran.tanggal DESC, 
+          siswa.id_siswa
+      `;
+
+      const result = await pool.query(queryText, queryParams);
+
+      return res.status(200).json({ data: result.rows });
+    } catch (error) {
+      console.error("Error pada PelanggaranController.getById:", error.message);
+      return res
+        .status(500)
+        .json({ error: "Internal Server Error: " + error.message });
+    }
+  },
+
   //mengambil seluruh data pelanggaran_siswa BY Filter
   async getFiltered(req, res) {
     try {
