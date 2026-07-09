@@ -66,8 +66,8 @@ const navItems: NavItem[] = [
     ],
     subItems: [
       {
-        name: "Data Poin Pelanggaran",
-        path: "/data-poin-pelanggaran",
+        name: "Manajemen Data Poin dan Sanksi",
+        path: "/PoinSanksi",
         pro: false,
         roles: [
           "Admin",
@@ -85,45 +85,20 @@ const navItems: NavItem[] = [
         roles: ["Admin"],
       },
       {
-        name: "Data Rombongan Belajar",
-        path: "/data-rombel",
+        name: "Manajemen Rombel dan Plotting BK",
+        path: "/ManajemenRombelPlotting",
         pro: false,
-        roles: ["Admin", "Wali Kelas"],
+        roles: ["Admin"],
       },
       {
-        name: "Data Siswa",
-        path: "/siswa",
+        name: "Manajemen Data Siswa",
+        path: "/ManajemenDataSiswa",
         pro: false,
         roles: ["Admin", "BK", "Wali Kelas"],
       },
       {
-        name: "Data User",
-        path: "/data-user",
-        pro: false,
-        roles: ["Admin"],
-      },
-      {
-        name: "Data Sanksi",
-        path: "/data-sanksi",
-        pro: false,
-        roles: [
-          "Admin",
-          "BK",
-          "Guru",
-          "Wali Kelas",
-          "Tenaga Kependidikan",
-          "Siswa",
-        ],
-      },
-      {
-        name: "Plotting BK",
-        path: "/plotting-bk",
-        pro: false,
-        roles: ["Admin"],
-      },
-      {
-        name: "Plotting BK",
-        path: "/plotting-bk",
+        name: "Manajemen Data User",
+        path: "/ManajemenDataUser",
         pro: false,
         roles: ["Admin"],
       },
@@ -147,30 +122,6 @@ const navItems: NavItem[] = [
     icon: <TableIcon />,
     roles: ["Admin", "BK", "Wali Kelas", "Siswa"],
     subItems: [
-      {
-        name: "Manajemen Data Poin dan Sanksi",
-        path: "/PoinSanksi",
-        pro: false,
-        roles: ["Admin", "BK", "Wali Kelas", "Siswa"],
-      },
-      {
-        name: "Manajemen Data User",
-        path: "/ManajemenDataUser",
-        pro: false,
-        roles: ["Admin"],
-      },
-      {
-        name: "Manajemen Rombel dan Plotting BK",
-        path: "/ManajemenRombelPlotting",
-        pro: false,
-        roles: ["Admin"],
-      },
-      {
-        name: "Manajemen Data Siswa",
-        path: "/ManajemenDataSiswa",
-        pro: false,
-        roles: ["Admin", "BK", "Wali Kelas"],
-      },
       {
         name: "Manajemen Pelanggaran dan Pembinaan",
         path: "/ManajemenPelanggaranPembinaan",

@@ -316,36 +316,6 @@ const ManajemenRombelPlotting = () => {
 
   const titles = getPageTitles();
 
-  // 📋 Render Navigasi Tab Atas
-  const renderCardTitle = () => {
-    return (
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => setActiveTab("rombel")}
-          className={`px-4 py-2 text-sm font-bold rounded-lg border transition-all duration-200 ${
-            activeTab === "rombel"
-              ? "bg-blue-600 text-white border-blue-600 shadow-sm"
-              : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700"
-          }`}
-        >
-          Data Rombel
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab("plotting")}
-          className={`px-4 py-2 text-sm font-bold rounded-lg border transition-all duration-200 ${
-            activeTab === "plotting"
-              ? "bg-blue-600 text-white border-blue-600 shadow-sm"
-              : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700"
-          }`}
-        >
-          Plotting BK
-        </button>
-      </div>
-    );
-  };
-
   return (
     <>
       <PageMeta
@@ -430,76 +400,108 @@ const ManajemenRombelPlotting = () => {
 
       {/* --- MAIN CARD & TABLES --- */}
       <div className="space-y-6">
-        <ComponentCard title={renderCardTitle() as any}>
+        {/* Navigation Tabs */}
+        <div className="flex border-b border-gray-200 dark:border-gray-800 gap-4">
+          <button
+            type="button"
+            onClick={() => setActiveTab("rombel")}
+            className={`pb-3 text-sm font-semibold transition-all relative ${
+              activeTab === "rombel"
+                ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600"
+                : "text-gray-500 hover:text-gray-700 dark:text-gray-400"
+            }`}
+          >
+            Data Rombel
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("plotting")}
+            className={`pb-3 text-sm font-semibold transition-all relative ${
+              activeTab === "plotting"
+                ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600"
+                : "text-gray-500 hover:text-gray-700 dark:text-gray-400"
+            }`}
+          >
+            Plotting BK
+          </button>
+        </div>
+
+        <div>
           {loading ? (
-            <p className="text-center dark:text-gray-400">Loading...</p>
+            <ComponentCard title={activeTab === "rombel" ? "Daftar Rombongan Belajar" : "Daftar Plotting BK"}>
+              <p className="text-center dark:text-gray-400">Loading...</p>
+            </ComponentCard>
           ) : activeTab === "rombel" ? (
-            <DataTable
-              columns={rombelColumns}
-              data={filteredRombelData}
-              searchable
-              paginated
-              itemsPerPageOptions={[5, 10, 20, 50]}
-              defaultItemsPerPage={10}
-              extraActions={
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant={
-                      activeRombelFiltersCount > 0 ? "primary" : "outline"
-                    }
-                    onClick={() => setShowFilterRombel(true)}
-                    className="relative"
-                  >
-                    🔍 Filter
-                    {activeRombelFiltersCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
-                        {activeRombelFiltersCount}
-                      </span>
-                    )}
-                  </Button>
-                </div>
-              }
-            />
-          ) : (
-            <DataTable
-              columns={plottingColumns}
-              data={filteredPlottingData}
-              searchable
-              paginated
-              itemsPerPageOptions={[5, 10, 20, 50]}
-              defaultItemsPerPage={10}
-              extraActions={
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant={
-                      activePlottingFiltersCount > 0 ? "primary" : "outline"
-                    }
-                    onClick={() => setShowFilterPlotting(true)}
-                    className="relative"
-                  >
-                    🔍 Filter
-                    {activePlottingFiltersCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
-                        {activePlottingFiltersCount}
-                      </span>
-                    )}
-                  </Button>
-                  {isAdmin && (
+            <ComponentCard title="Daftar Rombongan Belajar">
+              <DataTable
+                columns={rombelColumns}
+                data={filteredRombelData}
+                searchable
+                paginated
+                itemsPerPageOptions={[5, 10, 20, 50]}
+                defaultItemsPerPage={10}
+                extraActions={
+                  <div className="flex items-center gap-2">
                     <Button
                       size="sm"
-                      variant="primary"
-                      onClick={() => setShowAddPlotting(true)}
+                      variant={
+                        activeRombelFiltersCount > 0 ? "primary" : "outline"
+                      }
+                      onClick={() => setShowFilterRombel(true)}
+                      className="relative"
                     >
-                      + Tambah
+                      🔍 Filter
+                      {activeRombelFiltersCount > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
+                          {activeRombelFiltersCount}
+                        </span>
+                      )}
                     </Button>
-                  )}
-                </div>
-              }
-            />
+                  </div>
+                }
+              />
+            </ComponentCard>
+          ) : (
+            <ComponentCard title="Daftar Plotting BK">
+              <DataTable
+                columns={plottingColumns}
+                data={filteredPlottingData}
+                searchable
+                paginated
+                itemsPerPageOptions={[5, 10, 20, 50]}
+                defaultItemsPerPage={10}
+                extraActions={
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant={
+                        activePlottingFiltersCount > 0 ? "primary" : "outline"
+                      }
+                      onClick={() => setShowFilterPlotting(true)}
+                      className="relative"
+                    >
+                      🔍 Filter
+                      {activePlottingFiltersCount > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">
+                          {activePlottingFiltersCount}
+                        </span>
+                      )}
+                    </Button>
+                    {isAdmin && (
+                      <Button
+                        size="sm"
+                        variant="primary"
+                        onClick={() => setShowAddPlotting(true)}
+                      >
+                        + Tambah
+                      </Button>
+                    )}
+                  </div>
+                }
+              />
+            </ComponentCard>
           )}
-        </ComponentCard>
+        </div>
       </div>
     </>
   );

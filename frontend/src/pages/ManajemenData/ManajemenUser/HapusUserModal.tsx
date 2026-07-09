@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "../../../api/axios";
 import Button from "../../../components/ui/button/Button";
-import { Users } from "./ManajemenDataUsers";
+import { Users } from "./DataUsers";
 
 interface HapusProps {
   show: boolean;

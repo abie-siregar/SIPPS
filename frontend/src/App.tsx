@@ -35,11 +35,11 @@ import DataSanksi from "./pages/ManajemenData/Sanksi/DataSanksi";
 import SignUp from "./pages/AuthPages/SignUp";
 import { AuthProvider } from "./context/AuthContext";
 import DataPlottingBK from "./pages/ManajemenData/PlottingBK/DataPlottingBK";
-import ManajemenPoinSanksi from "./pages/TestLayout/ManajemenPoinSanksi/ManajemenPoinSanksi";
-import ManajemenDataUsers from "./pages/TestLayout/ManajemenUser/ManajemenDataUsers";
-import ManajemenRombelPlotting from "./pages/TestLayout/ManajemenRombelPlotting";
-import ManajemenDataSiswa from "./pages/TestLayout/ManajemenDataSiswa/ManajemenDataSiswa";
-import DataSiswa from "./pages/TestLayout/ManajemenDataSiswa/DataSiswa";
+import ManajemenPoinSanksi from "./pages/ManajemenData/ManajemenPoinSanksi/ManajemenPoinSanksi";
+import ManajemenDataUsers from "./pages/ManajemenData/ManajemenUser/ManajemenDataUsers";
+import ManajemenRombelPlotting from "./pages/ManajemenData/ManajemenRombelPlotting";
+import ManajemenDataSiswa from "./pages/ManajemenData/ManajemenDataSiswa/ManajemenDataSiswa";
+import DataSiswa from "./pages/ManajemenData/ManajemenDataSiswa/DataSiswa";
 import ManajemenPembinaanPelanggaran from "./pages/TestLayout/ManajemenPelanggaranPembinaan/ManajemenPelanggaranPembinaan";
 
 export default function App() {
@@ -175,7 +175,16 @@ export default function App() {
             <Route
               path="/PoinSanksi"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute
+                  roles={[
+                    "Admin",
+                    "BK",
+                    "Guru",
+                    "Wali Kelas",
+                    "Tenaga Kependidikan",
+                    "Siswa",
+                  ]}
+                >
                   <ManajemenPoinSanksi />
                 </ProtectedRoute>
               }

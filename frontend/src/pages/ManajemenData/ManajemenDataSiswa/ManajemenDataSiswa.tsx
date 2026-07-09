@@ -8,7 +8,7 @@ import PageMeta from "../../../components/common/PageMeta";
 import Button from "../../../components/ui/button/Button";
 import DataTable, { Column } from "../../../components/ui/table/DataTable";
 import FilterSiswaModal from "../../ManajemenData/Siswa/FilterSiswaModal";
-import SiswaDetailModal, { Siswa } from "./SiswaDetailModal";
+import { Siswa } from "./SiswaDetailModal";
 
 const ManajemenDataSiswa = () => {
   const navigate = useNavigate(); // 2. Inisialisasi hook navigate
@@ -21,9 +21,7 @@ const ManajemenDataSiswa = () => {
   const [selectedTingkat, setSelectedTingkat] = useState<string[]>([]);
   const [selectedJurusan, setSelectedJurusan] = useState<string[]>([]);
 
-  // State untuk mengontrol Pop-Up Detail
-  const [showDetailModal, setShowDetailModal] = useState(false);
-  const [selectedSiswa, setSelectedSiswa] = useState<Siswa | null>(null);
+
 
   const fetchData = async () => {
     setLoading(true);
@@ -105,11 +103,7 @@ const ManajemenDataSiswa = () => {
     setSelectedJurusan(filters.selectedJurusan);
   };
 
-  // Handler untuk membuka detail modal
-  const handleOpenDetail = (siswa: Siswa) => {
-    setSelectedSiswa(siswa);
-    setShowDetailModal(true);
-  };
+
 
   // Handler untuk navigasi ke halaman DataSiswa penuh
   const handleNavigateToDetail = (siswa: Siswa) => {
@@ -132,27 +126,17 @@ const ManajemenDataSiswa = () => {
     {
       header: "Aksi",
       accessor: "nama",
-      className: "w-48", // 3. Menyesuaikan lebar kolom aksi agar memuat 2 tombol
+      className: "w-28 text-center",
       render: (row) => (
-        <div className="flex gap-2">
-          {/* Tombol Pop-up Detail (Lama) */}
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => handleOpenDetail(row)}
-            className="border-gray-300 text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
-          >
-            Detail
-          </Button>
-
-          {/* Tombol Navigasi Halaman Penuh (Baru) */}
+        <div className="flex justify-center gap-2">
+          {/* Tombol Navigasi Halaman Penuh */}
           <Button
             size="sm"
             variant="primary"
             onClick={() => handleNavigateToDetail(row)}
             className="border-blue-500 text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-950/30"
           >
-            View Detail
+            Detail
           </Button>
         </div>
       ),
@@ -186,15 +170,7 @@ const ManajemenDataSiswa = () => {
         availableJurusan={availableJurusan}
       />
 
-      {/* Komponen Detail Modal */}
-      <SiswaDetailModal
-        show={showDetailModal}
-        siswa={selectedSiswa}
-        onClose={() => {
-          setShowDetailModal(false);
-          setSelectedSiswa(null);
-        }}
-      />
+
 
       <div className="space-y-6">
         <ComponentCard title="Tabel Data Siswa">
