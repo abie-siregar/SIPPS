@@ -110,21 +110,14 @@ const navItems: NavItem[] = [
     roles: ["Admin", "BK", "Wali Kelas", "Siswa"],
     subItems: [
       {
-        name: "Data Pelanggaran Siswa",
-        path: "/data-pelanggaran-siswa",
+        name: "Manajemen Pelanggaran",
+        path: "/ManajemenPelanggaran",
         pro: false,
         roles: ["Admin", "BK", "Wali Kelas", "Siswa"],
       },
-    ],
-  },
-  {
-    name: "Test Layout",
-    icon: <TableIcon />,
-    roles: ["Admin", "BK", "Wali Kelas", "Siswa"],
-    subItems: [
       {
-        name: "Manajemen Pelanggaran dan Pembinaan",
-        path: "/ManajemenPelanggaranPembinaan",
+        name: "Manajemen Pembinaan",
+        path: "/ManajemenPembinaan",
         pro: false,
         roles: ["Admin", "BK", "Wali Kelas", "Siswa"],
       },

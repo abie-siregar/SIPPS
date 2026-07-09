@@ -40,7 +40,8 @@ import ManajemenDataUsers from "./pages/ManajemenData/ManajemenUser/ManajemenDat
 import ManajemenRombelPlotting from "./pages/ManajemenData/ManajemenRombelPlotting";
 import ManajemenDataSiswa from "./pages/ManajemenData/ManajemenDataSiswa/ManajemenDataSiswa";
 import DataSiswa from "./pages/ManajemenData/ManajemenDataSiswa/DataSiswa";
-import ManajemenPembinaanPelanggaran from "./pages/TestLayout/ManajemenPelanggaranPembinaan/ManajemenPelanggaranPembinaan";
+import ManajemenPelanggaran from "./pages/ManajemenData/PelanggaranSiswa/ManajemenPelanggaranPembinaan/ManajemenPelanggaran";
+import ManajemenPembinaan from "./pages/ManajemenData/PelanggaranSiswa/ManajemenPelanggaranPembinaan/ManajemenPembinaan";
 
 export default function App() {
   return (
@@ -214,10 +215,18 @@ export default function App() {
               }
             />
             <Route
-              path="/ManajemenPelanggaranPembinaan"
+              path="/ManajemenPelanggaran"
               element={
-                <ProtectedRoute>
-                  <ManajemenPembinaanPelanggaran />
+                <ProtectedRoute roles={["Admin", "BK", "Wali Kelas", "Siswa"]}>
+                  <ManajemenPelanggaran />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ManajemenPembinaan"
+              element={
+                <ProtectedRoute roles={["Admin", "BK", "Wali Kelas", "Siswa"]}>
+                  <ManajemenPembinaan />
                 </ProtectedRoute>
               }
             />

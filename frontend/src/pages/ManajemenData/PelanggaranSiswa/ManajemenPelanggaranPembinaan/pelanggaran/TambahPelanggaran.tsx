@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import axios from "../../../../api/axios";
-import Button from "../../../../components/ui/button/Button";
-import Toast from "../../../../components/ui/alert/Toast";
-import SearchableSelect from "../../../../components/form/SearchableSelect";
+import axios from "../../../../../api/axios";
+import Button from "../../../../../components/ui/button/Button";
+import Toast from "../../../../../components/ui/alert/Toast";
+import SearchableSelect from "../../../../../components/form/SearchableSelect";
 
 interface TambahPopupProps {
   show: boolean;

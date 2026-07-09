@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import axios from "../../../../api/axios";
-import DataTable, { Column } from "../../../../components/ui/table/DataTable";
-import ComponentCard from "../../../../components/common/ComponentCard";
-import Button from "../../../../components/ui/button/Button";
-import { useAuth } from "../../../../context/AuthContext";
+import axios from "../../../../../api/axios";
+import DataTable, { Column } from "../../../../../components/ui/table/DataTable";
+import ComponentCard from "../../../../../components/common/ComponentCard";
+import Button from "../../../../../components/ui/button/Button";
+import { useAuth } from "../../../../../context/AuthContext";
 
 import TambahPelanggaran from "./TambahPelanggaran";
 import DetailPelanggaranModal from "./DetailPelanggaranModal";

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axios from "../../../../api/axios";
-import Button from "../../../../components/ui/button/Button";
+import axios from "../../../../../api/axios";
+import Button from "../../../../../components/ui/button/Button";
 import { Pelanggaran } from "./DataPelanggaran";
 
 interface HapusModalProps {

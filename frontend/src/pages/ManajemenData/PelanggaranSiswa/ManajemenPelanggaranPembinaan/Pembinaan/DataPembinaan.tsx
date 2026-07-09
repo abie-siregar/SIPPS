@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import axios from "../../../../api/axios";
-import DataTable, { Column } from "../../../../components/ui/table/DataTable";
-import ComponentCard from "../../../../components/common/ComponentCard";
-import Button from "../../../../components/ui/button/Button";
+import axios from "../../../../../api/axios";
+import DataTable, { Column } from "../../../../../components/ui/table/DataTable";
+import ComponentCard from "../../../../../components/common/ComponentCard";
+import Button from "../../../../../components/ui/button/Button";
 
 export interface Pembinaan {
   id_sanksi_siswa: number;

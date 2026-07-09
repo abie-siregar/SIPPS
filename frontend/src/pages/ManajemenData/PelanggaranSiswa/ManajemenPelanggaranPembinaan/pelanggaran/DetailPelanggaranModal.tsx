@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import Button from "../../../../components/ui/button/Button";
+import Button from "../../../../../components/ui/button/Button";
 import { Pelanggaran } from "./DataPelanggaran";
 
 interface DetailModalProps {
