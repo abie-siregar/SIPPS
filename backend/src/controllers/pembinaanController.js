@@ -12,18 +12,28 @@ const pembinaanController = {
           ms.nama_sanksi,
           ss.tanggal AS tanggal_sanksi,
           ss.status AS status_sanksi,
-          (
-            SELECT tahap_pembinaan 
-            FROM progres_pembinaan 
-            WHERE id_sanksi_siswa = ss.id_sanksi_siswa 
-            ORDER BY tanggal DESC, id_progres DESC LIMIT 1
-          ) AS tahap_akhir
-         FROM sanksi_siswa ss
-         INNER JOIN siswa s ON s.id_siswa = ss.id_siswa
-         INNER JOIN anggota_rombel ar ON ar.id_siswa = s.id_siswa
-         INNER JOIN rombel r ON r.id_rombel = ar.id_rombel
-         INNER JOIN master_sanksi ms ON ms.id_master_sanksi = ss.id_master_sanksi
-         ORDER BY ss.tanggal DESC`,
+          pp.tahap_pembinaan AS tahap_akhir,
+          pp.id_progres AS id_progres
+        FROM 
+          sanksi_siswa ss
+        INNER JOIN 
+          siswa s ON s.id_siswa = ss.id_siswa
+        INNER JOIN 
+          anggota_rombel ar ON ar.id_siswa = s.id_siswa
+        INNER JOIN 
+          rombel r ON r.id_rombel = ar.id_rombel
+        INNER JOIN 
+          master_sanksi ms ON ms.id_master_sanksi = ss.id_master_sanksi
+        LEFT JOIN (
+        SELECT DISTINCT ON 
+          (id_sanksi_siswa) id_sanksi_siswa, id_progres, tahap_pembinaan
+        FROM 
+          progres_pembinaan
+        ORDER BY 
+          id_sanksi_siswa, tanggal DESC, id_progres DESC ) 
+          pp ON pp.id_sanksi_siswa = ss.id_sanksi_siswa
+        ORDER BY 
+          ss.tanggal DESC;`,
       );
 
       res.json(result.rows);
@@ -52,10 +62,14 @@ const pembinaanController = {
           pp.tahap_pembinaan,
           pp.catatan_perkembangan,
           p.nama AS nama_pendamping
-         FROM progres_pembinaan pp
-         LEFT JOIN ptk p ON p.id_ptk = pp.id_ptk_pendamping
-         WHERE pp.id_sanksi_siswa = $1
-         ORDER BY pp.tanggal ASC`,
+         FROM 
+          progres_pembinaan pp
+         LEFT JOIN 
+          ptk p ON p.id_ptk = pp.id_ptk_pendamping
+         WHERE 
+          pp.id_sanksi_siswa = $1
+         ORDER BY 
+          pp.tanggal ASC`,
         [id],
       );
 

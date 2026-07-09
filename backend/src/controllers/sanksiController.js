@@ -3,16 +3,14 @@ const pool = require("../../config/database");
 module.exports = {
   async getAll(req, res) {
     try {
-      const result = await pool.query(
-        `SELECT
-                    * 
-                 FROM
-                 master_sanksi
-                 ORDER BY 
-                 id_master_sanksi
-                 ASC
-                `,
-      );
+      const result = await pool.query(`
+        SELECT
+          * 
+        FROM
+          master_sanksi
+        ORDER BY 
+          id_master_sanksi
+        ASC`);
 
       res.json(result.rows);
     } catch (error) {
@@ -55,15 +53,22 @@ module.exports = {
     const { nama_sanksi, batas_poin } = req.body;
     try {
       const result = await pool.query(
-        `UPDATE
-                master_sanksi
-                SET
-                nama_sanksi = $1, batas_poin = $2
-                WHERE
-                id_master_sanksi = $3
-                RETURNING *`,
+        `
+        UPDATE
+          master_sanksi
+        SET
+          nama_sanksi = $1, batas_poin = $2, updated_at = NOW()
+        WHERE
+          id_master_sanksi = $3
+        RETURNING *`,
         [nama_sanksi, batas_poin, id],
       );
+
+      if (result.rows.length === 0) {
+        return res
+          .status(404)
+          .json({ error: "Data master sanksi tidak ditemukan" });
+      }
       res.json({
         message: "Data berhasil di perbaharui",
         data: result.rows[0],

@@ -35,6 +35,12 @@ import DataSanksi from "./pages/ManajemenData/Sanksi/DataSanksi";
 import SignUp from "./pages/AuthPages/SignUp";
 import { AuthProvider } from "./context/AuthContext";
 import DataPlottingBK from "./pages/ManajemenData/PlottingBK/DataPlottingBK";
+import ManajemenPoinSanksi from "./pages/TestLayout/ManajemenPoinSanksi/ManajemenPoinSanksi";
+import ManajemenDataUsers from "./pages/TestLayout/ManajemenUser/ManajemenDataUsers";
+import ManajemenRombelPlotting from "./pages/TestLayout/ManajemenRombelPlotting";
+import ManajemenDataSiswa from "./pages/TestLayout/ManajemenDataSiswa/ManajemenDataSiswa";
+import DataSiswa from "./pages/TestLayout/ManajemenDataSiswa/DataSiswa";
+import ManajemenPembinaanPelanggaran from "./pages/TestLayout/ManajemenPelanggaranPembinaan/ManajemenPelanggaranPembinaan";
 
 export default function App() {
   return (
@@ -45,163 +51,226 @@ export default function App() {
           {/* Default route */}
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-        {/* Auth routes (tanpa layout) */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<SignUp />} />
-        <Route path="/admin-login" element={<AdminLogin />} />
+          {/* Auth routes (tanpa layout) */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<SignUp />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
 
-        {/* Routes yang memakai AppLayout */}
-        <Route
-          element={
-            <AppLayout />
-          }
-        >
-          {/* Dashboard (dengan proteksi login) */}
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Home />
-              </ProtectedRoute>
-            }
-          />
-          {/* Manajemen Data */}
-          /* Data Poin Pelanggaran */
-          <Route
-            path="/data-poin-pelanggaran"
-            element={
-              <ProtectedRoute roles={["Admin", "BK", "Guru", "Wali Kelas", "Tenaga Kependidikan", "Siswa"]}>
-                <DataPoinPelanggaran />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/data-poin-pelanggaran/tambah"
-            element={
-              <ProtectedRoute roles={["Admin"]}>
-                <TambahPelanggaran />
-              </ProtectedRoute>
-            }
-          />
-          /* Pelanggaran-siswa */
-          <Route
-            path="/data-pelanggaran-siswa"
-            element={
-              <ProtectedRoute roles={["Admin", "BK", "Wali Kelas", "Siswa"]}>
-                <DataPelanggaranSiswa />
-              </ProtectedRoute>
-            }
-          />
-          /* Data Rombongan Belajar */
-          <Route
-            path="/data-rombel"
-            element={
-              <ProtectedRoute roles={["Admin", "Wali Kelas", "BK"]}>
-                <DataRombel />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/data-rombel/edit/:id"
-            element={
-              <ProtectedRoute roles={["Admin"]}>
-                <EditDataRombel />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/data-user"
-            element={
-              <ProtectedRoute roles={["Admin"]}>
-                <DataUsers />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/data-sanksi"
-            element={
-              <ProtectedRoute roles={["Admin", "BK", "Guru", "Wali Kelas", "Tenaga Kependidikan", "Siswa"]}>
-                <DataSanksi />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/plotting-bk"
-            element={
-              <ProtectedRoute roles={["Admin"]}>
-                <DataPlottingBK />
-              </ProtectedRoute>
-            }
-          />
-          /* Data PTK & PD */
-          <Route
-            path="/ptk"
-            element={
-              <ProtectedRoute roles={["Admin", "Tenaga Kependidikan"]}>
-                <PTK />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/siswa"
-            element={
-              <ProtectedRoute roles={["Admin", "BK", "Guru", "Wali Kelas"]}>
-                <Siswa />
-              </ProtectedRoute>
-            }
-          />
-          /* Others */
-          <Route
-            path="/calendar"
-            element={
-              <ProtectedRoute
-                roles={[
-                  "Admin",
-                  "BK",
-                  "Guru",
-                  "Wali Kelas",
-                  "Siswa",
-                  "Tenaga Kependidikan",
-                ]}
-              >
-                <Calendar />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/blank"
-            element={
-              <ProtectedRoute roles={["Admin"]}>
-                <Blank />
-              </ProtectedRoute>
-            }
-          />
-          /* Tables */
-          <Route
-            path="/basic-tables"
-            element={
-              <ProtectedRoute roles={["Admin"]}>
-                <BasicTables />
-              </ProtectedRoute>
-            }
-          />
-          {/* UI Elements */}
-          <Route path="/alerts" element={<Alerts />} />
-          <Route path="/avatars" element={<Avatars />} />
-          <Route path="/badge" element={<Badges />} />
-          <Route path="/buttons" element={<Buttons />} />
-          <Route path="/images" element={<Images />} />
-          <Route path="/videos" element={<Videos />} />
-          {/* Charts */}
-          <Route path="/line-chart" element={<LineChart />} />
-          <Route path="/bar-chart" element={<BarChart />} />
-          <Route path="/user-profile" element={<UserProfile />} />
-        </Route>
+          {/* Routes yang memakai AppLayout */}
+          <Route element={<AppLayout />}>
+            {/* Dashboard (dengan proteksi login) */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Home />
+                </ProtectedRoute>
+              }
+            />
+            {/* Manajemen Data */}
+            /* Data Poin Pelanggaran */
+            <Route
+              path="/data-poin-pelanggaran"
+              element={
+                <ProtectedRoute
+                  roles={[
+                    "Admin",
+                    "BK",
+                    "Guru",
+                    "Wali Kelas",
+                    "Tenaga Kependidikan",
+                    "Siswa",
+                  ]}
+                >
+                  <DataPoinPelanggaran />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/data-poin-pelanggaran/tambah"
+              element={
+                <ProtectedRoute roles={["Admin"]}>
+                  <TambahPelanggaran />
+                </ProtectedRoute>
+              }
+            />
+            /* Pelanggaran-siswa */
+            <Route
+              path="/data-pelanggaran-siswa"
+              element={
+                <ProtectedRoute roles={["Admin", "BK", "Wali Kelas", "Siswa"]}>
+                  <DataPelanggaranSiswa />
+                </ProtectedRoute>
+              }
+            />
+            /* Data Rombongan Belajar */
+            <Route
+              path="/data-rombel"
+              element={
+                <ProtectedRoute roles={["Admin", "Wali Kelas", "BK"]}>
+                  <DataRombel />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/data-rombel/edit/:id"
+              element={
+                <ProtectedRoute roles={["Admin"]}>
+                  <EditDataRombel />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/data-user"
+              element={
+                <ProtectedRoute roles={["Admin"]}>
+                  <DataUsers />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/data-sanksi"
+              element={
+                <ProtectedRoute
+                  roles={[
+                    "Admin",
+                    "BK",
+                    "Guru",
+                    "Wali Kelas",
+                    "Tenaga Kependidikan",
+                    "Siswa",
+                  ]}
+                >
+                  <DataSanksi />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/plotting-bk"
+              element={
+                <ProtectedRoute roles={["Admin"]}>
+                  <DataPlottingBK />
+                </ProtectedRoute>
+              }
+            />
+            /* Data PTK & PD */
+            <Route
+              path="/ptk"
+              element={
+                <ProtectedRoute roles={["Admin", "Tenaga Kependidikan"]}>
+                  <PTK />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/siswa"
+              element={
+                <ProtectedRoute roles={["Admin", "BK", "Guru", "Wali Kelas"]}>
+                  <Siswa />
+                </ProtectedRoute>
+              }
+            />
+            /* Others */
+            {/* TestLayout */}
+            <Route
+              path="/PoinSanksi"
+              element={
+                <ProtectedRoute>
+                  <ManajemenPoinSanksi />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ManajemenDataUser"
+              element={
+                <ProtectedRoute roles={["Admin"]}>
+                  <ManajemenDataUsers />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ManajemenRombelPlotting"
+              element={
+                <ProtectedRoute roles={["Admin"]}>
+                  <ManajemenRombelPlotting />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ManajemenDataSiswa"
+              element={
+                <ProtectedRoute>
+                  <ManajemenDataSiswa />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ManajemenPelanggaranPembinaan"
+              element={
+                <ProtectedRoute>
+                  <ManajemenPembinaanPelanggaran />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/data-siswa/:id"
+              element={
+                <ProtectedRoute>
+                  <DataSiswa />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/calendar"
+              element={
+                <ProtectedRoute
+                  roles={[
+                    "Admin",
+                    "BK",
+                    "Guru",
+                    "Wali Kelas",
+                    "Siswa",
+                    "Tenaga Kependidikan",
+                  ]}
+                >
+                  <Calendar />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/blank"
+              element={
+                <ProtectedRoute roles={["Admin"]}>
+                  <Blank />
+                </ProtectedRoute>
+              }
+            />
+            /* Tables */
+            <Route
+              path="/basic-tables"
+              element={
+                <ProtectedRoute roles={["Admin"]}>
+                  <BasicTables />
+                </ProtectedRoute>
+              }
+            />
+            {/* UI Elements */}
+            <Route path="/alerts" element={<Alerts />} />
+            <Route path="/avatars" element={<Avatars />} />
+            <Route path="/badge" element={<Badges />} />
+            <Route path="/buttons" element={<Buttons />} />
+            <Route path="/images" element={<Images />} />
+            <Route path="/videos" element={<Videos />} />
+            {/* Charts */}
+            <Route path="/line-chart" element={<LineChart />} />
+            <Route path="/bar-chart" element={<BarChart />} />
+            <Route path="/user-profile" element={<UserProfile />} />
+          </Route>
 
-        {/* Fallback */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Router>
+          {/* Fallback */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Router>
     </AuthProvider>
   );
 }

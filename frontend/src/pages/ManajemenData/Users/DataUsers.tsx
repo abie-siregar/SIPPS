@@ -9,6 +9,7 @@ import Button from "../../../components/ui/button/Button";
 import FilterUserModal from "./FilterUserModal";
 
 export interface Users {
+  id_user: string;
   username: string;
   nama: string;
   nama_role: string;
@@ -61,10 +62,7 @@ const DataUsers = () => {
   const filteredData = useMemo(() => {
     return processedData.filter((row) => {
       // 1. Role filter
-      if (
-        selectedRole.length > 0 &&
-        !selectedRole.includes(row.nama_role)
-      ) {
+      if (selectedRole.length > 0 && !selectedRole.includes(row.nama_role)) {
         return false;
       }
       return true;
@@ -75,7 +73,7 @@ const DataUsers = () => {
     () => ({
       selectedRole,
     }),
-    [selectedRole]
+    [selectedRole],
   );
 
   const handleApplyFilters = (filters: typeof filterValues) => {
