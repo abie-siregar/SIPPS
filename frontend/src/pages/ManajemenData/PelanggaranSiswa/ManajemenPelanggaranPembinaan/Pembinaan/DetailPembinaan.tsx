@@ -11,10 +11,12 @@ import { Modal } from "../../../../../components/ui/modal";
 
 interface ProgressStep {
   id_progres: number;
+  id_sanksi_siswa?: number;
   tanggal: string;
   tahap_pembinaan: string;
   catatan_perkembangan: string;
   nama_pendamping: string;
+  batas_poin?: number;
 }
 
 interface PTK {
@@ -72,15 +74,22 @@ const DetailPembinaan: React.FC = () => {
     message: string;
   }>({ show: false, variant: "success", message: "" });
 
-  const predefinedStages = ["BARU", tahapAkhir, "SELESAI"];
+  const predefinedStages =
+    tahapAkhir === "TAHAP_1"
+      ? ["TAHAP_1", "SELESAI"]
+      : ["TAHAP_1", tahapAkhir, "SELESAI"];
+
+  const currentHistory = history.filter(
+    (step) => Number(step.id_sanksi_siswa) === Number(id),
+  );
 
   // Automatically calculate next stage based on completed ones
   const getNextStage = () => {
-    const completedIndexes = history.map((step) =>
+    const completedIndexes = currentHistory.map((step) =>
       predefinedStages.indexOf(step.tahap_pembinaan),
     ).filter(idx => idx !== -1);
     if (completedIndexes.length === 0) {
-      return predefinedStages[1] || ""; // First stage after BARU
+      return predefinedStages[0] || ""; // First stage (TAHAP_1)
     }
     const maxIndex = Math.max(...completedIndexes);
     if (maxIndex < predefinedStages.length - 1) {
@@ -174,13 +183,17 @@ const DetailPembinaan: React.FC = () => {
       currentTahapAkhir = `TAHAP_${maxTahapNum}`;
       setTahapAkhir(currentTahapAkhir);
       
-      const dynamicStages = ["BARU", currentTahapAkhir, "SELESAI"];
+      const dynamicStages =
+        currentTahapAkhir === "TAHAP_1"
+          ? ["TAHAP_1", "SELESAI"]
+          : ["TAHAP_1", currentTahapAkhir, "SELESAI"];
 
       const filteredData = data.filter((step) => dynamicStages.includes(step.tahap_pembinaan));
       setHistory(filteredData);
 
-      if (filteredData.length > 0) {
-        const latestStep = filteredData[filteredData.length - 1];
+      const currentFiltered = filteredData.filter((step) => Number(step.id_sanksi_siswa) === Number(id));
+      if (currentFiltered.length > 0) {
+        const latestStep = currentFiltered[currentFiltered.length - 1];
         const latestIdx = dynamicStages.indexOf(latestStep.tahap_pembinaan);
         setSelectedStepIndex(latestIdx !== -1 ? latestIdx : 0);
       } else {
@@ -290,16 +303,11 @@ const DetailPembinaan: React.FC = () => {
 
   const isCompleted = nextTahap === "";
 
-  const completedStagesIndexes = history.map((step) =>
+  const completedStagesIndexes = currentHistory.map((step) =>
     predefinedStages.indexOf(step.tahap_pembinaan),
   );
 
   const getStepStatus = (index: number) => {
-    if (completedStagesIndexes.length === 0) {
-      return index === 0 ? "active" : "upcoming";
-    }
-    const latestCompletedIndex = Math.max(...completedStagesIndexes);
-    
     // If SELESAI is completed
     const selesaiIndex = predefinedStages.indexOf("SELESAI");
     const isFinished =
@@ -309,19 +317,31 @@ const DetailPembinaan: React.FC = () => {
     if (isFinished) {
       return "completed";
     }
-    
-    if (index < latestCompletedIndex) {
+
+    // A step is completed if it is recorded in completedStagesIndexes
+    if (completedStagesIndexes.includes(index)) {
       return "completed";
     }
-    if (index === latestCompletedIndex) {
+
+    // Find the first index that is NOT in completedStagesIndexes
+    let firstActiveIndex = 0;
+    for (let i = 0; i < predefinedStages.length; i++) {
+      if (!completedStagesIndexes.includes(i)) {
+        firstActiveIndex = i;
+        break;
+      }
+    }
+
+    if (index === firstActiveIndex) {
       return "active";
     }
+
     return "upcoming";
   };
 
   const getStageHistoryRecord = (index: number) => {
     const stageName = predefinedStages[index];
-    return history.find((step) => step.tahap_pembinaan === stageName);
+    return currentHistory.find((step) => step.tahap_pembinaan === stageName);
   };
 
   const selectedRecord = selectedStepIndex !== -1 ? getStageHistoryRecord(selectedStepIndex) : null;
@@ -349,7 +369,18 @@ const DetailPembinaan: React.FC = () => {
     {
       header: "Tahap Pembinaan",
       accessor: "tahap_pembinaan",
-      render: (row) => getStageLabel(row.tahap_pembinaan),
+      render: (row) => {
+        let rowTahapAkhir = tahapAkhir;
+        if (row.batas_poin !== undefined) {
+          const bp = row.batas_poin;
+          if (bp >= 901) rowTahapAkhir = "TAHAP_5";
+          else if (bp >= 701) rowTahapAkhir = "TAHAP_4";
+          else if (bp >= 201) rowTahapAkhir = "TAHAP_3";
+          else if (bp >= 101) rowTahapAkhir = "TAHAP_2";
+          else rowTahapAkhir = "TAHAP_1";
+        }
+        return getStageLabel(row.tahap_pembinaan, rowTahapAkhir);
+      },
       className: "w-48",
     },
     {
@@ -391,15 +422,16 @@ const DetailPembinaan: React.FC = () => {
     { header: "PTK Pelapor", accessor: "nama_ptk", className: "w-36" },
   ];
 
-  const getStageLabel = (stage: string) => {
-    if (stage === "BARU") {
+  const getStageLabel = (stage: string, rowTahapAkhir?: string) => {
+    const resolvedTahapAkhir = rowTahapAkhir || tahapAkhir;
+    if (stage === "TAHAP_1") {
       return "MENUNGGU PEMBINAAN";
     }
     if (stage === "SELESAI") {
-      if (tahapAkhir.toUpperCase() === "TAHAP_5") {
+      if (resolvedTahapAkhir.toUpperCase() === "TAHAP_5") {
         return "SIDANG MAJELIS SELESAI DILAKUKAN";
       }
-      return `PEMBINAAN ${tahapAkhir.replace("_", " ")} SELESAI`;
+      return `PEMBINAAN ${resolvedTahapAkhir.replace("_", " ")} SELESAI`;
     }
     return "PROSES PEMBINAAN";
   };

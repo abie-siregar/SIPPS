@@ -12,7 +12,13 @@ const pembinaanController = {
           ms.nama_sanksi,
           ss.tanggal AS tanggal_sanksi,
           ss.status AS status_sanksi,
-          pp.tahap_pembinaan AS tahap_akhir,
+          CASE 
+            WHEN ms.batas_poin >= 901 THEN 'TAHAP_5'
+            WHEN ms.batas_poin >= 701 THEN 'TAHAP_4'
+            WHEN ms.batas_poin >= 201 THEN 'TAHAP_3'
+            WHEN ms.batas_poin >= 101 THEN 'TAHAP_2'
+            ELSE 'TAHAP_1'
+          END AS tahap_akhir,
           pp.id_progres AS id_progres
         FROM 
           sanksi_siswa ss
@@ -25,6 +31,11 @@ const pembinaanController = {
         INNER JOIN 
           master_sanksi ms ON ms.id_master_sanksi = ss.id_master_sanksi
         LEFT JOIN (
+          SELECT id_siswa, MAX(tanggal) AS max_tanggal_pelanggaran
+          FROM pelanggaran_siswa
+          GROUP BY id_siswa
+        ) lp ON lp.id_siswa = ss.id_siswa
+        LEFT JOIN (
         SELECT DISTINCT ON 
           (id_sanksi_siswa) id_sanksi_siswa, id_progres, tahap_pembinaan
         FROM 
@@ -33,7 +44,7 @@ const pembinaanController = {
           id_sanksi_siswa, tanggal DESC, id_progres DESC ) 
           pp ON pp.id_sanksi_siswa = ss.id_sanksi_siswa
         ORDER BY 
-          ss.tanggal DESC;`,
+          COALESCE(lp.max_tanggal_pelanggaran, ss.tanggal) DESC, ss.id_sanksi_siswa DESC;`,
       );
 
       res.json(result.rows);
@@ -58,18 +69,24 @@ const pembinaanController = {
       const result = await pool.query(
         `SELECT 
           pp.id_progres,
+          pp.id_sanksi_siswa,
           pp.tanggal,
           pp.tahap_pembinaan,
           pp.catatan_perkembangan,
-          p.nama AS nama_pendamping
+          p.nama AS nama_pendamping,
+          ms.batas_poin
          FROM 
           progres_pembinaan pp
          LEFT JOIN 
           ptk p ON p.id_ptk = pp.id_ptk_pendamping
+         INNER JOIN
+          sanksi_siswa ss ON ss.id_sanksi_siswa = pp.id_sanksi_siswa
+         INNER JOIN
+          master_sanksi ms ON ms.id_master_sanksi = ss.id_master_sanksi
          WHERE 
-          pp.id_sanksi_siswa = $1
+          ss.id_siswa = (SELECT id_siswa FROM sanksi_siswa WHERE id_sanksi_siswa = $1)
          ORDER BY 
-          pp.tanggal ASC`,
+          pp.tanggal ASC, pp.id_progres ASC`,
         [id],
       );
 
