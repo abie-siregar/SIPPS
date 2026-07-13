@@ -42,6 +42,9 @@ import ManajemenDataSiswa from "./pages/ManajemenData/ManajemenDataSiswa/Manajem
 import DataSiswa from "./pages/ManajemenData/ManajemenDataSiswa/DataSiswa";
 import ManajemenPelanggaran from "./pages/ManajemenData/PelanggaranSiswa/ManajemenPelanggaranPembinaan/ManajemenPelanggaran";
 import ManajemenPembinaan from "./pages/ManajemenData/PelanggaranSiswa/ManajemenPelanggaranPembinaan/ManajemenPembinaan";
+import DetailPembinaan from "./pages/ManajemenData/PelanggaranSiswa/ManajemenPelanggaranPembinaan/Pembinaan/DetailPembinaan";
+import IdentitasSiswaRedirect from "./pages/ManajemenData/ManajemenDataSiswa/IdentitasSiswaRedirect";
+import RiwayatPelanggaranRedirect from "./pages/ManajemenData/ManajemenDataSiswa/RiwayatPelanggaranRedirect";
 
 export default function App() {
   return (
@@ -215,6 +218,22 @@ export default function App() {
               }
             />
             <Route
+              path="/IdentitasSiswa"
+              element={
+                <ProtectedRoute roles={["Siswa"]}>
+                  <IdentitasSiswaRedirect />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/RiwayatPelanggaran"
+              element={
+                <ProtectedRoute roles={["Siswa"]}>
+                  <RiwayatPelanggaranRedirect />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/ManajemenPelanggaran"
               element={
                 <ProtectedRoute roles={["Admin", "BK", "Wali Kelas", "Siswa"]}>
@@ -227,6 +246,14 @@ export default function App() {
               element={
                 <ProtectedRoute roles={["Admin", "BK", "Wali Kelas", "Siswa"]}>
                   <ManajemenPembinaan />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/detail-pembinaan/:id"
+              element={
+                <ProtectedRoute roles={["Admin", "BK", "Wali Kelas"]}>
+                  <DetailPembinaan />
                 </ProtectedRoute>
               }
             />

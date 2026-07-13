@@ -83,7 +83,7 @@ module.exports = {
 
         const checkSanksiSiswa = await client.query(
           `SELECT id_sanksi_siswa FROM sanksi_siswa 
-         WHERE id_siswa = $1 AND id_master_sanksi = $2 AND id_semester = $3`,
+         WHERE id_siswa = $1 AND id_master_sanksi = $2 AND id_semester = $3 AND status != 'SELESAI'`,
           [id_siswa, id_master_sanksi, id_semester],
         );
 
@@ -260,7 +260,7 @@ module.exports = {
 
         const checkSanksiSiswa = await client.query(
           `SELECT id_sanksi_siswa FROM sanksi_siswa 
-         WHERE id_siswa = $1 AND id_master_sanksi = $2 AND id_semester = $3`,
+         WHERE id_siswa = $1 AND id_master_sanksi = $2 AND id_semester = $3 AND status != 'SELESAI'`,
           [id_siswa, id_master_sanksi, id_semester],
         );
 
@@ -376,6 +376,38 @@ module.exports = {
        WHERE id_siswa = $2`,
         [bobotDihapus, id_siswa],
       );
+
+      // Get updated points
+      const updatedRombel = await client.query(
+        `SELECT saldo_poin FROM anggota_rombel WHERE id_siswa = $1`,
+        [id_siswa]
+      );
+      const newPoints = updatedRombel.rows[0]?.saldo_poin || 0;
+
+      // Find sanksi records that need to be deleted (where master_sanksi.batas_poin > newPoints)
+      const sanksiToDelete = await client.query(
+        `SELECT ss.id_sanksi_siswa 
+         FROM sanksi_siswa ss
+         INNER JOIN master_sanksi ms ON ms.id_master_sanksi = ss.id_master_sanksi
+         WHERE ss.id_siswa = $1 AND ms.batas_poin > $2`,
+        [id_siswa, newPoints]
+      );
+
+      const sanksiIds = sanksiToDelete.rows.map((row) => row.id_sanksi_siswa);
+
+      if (sanksiIds.length > 0) {
+        // Delete related progres_pembinaan
+        await client.query(
+          `DELETE FROM progres_pembinaan WHERE id_sanksi_siswa = ANY($1)`,
+          [sanksiIds]
+        );
+
+        // Delete from sanksi_siswa
+        await client.query(
+          `DELETE FROM sanksi_siswa WHERE id_sanksi_siswa = ANY($1)`,
+          [sanksiIds]
+        );
+      }
 
       await client.query("COMMIT");
 

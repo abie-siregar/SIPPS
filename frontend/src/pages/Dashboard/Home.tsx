@@ -1,5 +1,6 @@
 import PageMeta from "../../components/common/PageMeta";
 import { useAuth } from "../../context/AuthContext";
+import SiswaRiwayatPelanggaran from "../../components/siswa/SiswaRiwayatPelanggaran";
 
 // ────────────────────────────────────────────────
 // Role configuration — keys match DB nama_role exactly
@@ -203,6 +204,8 @@ export default function Home() {
           </div>
         </div>
 
+
+
         {/* ── Role Info Card ───────────────────────────── */}
         <div className="col-span-12 md:col-span-4">
           <div
@@ -333,20 +336,26 @@ export default function Home() {
                       fontSize: "0.95rem",
                       fontWeight: 600,
                       color: "#1f2937",
-                    }}
-                    className="dark:text-white"
-                  >
-                    {value || (
-                      <span style={{ color: "#d1d5db", fontWeight: 400 }}>
-                        —
-                      </span>
-                    )}
-                  </p>
+                        }}
+                        className="dark:text-white"
+                      >
+                        {value || (
+                          <span style={{ color: "#d1d5db", fontWeight: 400 }}>
+                            —
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
+
+        {user?.role === "Siswa" && (
+          <div className="col-span-12 mt-2">
+            <SiswaRiwayatPelanggaran isDashboard />
           </div>
-        </div>
+        )}
       </div>
     </>
   );

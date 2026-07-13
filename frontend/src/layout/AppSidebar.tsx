@@ -97,6 +97,18 @@ const navItems: NavItem[] = [
         roles: ["Admin", "BK", "Wali Kelas"],
       },
       {
+        name: "Identitas Siswa",
+        path: "/IdentitasSiswa",
+        pro: false,
+        roles: ["Siswa"],
+      },
+      {
+        name: "Riwayat Pelanggaran",
+        path: "/RiwayatPelanggaran",
+        pro: false,
+        roles: ["Siswa"],
+      },
+      {
         name: "Manajemen Data User",
         path: "/ManajemenDataUser",
         pro: false,
@@ -271,7 +283,11 @@ const AppSidebar: React.FC = () => {
                                   : "menu-dropdown-item-inactive"
                               }`}
                             >
-                              {subItem.name}
+                              {subItem.path === "/PoinSanksi"
+                                ? user?.role === "Admin"
+                                  ? "Manajemen Data Poin dan Sanksi"
+                                  : "Aturan Data Poin dan Sanksi"
+                                : subItem.name}
                               <span className="flex items-center gap-1 ml-auto">
                                 {subItem.new && (
                                   <span

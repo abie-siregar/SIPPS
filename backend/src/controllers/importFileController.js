@@ -86,7 +86,7 @@ module.exports = {
 
           // Cek duplikasi sanksi di semester yang sama
           const checkSanksiSiswa = await client.query(
-            `SELECT id_sanksi_siswa FROM sanksi_siswa WHERE id_siswa = $1 AND id_master_sanksi = $2 AND id_semester = $3`,
+            `SELECT id_sanksi_siswa FROM sanksi_siswa WHERE id_siswa = $1 AND id_master_sanksi = $2 AND id_semester = $3 AND status != 'SELESAI'`,
             [id_siswa, id_master_sanksi, id_semester],
           );
 

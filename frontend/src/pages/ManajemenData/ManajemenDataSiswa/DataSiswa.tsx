@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import axios from "../../../api/axios";
 
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import Toast from "../../../components/ui/alert/Toast";
 import ComponentCard from "../../../components/common/ComponentCard";
 import Button from "../../../components/ui/button/Button";
-import DataTable, { Column } from "../../../components/ui/table/DataTable";
+import SiswaRiwayatPelanggaran from "../../../components/siswa/SiswaRiwayatPelanggaran";
 
 export interface DetailSiswa {
   id_siswa?: number | string;
@@ -59,11 +59,12 @@ export interface RiwayatPelanggaran {
 const DataSiswa = () => {
   const { id } = useParams<{ id: string }>(); // Mengambil ID siswa dinamis dari URL router
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const tab = searchParams.get("tab");
 
   // Loading states
   const [loading, setLoading] = useState(true);
   const [loadingOrtu, setLoadingOrtu] = useState(false);
-  const [loadingPelanggaran, setLoadingPelanggaran] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   // Data states dengan inisialisasi lengkap mematuhi aturan tipe data kontrak TypeScript
@@ -91,10 +92,6 @@ const DataSiswa = () => {
     id_siswa: "",
     nama: "",
   });
-
-  const [riwayatPelanggaran, setRiwayatPelanggaran] = useState<
-    RiwayatPelanggaran[]
-  >([]);
 
   // UI Control states
   const [isEditMode, setIsEditMode] = useState(false);
@@ -166,26 +163,9 @@ const DataSiswa = () => {
     }
   };
 
-  // 3. Ambil Riwayat Pelanggaran
-  const fetchPelanggaranData = async () => {
-    if (!id) return;
-    setLoadingPelanggaran(true);
-    try {
-      const res = await axios.post(`/pelanggaran-siswa/${id}`);
-      const fetchedData = res.data.data || res.data || [];
-      setRiwayatPelanggaran(Array.isArray(fetchedData) ? fetchedData : []);
-    } catch (error) {
-      console.error("Gagal memuat riwayat pelanggaran:", error);
-      setRiwayatPelanggaran([]);
-    } finally {
-      setLoadingPelanggaran(false);
-    }
-  };
-
   useEffect(() => {
     fetchSiswaData();
     fetchOrtuData();
-    fetchPelanggaranData();
   }, [id]);
 
   // Handle Input Changes
@@ -245,42 +225,7 @@ const DataSiswa = () => {
     }
   };
 
-  // Kolom konfigurasi untuk Tabel Riwayat Pelanggaran
-  const pelanggaranColumns: Column<RiwayatPelanggaran>[] = [
-    {
-      header: "No",
-      accessor: "id_pelanggaran",
-      render: (_, index) => (index ?? 0) + 1,
-      className: "w-12",
-    },
-    {
-      header: "Tanggal",
-      accessor: "tanggal",
-      className: "w-32",
-      render: (row) => {
-        if (!row.tanggal) return "-";
-        try {
-          // Ambil bagian "2026-06-11" sebelum huruf T, lalu pecah berdasarkan '-'
-          const [year, month, day] = row.tanggal.split("T")[0].split("-");
-          return `${day}-${month}-${year}`; // Hasil: 11-06-2026
-        } catch (error) {
-          return "-";
-        }
-      },
-    },
-    {
-      header: "Pelanggaran",
-      accessor: "jenis_pelanggaran",
-      className: "w-64",
-    },
-    { header: "Kategori", accessor: "jenis_penilaian", className: "w-32" },
-    {
-      header: "Poin",
-      accessor: "poin",
-      className: "w-20 font-bold text-red-600 dark:text-red-400",
-    },
-    { header: "Keterangan", accessor: "keterangan" },
-  ];
+
 
   if (loading) {
     return (
@@ -292,7 +237,13 @@ const DataSiswa = () => {
 
   return (
     <>
-      <PageBreadcrumb pageTitle={`Profil : ${siswaForm.nama || "Siswa"}`} />
+      <PageBreadcrumb
+        pageTitle={
+          tab === "riwayat"
+            ? `Riwayat Pelanggaran: ${siswaForm.nama || "Siswa"}`
+            : `Profil : ${siswaForm.nama || "Siswa"}`
+        }
+      />
       <Toast
         show={toast.show}
         variant={toast.variant}
@@ -301,7 +252,8 @@ const DataSiswa = () => {
       />
 
       <div className="space-y-6">
-        <ComponentCard title="">
+        {tab !== "riwayat" && (
+          <ComponentCard title="">
           <div className="flex justify-between items-center w-full pb-4 mb-4 border-b border-gray-200 dark:border-gray-800">
             <h4 className="text-sm font-medium text-gray-400 uppercase tracking-wider">
               Manajemen Profil
@@ -661,22 +613,11 @@ const DataSiswa = () => {
             </div>
           </div>
         </ComponentCard>
+        )}
 
-        <ComponentCard title="Riwayat Pelanggaran Siswa">
-          {loadingPelanggaran ? (
-            <p className="text-center py-4 dark:text-gray-400 animate-pulse">
-              Memuat riwayat catatan...
-            </p>
-          ) : (
-            <DataTable
-              columns={pelanggaranColumns}
-              data={riwayatPelanggaran}
-              searchable={false}
-              paginated={riwayatPelanggaran.length > 5}
-              defaultItemsPerPage={5}
-            />
-          )}
-        </ComponentCard>
+        {tab !== "identitas" && (
+          <SiswaRiwayatPelanggaran studentIdFromProp={id} isSelf={false} />
+        )}
       </div>
     </>
   );

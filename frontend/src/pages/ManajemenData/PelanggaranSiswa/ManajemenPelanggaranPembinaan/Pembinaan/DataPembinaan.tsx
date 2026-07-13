@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "../../../../../api/axios";
 import DataTable, { Column } from "../../../../../components/ui/table/DataTable";
 import ComponentCard from "../../../../../components/common/ComponentCard";
@@ -17,6 +18,7 @@ export interface Pembinaan {
 }
 
 const DataPembinaan = () => {
+  const navigate = useNavigate();
   const [data, setData] = useState<Pembinaan[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -24,7 +26,20 @@ const DataPembinaan = () => {
     setLoading(true);
     try {
       const res = await axios.get("/pembinaan");
-      setData(res.data.data || res.data || []);
+      const rawData = res.data.data || res.data || [];
+      const uniqueDataMap = new Map<string, Pembinaan>();
+      rawData.forEach((item: Pembinaan) => {
+        const key = item.id_siswa;
+        if (!uniqueDataMap.has(key)) {
+          uniqueDataMap.set(key, item);
+        } else {
+          const existing = uniqueDataMap.get(key)!;
+          if (item.id_sanksi_siswa > existing.id_sanksi_siswa) {
+            uniqueDataMap.set(key, item);
+          }
+        }
+      });
+      setData(Array.from(uniqueDataMap.values()));
     } catch (err) {
       console.error("Gagal mengambil data pembinaan:", err);
     } finally {
@@ -35,23 +50,6 @@ const DataPembinaan = () => {
   useEffect(() => {
     fetchData();
   }, []);
-
-  const handleSelesaikanPembinaan = async (idSanksoSiswa: number) => {
-    if (
-      window.confirm(
-        "Apakah Anda yakin ingin menyelesaikan masa pembinaan siswa ini?",
-      )
-    ) {
-      try {
-        await axios.patch(`/pembinaan/${idSanksoSiswa}`, {
-          status_sanksi: "Selesai",
-        });
-        fetchData(); // Refresh data setelah berhasil update
-      } catch (err) {
-        console.error("Gagal memperbarui status pembinaan:", err);
-      }
-    }
-  };
 
   const columns: Column<Pembinaan>[] = [
     {
@@ -94,34 +92,34 @@ const DataPembinaan = () => {
       className: "text-center w-36",
       render: (row) => (
         <div className="flex justify-center gap-2">
-          {row.status_sanksi !== "Selesai" ? (
-            <Button
-              variant="outline"
-              className="text-green-600 border-green-200 hover:bg-green-50 dark:text-green-400 dark:border-green-900/50"
-              onClick={() => handleSelesaikanPembinaan(row.id_sanksi_siswa)}
-            >
-              ✓ Selesai
-            </Button>
-          ) : (
-            <span className="text-xs text-gray-400 dark:text-gray-500">
-              Tidak ada aksi
-            </span>
-          )}
+          <Button
+            variant="outline"
+            className="text-blue-600 border-blue-200 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-900/50"
+            onClick={() =>
+              navigate(`/detail-pembinaan/${row.id_sanksi_siswa}`, {
+                state: { nama_sanksi: row.nama_sanksi },
+              })
+            }
+          >
+            Detail
+          </Button>
         </div>
       ),
     },
   ];
 
   return (
-    <ComponentCard title="Daftar Pembinaan Masuk">
-      {loading ? (
-        <p className="text-center dark:text-gray-400 py-4">
-          Loading data pembinaan...
-        </p>
-      ) : (
-        <DataTable columns={columns} data={data} searchable paginated />
-      )}
-    </ComponentCard>
+    <>
+      <ComponentCard title="Daftar Pembinaan Masuk">
+        {loading ? (
+          <p className="text-center dark:text-gray-400 py-4">
+            Loading data pembinaan...
+          </p>
+        ) : (
+          <DataTable columns={columns} data={data} searchable paginated />
+        )}
+      </ComponentCard>
+    </>
   );
 };
 
