@@ -423,17 +423,14 @@ module.exports = {
       const workbook = new ExcelJS.Workbook();
       await workbook.xlsx.load(req.file.buffer);
 
-      const worksheet = workbook.getWorksheet(1); // Ambil sheet pertama
-
+      const worksheet = workbook.getWorksheet(1);
       await client.query("BEGIN");
 
       let rowsImported = 0;
 
-      // 3. Looping baris Excel (Mulai dari baris ke-2, karena baris 1 adalah Header/Judul Kolom)
       for (let i = 2; i <= worksheet.rowCount; i++) {
         const row = worksheet.getRow(i);
 
-        // Ambil data berdasarkan urutan kolom di template Excel kamu
         const id_siswa = row.getCell(1).value; // Kolom A
         const id_poin = row.getCell(2).value; // Kolom B
         const id_ptk = row.getCell(3).value; // Kolom C
@@ -441,12 +438,7 @@ module.exports = {
         const tanggal = row.getCell(5).value; // Kolom E
         const keterangan = row.getCell(6).value; // Kolom F
 
-        // Skip jika baris kosong
         if (!id_siswa || !id_poin) continue;
-
-        // =======================================================
-        // ALUR DOMINO UTAMA (Sama seperti fungsi Create)
-        // =======================================================
 
         // A. Insert Riwayat Pelanggaran
         await client.query(
@@ -483,7 +475,6 @@ module.exports = {
         );
         const totalPoinSekarang = updateSaldoDb.rows[0].saldo_poin;
 
-        // E. Cek Ambang Batas Sanksi
         const sanksiDb = await client.query(
           `SELECT id_master_sanksi, nama_sanksi FROM master_sanksi WHERE batas_poin <= $1 ORDER BY batas_poin DESC LIMIT 1`,
           [totalPoinSekarang],
@@ -492,14 +483,12 @@ module.exports = {
         if (sanksiDb.rows.length > 0) {
           const { id_master_sanksi, nama_sanksi } = sanksiDb.rows[0];
 
-          // Cek duplikasi sanksi di semester yang sama
           const checkSanksiSiswa = await client.query(
             `SELECT id_sanksi_siswa FROM sanksi_siswa WHERE id_siswa = $1 AND id_master_sanksi = $2 AND id_semester = $3`,
             [id_siswa, id_master_sanksi, id_semester],
           );
 
           if (checkSanksiSiswa.rows.length === 0) {
-            // Insert sanksi_siswa
             const insertSanksiDb = await client.query(
               `INSERT INTO sanksi_siswa (id_siswa, id_master_sanksi, id_semester, tanggal, keterangan, status)
                VALUES ($1, $2, $3, NOW(), $4, 'BARU') RETURNING id_sanksi_siswa`,

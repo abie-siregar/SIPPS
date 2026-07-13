@@ -135,26 +135,51 @@ module.exports = {
           const bkUserDb = await client.query(
             `SELECT 
              u.id_user 
-           FROM plotting_bk pbk
-           INNER JOIN users u ON u.id_ptk = pbk.id_ptk_bk
-           WHERE pbk.id_rombel = $1 
+            FROM 
+              plotting_bk pbk
+           INNER JOIN 
+              users u ON u.id_ptk = pbk.id_ptk_bk
+           WHERE 
+              pbk.id_rombel = $1 
            LIMIT 1`,
             [id_rombel],
           );
           const id_user_bk = bkUserDb.rows[0]?.id_user;
 
-          const pesanNotif = `Siswa bimbingan resmi mendapat sanksi: ${nama_sanksi} (${totalPoinSekarang} Poin).`;
+          const OrtuUserDB = await client.query(
+            `SELECT
+              u.id_user
+            From 
+              orangtua_wali ow
+            INNER JOIN
+              users u on u.id_orangtua = ow.id_orangtua
+            INNER JOIN
+              siswa s on s.id_orangtua = ow.id_orangtua
+            WHERE
+              s.id_siswa = $1
+            LIMIT 1`,
+          );
+          const id_user_orangtua = OrtuUserDB.rows[0]?.id_user;
 
           if (id_user_wali) {
+            const pesanNotif = `Siswa bimbingan mendapat sanksi: ${nama_sanksi} (${totalPoinSekarang} Poin).`;
             await client.query(
               `INSERT INTO notifikasi (id_user, judul, pesan, is_read, created_at) VALUES ($1, $2, 'SANKSI', false, NOW())`,
               [id_user_wali, pesanNotif],
             );
           }
           if (id_user_bk) {
+            const pesanNotif = `Siswa bimbingan mendapat sanksi: ${nama_sanksi} (${totalPoinSekarang} Poin).`;
             await client.query(
               `INSERT INTO notifikasi (id_user, judul, pesan, is_read, created_at) VALUES ($1, $2, 'SANKSI', false, NOW())`,
               [id_user_bk, pesanNotif],
+            );
+          }
+          if (id_user_orangtua) {
+            const pesanNotif = ` Ananda mendapat sanksi: ${nama_sanksi} dengan akumulasi (${totalPoinSekarang} Poin).`;
+            await client.query(
+              `INSERT INTO notifikasi (id_user, judul, pesan, is_read, created_at) VALUES ($1, $2, 'SANKSI', false, NOW())`,
+              [id_user_orangtua, pesanNotif],
             );
           }
         }
@@ -399,6 +424,7 @@ module.exports = {
     try {
       const id = req.user?.id;
 
+      // 1. Ambil data user terlebih dahulu
       const userDb = await pool.query(
         `SELECT id_role, id_ptk FROM users WHERE id_user = $1`,
         [id],
@@ -412,71 +438,93 @@ module.exports = {
       const id_ptk = userDb.rows[0].id_ptk;
       const role = { admin: 1, wali_kelas: 103, BK: 102 };
 
-      let queryParams = [];
+      // PAGINATION: Ambil dari query string, default page 1, limit 10 data
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 10;
+      const offset = (page - 1) * limit;
 
+      let queryParams = [];
+      let paramIndex = 1;
+
+      // Masukkan distinct on di awal kolom order by agar valid secara sintaks
       let queryText = `
-        SELECT 
-            distinct on (pelanggaran.tanggal, siswa.id_siswa, pelanggaran.keterangan)
-            pelanggaran.id_pelanggaran,
-            pelanggaran.id_siswa,
-            pelanggaran.id_poin,
-            pelanggaran.id_ptk,
-            pelanggaran.id_semester,
-            pelanggaran.tanggal,
-            pelanggaran.keterangan,
-            popel.jenis_penilaian,
-            popel.jenis_pelanggaran,
-            popel.bobot, 
-            ptk.nama as nama_ptk,
-            jabatan.nama_jabatan,
-            siswa.nama as nama_siswa,
-            siswa.nisn,
-            semester.nama_semester,
-            walikelas.nama as walikelas,
-            rombel.nama_rombel,
-            jurusan.nama_jurusan
-        FROM
-            pelanggaran_siswa pelanggaran
-        LEFT JOIN
-            poin_pelanggaran popel ON popel.id_poin = pelanggaran.id_poin
-        LEFT JOIN
-            ptk ON ptk.id_ptk = pelanggaran.id_ptk
-        LEFT JOIN
-            siswa ON siswa.id_siswa = pelanggaran.id_siswa
-        LEFT JOIN
-            anggota_rombel ON anggota_rombel.id_siswa = pelanggaran.id_siswa
-        LEFT JOIN
-            rombel ON rombel.id_rombel = anggota_rombel.id_rombel
-        LEFT JOIN
-            semester ON semester.id_semester = pelanggaran.id_semester
-        LEFT JOIN
-            jurusan ON jurusan.id_jurusan = rombel.id_jurusan
-        LEFT JOIN
-            ptk walikelas ON walikelas.id_ptk = rombel.id_ptk_wali
-        LEFT JOIN
-            jabatan_ptk jabatan ON jabatan.id_jabatan = ptk.id_jabatan
-        `;
+      SELECT 
+          distinct on (pelanggaran.tanggal, siswa.id_siswa, pelanggaran.keterangan)
+          pelanggaran.id_pelanggaran,
+          pelanggaran.id_siswa,
+          pelanggaran.id_poin,
+          pelanggaran.id_ptk,
+          pelanggaran.id_semester,
+          pelanggaran.tanggal,
+          pelanggaran.keterangan,
+          popel.jenis_penilaian,
+          popel.jenis_pelanggaran,
+          popel.bobot, 
+          ptk.nama as nama_ptk,
+          jabatan.nama_jabatan,
+          siswa.nama as nama_siswa,
+          siswa.nisn,
+          semester.nama_semester,
+          walikelas.nama as walikelas,
+          rombel.nama_rombel,
+          jurusan.nama_jurusan
+      FROM
+          pelanggaran_siswa pelanggaran
+      LEFT JOIN
+          poin_pelanggaran popel ON popel.id_poin = pelanggaran.id_poin
+      LEFT JOIN
+          ptk ON ptk.id_ptk = pelanggaran.id_ptk
+      LEFT JOIN
+          siswa ON siswa.id_siswa = pelanggaran.id_siswa
+      LEFT JOIN
+          anggota_rombel ON anggota_rombel.id_siswa = pelanggaran.id_siswa
+      LEFT JOIN
+          rombel ON rombel.id_rombel = anggota_rombel.id_rombel
+      LEFT JOIN
+          semester ON semester.id_semester = pelanggaran.id_semester
+      LEFT JOIN
+          jurusan ON jurusan.id_jurusan = rombel.id_jurusan
+      LEFT JOIN
+          ptk walikelas ON walikelas.id_ptk = rombel.id_ptk_wali
+      LEFT JOIN
+          jabatan_ptk jabatan ON jabatan.id_jabatan = ptk.id_jabatan
+      `;
 
       if (id_role === role.BK) {
         queryText += `
         INNER JOIN plotting_bk pbk ON rombel.id_rombel = pbk.id_rombel
-        WHERE pbk.id_ptk_bk = $1
+        WHERE pbk.id_ptk_bk = $${paramIndex}
       `;
         queryParams.push(id_ptk);
+        paramIndex++;
       } else if (id_role === role.wali_kelas) {
         queryText += `
-        WHERE rombel.id_ptk_wali = $1
+        WHERE rombel.id_ptk_wali = $${paramIndex}
       `;
         queryParams.push(id_ptk);
+        paramIndex++;
       }
+
+      // WAJIB: Aturan DISTINCT ON mengharuskan kolom ekspresinya berada di urutan pertama ORDER BY
       queryText += `
       ORDER BY
         pelanggaran.tanggal DESC, 
-        siswa.id_siswa
+        siswa.id_siswa,
+        pelanggaran.keterangan
+      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
     `;
 
+      queryParams.push(limit, offset);
+
       const result = await pool.query(queryText, queryParams);
-      res.json(result.rows);
+
+      // Kembalikan metadata pagination beserta datanya biar frontend lu tau cara mappingnya
+      res.json({
+        page,
+        limit,
+        total_rows: result.rows.length,
+        data: result.rows,
+      });
     } catch (error) {
       console.error("Error fetching ptk:", error.message);
       res.status(500).json({ error: "Internal Server Error " + error.message });
