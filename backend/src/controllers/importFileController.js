@@ -15,13 +15,11 @@ module.exports = {
     try {
       const workbook = new ExcelJS.Workbook();
       await workbook.xlsx.load(req.file.buffer);
-      const worksheet = workbook.getWorksheet(1); // Ambil sheet pertama
-
+      const worksheet = workbook.getWorksheet(1);
       await client.query("BEGIN");
 
       let rowsImported = 0;
 
-      // Looping dari baris ke-3
       for (let i = 3; i <= worksheet.rowCount; i++) {
         const row = worksheet.getRow(i);
 

@@ -154,6 +154,12 @@ const navItems: NavItem[] = [
         roles: ["Admin"],
       },
       {
+        name: "Import Data",
+        path: "/Import",
+        pro: false,
+        roles: ["Admin"],
+      },
+      {
         name: "Manajemen Rombel dan Plotting BK",
         path: "/ManajemenRombelPlotting",
         pro: false,

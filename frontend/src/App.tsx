@@ -41,6 +41,7 @@ import ManajemenRombelPlotting from "./pages/TestLayout/ManajemenRombelPlotting"
 import ManajemenDataSiswa from "./pages/TestLayout/ManajemenDataSiswa/ManajemenDataSiswa";
 import DataSiswa from "./pages/TestLayout/ManajemenDataSiswa/DataSiswa";
 import ManajemenPembinaanPelanggaran from "./pages/TestLayout/ManajemenPelanggaranPembinaan/ManajemenPelanggaranPembinaan";
+import ImportFile from "./pages/ManajemenData/Import/Import";
 
 export default function App() {
   return (
@@ -209,6 +210,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <ManajemenPembinaanPelanggaran />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/import"
+              element={
+                <ProtectedRoute>
+                  <ImportFile />
                 </ProtectedRoute>
               }
             />

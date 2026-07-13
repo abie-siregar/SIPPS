@@ -9,5 +9,12 @@ router.post(
   upload.single("file"),
   importFileController.importPelanggaran,
 );
+router.post("/iptk", upload.single("file"), importFileController.importPTK);
+router.post(
+  "/irombel",
+  upload.single("file"),
+  importFileController.importRombel,
+);
+router.post("/isiswa", upload.single("file"), importFileController.importSiswa);
 
 module.exports = router;
