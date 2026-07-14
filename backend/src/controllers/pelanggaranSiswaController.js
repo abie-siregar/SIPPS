@@ -158,6 +158,7 @@ module.exports = {
             WHERE
               s.id_siswa = $1
             LIMIT 1`,
+            [id_siswa],
           );
           const id_user_orangtua = OrtuUserDB.rows[0]?.id_user;
 

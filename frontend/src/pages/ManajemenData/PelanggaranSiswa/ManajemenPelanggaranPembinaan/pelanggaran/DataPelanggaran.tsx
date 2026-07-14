@@ -8,6 +8,7 @@ import { useAuth } from "../../../../../context/AuthContext";
 import TambahPelanggaran from "./TambahPelanggaran";
 import DetailPelanggaranModal from "./DetailPelanggaranModal";
 import HapusPelanggaranModal from "./HapusPelanggaranModal";
+import Toast from "../../../../../components/ui/alert/Toast";
 
 export interface Pelanggaran {
   id_pelanggaran: string | number;
@@ -47,6 +48,16 @@ const DataPelanggaran = () => {
   const [showHapusModal, setShowHapusModal] = useState(false);
   const [pelanggaranToDelete, setPelanggaranToDelete] =
     useState<Pelanggaran | null>(null);
+
+  const [toast, setToast] = useState<{
+    show: boolean;
+    variant: "success" | "error";
+    message: string;
+  }>({ show: false, variant: "success", message: "" });
+
+  const showToast = (variant: "success" | "error", message: string) => {
+    setToast({ show: true, variant, message });
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -118,6 +129,13 @@ const DataPelanggaran = () => {
 
   return (
     <>
+      <Toast
+        show={toast.show}
+        variant={toast.variant}
+        message={toast.message}
+        onClose={() => setToast((t) => ({ ...t, show: false }))}
+      />
+
       <ComponentCard title="Daftar Rekam Pelanggaran">
         {loading ? (
           <p className="dark:text-gray-400 text-center py-4">
@@ -150,6 +168,7 @@ const DataPelanggaran = () => {
           setShowTambahModal(false);
           if (didSave) {
             fetchData();
+            showToast("success", "Data pelanggaran siswa berhasil ditambahkan!");
           }
         }}
       />
@@ -172,6 +191,7 @@ const DataPelanggaran = () => {
           setPelanggaranToDelete(null); // Bersihkan state penampung
           if (didDelete) {
             fetchData(); // Refresh list data tabel setelah berhasil dihapus
+            showToast("success", "Data pelanggaran siswa berhasil dihapus!");
           }
         }}
       />
