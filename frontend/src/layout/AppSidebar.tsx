@@ -114,6 +114,12 @@ const navItems: NavItem[] = [
         pro: false,
         roles: ["Admin"],
       },
+      {
+        name: "Import Data",
+        path: "/Import",
+        pro: false,
+        roles: ["Admin"],
+      },
     ],
   },
   {

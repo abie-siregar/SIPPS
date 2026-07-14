@@ -3,7 +3,7 @@ const router = express.Router();
 const pembinaanSiswa = require("../controllers/pembinaanController");
 const isRoles = require("../middlewares/isRoles");
 
-router.get("/", isRoles(["BK", "Admin"]), pembinaanSiswa.getAll);
+router.get("/", pembinaanSiswa.getAll);
 router.get(
   "/stepper/:id",
   isRoles(["BK", "Admin", "Wali Kelas"]),

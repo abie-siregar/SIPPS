@@ -2,57 +2,99 @@ const pool = require("../../config/database");
 
 const pembinaanController = {
   async getAll(req, res) {
+    const id = req.user?.id;
+
+    const client = await pool.connect();
+
     try {
-      const result = await pool.query(
-        `SELECT 
-          ss.id_sanksi_siswa,
-          ss.id_siswa,
-          s.nama,
-          r.nama_rombel,
-          ms.nama_sanksi,
-          ss.tanggal AS tanggal_sanksi,
-          ss.status AS status_sanksi,
-          CASE 
-            WHEN ms.batas_poin >= 901 THEN 'TAHAP_5'
-            WHEN ms.batas_poin >= 701 THEN 'TAHAP_4'
-            WHEN ms.batas_poin >= 201 THEN 'TAHAP_3'
-            WHEN ms.batas_poin >= 101 THEN 'TAHAP_2'
-            ELSE 'TAHAP_1'
-          END AS tahap_akhir,
-          pp.id_progres AS id_progres
-        FROM 
-          sanksi_siswa ss
-        INNER JOIN 
-          siswa s ON s.id_siswa = ss.id_siswa
-        INNER JOIN 
-          anggota_rombel ar ON ar.id_siswa = s.id_siswa
-        INNER JOIN 
-          rombel r ON r.id_rombel = ar.id_rombel
-        INNER JOIN 
-          master_sanksi ms ON ms.id_master_sanksi = ss.id_master_sanksi
-        LEFT JOIN (
-          SELECT id_siswa, MAX(tanggal) AS max_tanggal_pelanggaran
-          FROM pelanggaran_siswa
-          GROUP BY id_siswa
-        ) lp ON lp.id_siswa = ss.id_siswa
-        LEFT JOIN (
-        SELECT DISTINCT ON 
-          (id_sanksi_siswa) id_sanksi_siswa, id_progres, tahap_pembinaan
-        FROM 
-          progres_pembinaan
-        ORDER BY 
-          id_sanksi_siswa, tanggal DESC, id_progres DESC ) 
-          pp ON pp.id_sanksi_siswa = ss.id_sanksi_siswa
-        ORDER BY 
-          COALESCE(lp.max_tanggal_pelanggaran, ss.tanggal) DESC, ss.id_sanksi_siswa DESC;`,
+      const userDb = await pool.query(
+        `SELECT id_role, id_ptk, id_siswa, id_orangtua FROM users WHERE id_user = $1`,
+        [id],
       );
 
+      const { id_role, id_ptk, id_siswa, id_orangtua } = userDb.rows[0];
+
+      const role = {
+        admin: 1,
+        BK: 102,
+        wali_kelas: 103,
+        siswa: 6,
+        orang_tua: 7,
+      };
+
+      let queryParams = [];
+      let whereClauses = [];
+
+      if (id_role === role.BK) {
+        whereClauses.push(
+          `r.id_rombel IN (SELECT id_rombel FROM plotting_bk WHERE id_ptk_bk = $1)`,
+        );
+        queryParams.push(id_ptk);
+      } else if (id_role === role.wali_kelas) {
+        whereClauses.push(`r.id_ptk_wali = $1`);
+        queryParams.push(id_ptk);
+      } else if (id_role === role.siswa) {
+        whereClauses.push(`ss.id_siswa = $1`);
+        queryParams.push(id_siswa);
+      } else if (id_role === role.orang_tua) {
+        whereClauses.push(`s.id_orangtua = $1`);
+        queryParams.push(id_orangtua);
+      }
+
+      const whereStatement =
+        whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
+
+      const queryText = `
+      SELECT 
+        ss.id_sanksi_siswa,
+        ss.id_siswa,
+        s.nama,
+        r.nama_rombel,
+        ms.nama_sanksi,
+        ss.tanggal AS tanggal_sanksi,
+        ss.status AS status_sanksi,
+        CASE 
+          WHEN ms.batas_poin >= 901 THEN 'TAHAP_5'
+          WHEN ms.batas_poin >= 701 THEN 'TAHAP_4'
+          WHEN ms.batas_poin >= 201 THEN 'TAHAP_3'
+          WHEN ms.batas_poin >= 101 THEN 'TAHAP_2'
+          ELSE 'TAHAP_1'
+        END AS tahap_akhir,
+        pp.id_progres AS id_progres
+      FROM 
+        sanksi_siswa ss
+      INNER JOIN 
+        siswa s ON s.id_siswa = ss.id_siswa
+      INNER JOIN 
+        anggota_rombel ar ON ar.id_siswa = s.id_siswa
+      INNER JOIN 
+        rombel r ON r.id_rombel = ar.id_rombel
+      INNER JOIN 
+        master_sanksi ms ON ms.id_master_sanksi = ss.id_master_sanksi
+      LEFT JOIN (
+        SELECT id_siswa, MAX(tanggal) AS max_tanggal_pelanggaran
+        FROM pelanggaran_siswa
+        GROUP BY id_siswa
+      ) lp ON lp.id_siswa = ss.id_siswa
+      LEFT JOIN (
+        SELECT DISTINCT ON (id_sanksi_siswa) id_sanksi_siswa, id_progres, tahap_pembinaan
+        FROM progres_pembinaan
+        ORDER BY id_sanksi_siswa, tanggal DESC, id_progres DESC
+      ) pp ON pp.id_sanksi_siswa = ss.id_sanksi_siswa
+      ${whereStatement} 
+      ORDER BY 
+        COALESCE(lp.max_tanggal_pelanggaran, ss.tanggal) DESC, ss.id_sanksi_siswa DESC;
+    `;
+
+      const result = await pool.query(queryText, queryParams);
       res.json(result.rows);
     } catch (error) {
-      console.error("Gagal mengambil data pembinaan:", error.message);
+      console.error("Error fetching sanksi:", error.message);
       res
         .status(500)
         .json({ error: "Internal Server Error: " + error.message });
+    } finally {
+      client.release();
     }
   },
 

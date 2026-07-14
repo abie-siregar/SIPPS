@@ -45,6 +45,7 @@ import ManajemenPembinaan from "./pages/ManajemenData/PelanggaranSiswa/Manajemen
 import DetailPembinaan from "./pages/ManajemenData/PelanggaranSiswa/ManajemenPelanggaranPembinaan/Pembinaan/DetailPembinaan";
 import IdentitasSiswaRedirect from "./pages/ManajemenData/ManajemenDataSiswa/IdentitasSiswaRedirect";
 import RiwayatPelanggaranRedirect from "./pages/ManajemenData/ManajemenDataSiswa/RiwayatPelanggaranRedirect";
+import ImportFile from "./pages/ManajemenData/Import/Import";
 
 export default function App() {
   return (
@@ -254,6 +255,14 @@ export default function App() {
               element={
                 <ProtectedRoute roles={["Admin", "BK", "Wali Kelas"]}>
                   <DetailPembinaan />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/import"
+              element={
+                <ProtectedRoute>
+                  <ImportFile />
                 </ProtectedRoute>
               }
             />

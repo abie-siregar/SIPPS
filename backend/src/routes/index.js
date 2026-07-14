@@ -20,6 +20,8 @@ const pembinaanRoutes = require("./pembinaanSiswa");
 const roleRoutes = require("./role");
 const OrtuRoutes = require("./OrangtuaWali");
 const dashboardRoutes = require("./dashboard");
+const printRoutes = require("./report");
+const notifRoutes = require("./notification");
 
 //  Auth routes (tidak perlu token)
 router.post("/auth/login", authController.login);
@@ -46,6 +48,8 @@ router.use("/plotting", authenticate, isRoles(["Admin"]), plottingRoutes);
 router.use("/role", authenticate, isRoles(["Admin"]), roleRoutes);
 router.use("/orangtua", authenticate, OrtuRoutes);
 router.use("/dashboard", authenticate, dashboardRoutes);
+router.use("/print-report", authenticate, printRoutes);
+router.use("/notification", authenticate, notifRoutes);
 router.get("/auth/profile", authenticate, authController.profile);
 
 module.exports = router;

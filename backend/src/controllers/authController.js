@@ -98,6 +98,7 @@ module.exports = {
       const { username } = req.user;
       const result = await pool.query(
         `SELECT
+          coalesce(u.id_siswa, u.id_orangtua, u.id_ptk) as id,
           u.id_user, 
           u.username,
           r.nama_role AS role,
