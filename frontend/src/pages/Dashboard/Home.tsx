@@ -1,6 +1,9 @@
+import React, { useEffect, useState } from "react";
 import PageMeta from "../../components/common/PageMeta";
 import { useAuth } from "../../context/AuthContext";
 import SiswaRiwayatPelanggaran from "../../components/siswa/SiswaRiwayatPelanggaran";
+import Chart from "react-apexcharts";
+import axios from "../../api/axios";
 
 // ────────────────────────────────────────────────
 // Role configuration — keys match DB nama_role exactly
@@ -106,6 +109,282 @@ export default function Home() {
   const roleConfig = (user?.role ? ROLE_CONFIG[user.role] : null) ?? FALLBACK_ROLE;
 
   const displayName = user?.nama || user?.username || "Pengguna";
+
+  const [analyticsData, setAnalyticsData] = useState<{ nama: string; total_poin: number }[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [rombelName, setRombelName] = useState<string | null>(null);
+  const [rombelNames, setRombelNames] = useState<string[]>([]);
+  const [violationsData, setViolationsData] = useState<{ jenis_pelanggaran: string; count: number }[]>([]);
+  const [trendsData, setTrendsData] = useState<{ tanggal_pelanggaran: string; count: number }[]>([]);
+
+  useEffect(() => {
+    if (["Admin", "Guru", "BK", "Wali Kelas"].includes(user?.role || "")) {
+      const fetchAnalytics = async () => {
+        setLoading(true);
+        try {
+          const params: any = {};
+          if (user?.role === "Admin" && selectedCategory) {
+            params.jenis_penilaian = selectedCategory;
+          }
+          const res = await axios.get("/dashboard/analytics", { params });
+          setAnalyticsData(res.data?.data || []);
+          setViolationsData(res.data?.violations || []);
+          setTrendsData(res.data?.trends || []);
+          if (res.data?.categories) {
+            setCategories(res.data.categories);
+          }
+          if (res.data?.rombelName) {
+            setRombelName(res.data.rombelName);
+          }
+          if (res.data?.rombelNames) {
+            setRombelNames(res.data.rombelNames);
+          }
+        } catch (err) {
+          console.error("Gagal memuat analitik dashboard:", err);
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchAnalytics();
+    }
+  }, [user?.role, selectedCategory]);
+
+  const chartOptions: any = {
+    colors: ["#6366f1"],
+    chart: {
+      fontFamily: "Outfit, sans-serif",
+      type: "bar",
+      toolbar: {
+        show: false,
+      },
+    },
+    plotOptions: {
+      bar: {
+        horizontal: false,
+        columnWidth: "45%",
+        borderRadius: 6,
+        borderRadiusApplication: "end",
+      },
+    },
+    dataLabels: {
+      enabled: false,
+    },
+    xaxis: {
+      categories: analyticsData.map((s) => s.nama),
+      labels: {
+        rotate: -45,
+        style: {
+          fontSize: "11px",
+        },
+      },
+      axisBorder: {
+        show: false,
+      },
+      axisTicks: {
+        show: false,
+      },
+    },
+    yaxis: {
+      title: {
+        text: "Poin Pelanggaran",
+      },
+    },
+    grid: {
+      yaxis: {
+        lines: {
+          show: true,
+        },
+      },
+    },
+    fill: {
+      opacity: 1,
+    },
+    tooltip: {
+      y: {
+        formatter: (val: number) => `${val} Pts`,
+      },
+    },
+  };
+
+  const chartSeries = [
+    {
+      name: "Total Poin",
+      data: analyticsData.map((s) => s.total_poin),
+    },
+  ];
+
+  const isDarkMode = document.documentElement.classList.contains("dark");
+
+  const pieChartOptions: any = {
+    colors: ["#6366f1", "#0ea5e9", "#14b8a6", "#f59e0b", "#ec4899", "#8b5cf6", "#10b981", "#ef4444"],
+    chart: {
+      fontFamily: "Outfit, sans-serif",
+      type: "pie",
+    },
+    theme: {
+      mode: isDarkMode ? "dark" : "light",
+    },
+    labels: violationsData.slice(0, 5).map((v) => v.jenis_pelanggaran),
+    dataLabels: {
+      enabled: true,
+      style: {
+        fontSize: "12px",
+        colors: ["#ffffff"],
+      },
+      dropShadow: {
+        enabled: true,
+      },
+    },
+    plotOptions: {
+      pie: {
+        customScale: 0.9,
+      },
+    },
+    legend: {
+      show: false,
+    },
+    tooltip: {
+      theme: "light",
+      y: {
+        formatter: (val: number) => `${val} Siswa`,
+      },
+    },
+    responsive: [
+      {
+        breakpoint: 480,
+        options: {
+          chart: {
+            width: 300,
+          },
+          legend: {
+            position: "bottom",
+          },
+        },
+      },
+    ],
+  };
+
+  const pieChartSeries = violationsData.slice(0, 5).map((v) => v.count);
+
+  const lineChartOptions: any = {
+    colors: ["#3b82f6"],
+    chart: {
+      fontFamily: "Outfit, sans-serif",
+      type: "line",
+      zoom: {
+        enabled: false,
+      },
+      toolbar: {
+        show: false,
+      },
+    },
+    stroke: {
+      curve: "smooth",
+      width: 3,
+    },
+    xaxis: {
+      type: "category",
+      categories: trendsData.map((t) => t.tanggal_pelanggaran),
+      labels: {
+        formatter: (val: string) => {
+          const index = trendsData.findIndex((t) => t.tanggal_pelanggaran === val);
+          if (index === -1) return val;
+          try {
+            const parts = val.split("-");
+            if (parts.length === 3) {
+              const y = parseInt(parts[0], 10);
+              const m = parseInt(parts[1], 10) - 1;
+              const d = parseInt(parts[2], 10);
+              const date = new Date(y, m, d);
+              const month = date.toLocaleDateString("id-ID", { month: "short" });
+              if (index === 0) {
+                return `1 ${month}`;
+              }
+              const prevItem = trendsData[index - 1];
+              if (prevItem) {
+                const prevParts = prevItem.tanggal_pelanggaran.split("-");
+                if (prevParts.length === 3) {
+                  const prevM = parseInt(prevParts[1], 10) - 1;
+                  if (m !== prevM) {
+                    return `1 ${month}`;
+                  }
+                }
+              }
+            }
+            return "";
+          } catch {
+            return val;
+          }
+        },
+        style: {
+          fontSize: "11px",
+          colors: isDarkMode ? "#e5e7eb" : "#374151",
+        },
+      },
+    },
+    yaxis: {
+      title: {
+        text: "Frekuensi Pelanggaran",
+        style: {
+          color: isDarkMode ? "#e5e7eb" : "#374151",
+        },
+      },
+      labels: {
+        style: {
+          colors: isDarkMode ? "#e5e7eb" : "#374151",
+        },
+      },
+    },
+    tooltip: {
+      theme: "light",
+      x: {
+        formatter: (val: any) => {
+          try {
+            let dateStr = val;
+            if (typeof val === "number" || isNaN(Date.parse(val))) {
+              const item = trendsData[Number(val)];
+              if (item) {
+                dateStr = item.tanggal_pelanggaran;
+              }
+            }
+            const parts = dateStr.split("-");
+            if (parts.length === 3) {
+              const y = parseInt(parts[0], 10);
+              const m = parseInt(parts[1], 10) - 1;
+              const d = parseInt(parts[2], 10);
+              const date = new Date(y, m, d);
+              return date.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+            }
+            const date = new Date(dateStr);
+            return date.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+          } catch {
+            return val;
+          }
+        },
+      },
+      y: {
+        formatter: (val: number) => `${val} Kasus`,
+      },
+    },
+    markers: {
+      size: 4,
+      colors: ["#3b82f6"],
+      strokeColors: "#fff",
+      strokeWidth: 2,
+      hover: {
+        size: 7,
+      },
+    },
+  };
+
+  const lineChartSeries = [
+    {
+      name: "Pelanggaran",
+      data: trendsData.map((t) => t.count),
+    },
+  ];
 
   return (
     <>
@@ -350,6 +629,141 @@ export default function Home() {
                 </div>
               </div>
             </div>
+
+        {["Admin", "Guru", "BK", "Wali Kelas"].includes(user?.role || "") && (
+          <div className="col-span-12 mt-4">
+            <div className="grid grid-cols-12 gap-6">
+              {/* Bar Chart - Top 10 Students */}
+              <div
+                style={{
+                  background: "var(--color-white, #fff)",
+                  borderRadius: "0.875rem",
+                  padding: "1.5rem",
+                  border: "1px solid #e5e7eb",
+                  boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+                }}
+                className="col-span-12 dark:bg-gray-800 dark:border-white/10"
+              >
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                      Analisis Akumulasi Poin Pelanggaran Siswa
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {user?.role === "Admin"
+                        ? "Peringkat 10 siswa dengan akumulasi poin pelanggaran tertinggi sekolah."
+                        : user?.role === "Guru" || user?.role === "Wali Kelas"
+                        ? `Peringkat 10 siswa dengan akumulasi poin pelanggaran tertinggi di rombel Anda (${rombelName || "-"}).`
+                        : `Peringkat 10 siswa dengan akumulasi poin pelanggaran tertinggi di rombel dampingan Anda (${rombelNames.join(", ") || "-"}).`}
+                    </p>
+                  </div>
+
+                  {user?.role === "Admin" && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500 whitespace-nowrap">
+                        Jenis Penilaian:
+                      </span>
+                      <select
+                        value={selectedCategory}
+                        onChange={(e) => setSelectedCategory(e.target.value)}
+                        className="px-3 py-1.5 border rounded-lg bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white text-sm"
+                      >
+                        <option value="">Semua</option>
+                        {categories.map((cat) => (
+                          <option key={cat} value={cat}>
+                            {cat}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
+
+                {loading ? (
+                  <p className="text-center dark:text-gray-400 py-8">Memuat data analitik...</p>
+                ) : analyticsData.length === 0 ? (
+                  <p className="text-center dark:text-gray-400 py-8">
+                    Tidak ada data pelanggaran siswa yang tercatat.
+                  </p>
+                ) : (
+                  <div className="max-w-full overflow-x-auto custom-scrollbar">
+                    <div className="min-w-[600px] h-[350px]">
+                      <Chart options={chartOptions} series={chartSeries} type="bar" height={320} />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Pie Chart - Top 5 Violations */}
+              <div
+                style={{
+                  background: "var(--color-white, #fff)",
+                  borderRadius: "0.875rem",
+                  padding: "1.5rem",
+                  border: "1px solid #e5e7eb",
+                  boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+                }}
+                className="col-span-12 lg:col-span-6 dark:bg-gray-800 dark:border-white/10"
+              >
+                <div className="mb-6">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                    Top 5 Jenis Pelanggaran
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Kategori pelanggaran yang paling sering dilakukan.
+                  </p>
+                </div>
+
+                {loading ? (
+                  <p className="text-center dark:text-gray-400 py-8">Memuat data analitik...</p>
+                ) : violationsData.length === 0 ? (
+                  <p className="text-center dark:text-gray-400 py-8">
+                    Tidak ada data pelanggaran yang tercatat.
+                  </p>
+                ) : (
+                  <div className="flex items-center justify-center h-[400px]">
+                    <Chart options={pieChartOptions} series={pieChartSeries} type="pie" width="100%" height={360} />
+                  </div>
+                )}
+              </div>
+
+              {/* Line Chart - Violations Trend by Date */}
+              <div
+                style={{
+                  background: "var(--color-white, #fff)",
+                  borderRadius: "0.875rem",
+                  padding: "1.5rem",
+                  border: "1px solid #e5e7eb",
+                  boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+                }}
+                className="col-span-12 lg:col-span-6 dark:bg-gray-800 dark:border-white/10"
+              >
+                <div className="mb-6">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                    Tren Pelanggaran Siswa
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Perkembangan frekuensi pelanggaran siswa berdasarkan tanggal.
+                  </p>
+                </div>
+
+                {loading ? (
+                  <p className="text-center dark:text-gray-400 py-8">Memuat data analitik...</p>
+                ) : trendsData.length === 0 ? (
+                  <p className="text-center dark:text-gray-400 py-8">
+                    Tidak ada data tren pelanggaran siswa.
+                  </p>
+                ) : (
+                  <div className="max-w-full overflow-x-auto custom-scrollbar">
+                    <div className="min-w-[400px] h-[400px]">
+                      <Chart options={lineChartOptions} series={lineChartSeries} type="line" height={360} />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {user?.role === "Siswa" && (
           <div className="col-span-12 mt-2">

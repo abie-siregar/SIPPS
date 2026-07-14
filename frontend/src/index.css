@@ -776,3 +776,11 @@ span.flatpickr-weekday,
 .simplebar-scrollbar.simplebar-visible:before {
   @apply opacity-100;
 }
+
+/* Force ApexCharts pie chart slice labels (percentages) to be white text */
+.apexcharts-canvas .apexcharts-datalabels-group text,
+.apexcharts-canvas .apexcharts-pie-label,
+.apexcharts-canvas text.apexcharts-datalabel {
+  fill: #ffffff !important;
+  color: #ffffff !important;
+}
