@@ -33,7 +33,7 @@ export interface Pelanggaran {
 const DataPelanggaran = () => {
   const { user } = useAuth();
   const userRole = user?.role;
-  const canModify = userRole === "Admin";
+  const canModify = userRole === "Admin" || userRole === "BK";
 
   const [data, setData] = useState<Pelanggaran[]>([]);
   const [loading, setLoading] = useState(true);
