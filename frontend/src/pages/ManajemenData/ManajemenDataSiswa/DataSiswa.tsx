@@ -7,6 +7,7 @@ import Toast from "../../../components/ui/alert/Toast";
 import ComponentCard from "../../../components/common/ComponentCard";
 import Button from "../../../components/ui/button/Button";
 import SiswaRiwayatPelanggaran from "../../../components/siswa/SiswaRiwayatPelanggaran";
+import { useAuth } from "../../../context/AuthContext";
 
 export interface DetailSiswa {
   id_siswa?: number | string;
@@ -57,6 +58,7 @@ export interface RiwayatPelanggaran {
 }
 
 const DataSiswa = () => {
+  const { user } = useAuth();
   const { id } = useParams<{ id: string }>(); // Mengambil ID siswa dinamis dari URL router
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -290,14 +292,16 @@ const DataSiswa = () => {
                   >
                     Perbarui Data
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => navigate(`/print-laporan/${id}`)}
-                    className="border-emerald-500 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-400 dark:text-emerald-400 dark:hover:bg-emerald-950/30"
-                  >
-                    Cetak
-                  </Button>
+                  {(user?.role === "Admin" || user?.role === "BK" || user?.role === "Wali Kelas") && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => navigate(`/print-laporan/${id}`)}
+                      className="border-emerald-500 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-400 dark:text-emerald-400 dark:hover:bg-emerald-950/30"
+                    >
+                      Cetak
+                    </Button>
+                  )}
                 </div>
               )}
             </div>

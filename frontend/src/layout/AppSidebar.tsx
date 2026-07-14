@@ -6,6 +6,8 @@ import {
   GridIcon,
   HorizontaLDots,
   TableIcon,
+  UserIcon,
+  TaskIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 import { useAuth } from "../context/AuthContext";
@@ -62,7 +64,6 @@ const navItems: NavItem[] = [
       "Guru",
       "Wali Kelas",
       "Tenaga Kependidikan",
-      "Siswa",
     ],
     subItems: [
       {
@@ -75,7 +76,6 @@ const navItems: NavItem[] = [
           "Guru",
           "Wali Kelas",
           "Tenaga Kependidikan",
-          "Siswa",
         ],
       },
       {
@@ -88,7 +88,7 @@ const navItems: NavItem[] = [
         name: "Manajemen Rombel dan Plotting BK",
         path: "/ManajemenRombelPlotting",
         pro: false,
-        roles: ["Admin"],
+        roles: ["Admin", "BK", "Wali Kelas"],
       },
       {
         name: "Manajemen Data Siswa",
@@ -125,21 +125,39 @@ const navItems: NavItem[] = [
   {
     name: "Pelanggaran Siswa",
     icon: <TableIcon />,
-    roles: ["Admin", "BK", "Wali Kelas", "Siswa"],
+    roles: ["Admin", "BK", "Wali Kelas"],
     subItems: [
       {
         name: "Manajemen Pelanggaran",
         path: "/ManajemenPelanggaran",
         pro: false,
-        roles: ["Admin", "BK", "Wali Kelas", "Siswa"],
+        roles: ["Admin", "BK", "Wali Kelas"],
       },
       {
         name: "Manajemen Pembinaan",
         path: "/ManajemenPembinaan",
         pro: false,
-        roles: ["Admin", "BK", "Wali Kelas", "Siswa"],
+        roles: ["Admin", "BK", "Wali Kelas"],
       },
     ],
+  },
+  {
+    name: "Aturan Data Poin dan Sanksi",
+    path: "/PoinSanksi",
+    icon: <TableIcon />,
+    roles: ["Siswa"],
+  },
+  {
+    name: "Identitas Siswa",
+    path: "/IdentitasSiswa",
+    icon: <UserIcon />,
+    roles: ["Siswa"],
+  },
+  {
+    name: "Riwayat Pelanggaran",
+    path: "/RiwayatPelanggaran",
+    icon: <TaskIcon />,
+    roles: ["Siswa"],
   },
 ];
 
@@ -293,6 +311,10 @@ const AppSidebar: React.FC = () => {
                                 ? user?.role === "Admin"
                                   ? "Manajemen Data Poin dan Sanksi"
                                   : "Aturan Data Poin dan Sanksi"
+                                : subItem.path === "/ManajemenRombelPlotting"
+                                ? user?.role === "Admin"
+                                  ? "Manajemen Rombel dan Plotting BK"
+                                  : "Manajemen Rombel"
                                 : subItem.name}
                               <span className="flex items-center gap-1 ml-auto">
                                 {subItem.new && (

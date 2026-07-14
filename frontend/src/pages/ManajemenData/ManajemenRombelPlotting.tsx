@@ -304,16 +304,20 @@ const ManajemenRombelPlotting = () => {
   const fetchAllData = async () => {
     setLoading(true);
     try {
-      const [resRombel, resPlotting] = await Promise.all([
-        axios.get("/rombel"),
-        axios.get("/plotting"),
-      ]);
+      const promises: Promise<any>[] = [axios.get("/rombel")];
+      if (isAdmin) {
+        promises.push(axios.get("/plotting"));
+      }
 
-      const resR = resRombel.data?.data || resRombel.data || [];
+      const results = await Promise.all(promises);
+
+      const resR = results[0].data?.data || results[0].data || [];
       setDataRombel(Array.isArray(resR) ? resR : []);
 
-      const resPl = resPlotting.data?.data || resPlotting.data || [];
-      setDataPlotting(Array.isArray(resPl) ? resPl : []);
+      if (isAdmin && results[1]) {
+        const resPl = results[1].data?.data || results[1].data || [];
+        setDataPlotting(Array.isArray(resPl) ? resPl : []);
+      }
     } catch (error) {
       console.error("Gagal memuat data:", error);
     } finally {
@@ -329,8 +333,8 @@ const ManajemenRombelPlotting = () => {
   const getPageTitles = () => {
     if (activeTab === "rombel") {
       return {
-        meta: "Data Rombongan Belajar",
-        breadcrumb: "Data Rombongan Belajar",
+        meta: isAdmin ? "Data Rombongan Belajar" : "Manajemen Rombel",
+        breadcrumb: isAdmin ? "Data Rombongan Belajar" : "Manajemen Rombel",
       };
     }
     return { meta: "Plotting BK", breadcrumb: "Plotting BK" };
@@ -435,17 +439,19 @@ const ManajemenRombelPlotting = () => {
           >
             Data Rombel
           </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("plotting")}
-            className={`pb-3 text-sm font-semibold transition-all relative ${
-              activeTab === "plotting"
-                ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600"
-                : "text-gray-500 hover:text-gray-700 dark:text-gray-400"
-            }`}
-          >
-            Plotting BK
-          </button>
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={() => setActiveTab("plotting")}
+              className={`pb-3 text-sm font-semibold transition-all relative ${
+                activeTab === "plotting"
+                  ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600"
+                  : "text-gray-500 hover:text-gray-700 dark:text-gray-400"
+              }`}
+            >
+              Plotting BK
+            </button>
+          )}
         </div>
 
         <div>

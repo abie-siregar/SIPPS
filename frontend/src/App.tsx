@@ -65,7 +65,7 @@ export default function App() {
           <Route
             path="/print-laporan/:id"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute roles={["Admin", "BK", "Wali Kelas"]}>
                 <PrintLaporan />
               </ProtectedRoute>
             }
@@ -73,7 +73,7 @@ export default function App() {
           <Route
             path="/print-rombel/:id"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute roles={["Admin", "BK", "Wali Kelas"]}>
                 <PrintRombel />
               </ProtectedRoute>
             }
@@ -223,7 +223,7 @@ export default function App() {
             <Route
               path="/ManajemenRombelPlotting"
               element={
-                <ProtectedRoute roles={["Admin"]}>
+                <ProtectedRoute roles={["Admin", "BK", "Wali Kelas"]}>
                   <ManajemenRombelPlotting />
                 </ProtectedRoute>
               }

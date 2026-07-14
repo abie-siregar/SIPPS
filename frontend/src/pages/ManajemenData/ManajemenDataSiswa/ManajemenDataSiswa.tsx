@@ -9,9 +9,11 @@ import Button from "../../../components/ui/button/Button";
 import DataTable, { Column } from "../../../components/ui/table/DataTable";
 import FilterSiswaModal from "../../ManajemenData/Siswa/FilterSiswaModal";
 import { Siswa } from "./SiswaDetailModal";
+import { useAuth } from "../../../context/AuthContext";
 
 const ManajemenDataSiswa = () => {
   const navigate = useNavigate(); // 2. Inisialisasi hook navigate
+  const { user } = useAuth();
   const [data, setData] = useState<Siswa[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -129,6 +131,7 @@ const ManajemenDataSiswa = () => {
       className: "w-36 text-center",
       render: (row) => {
         const targetId = row.id_siswa || row.id;
+        const canPrint = user?.role === "Admin" || user?.role === "BK" || user?.role === "Wali Kelas";
         return (
           <div className="flex justify-center gap-2">
             {/* Tombol Navigasi Halaman Penuh */}
@@ -140,14 +143,16 @@ const ManajemenDataSiswa = () => {
             >
               Detail
             </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => navigate(`/print-laporan/${targetId}`)}
-              className="border-emerald-500 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-400 dark:text-emerald-400 dark:hover:bg-emerald-950/30"
-            >
-              Cetak
-            </Button>
+            {canPrint && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => navigate(`/print-laporan/${targetId}`)}
+                className="border-emerald-500 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-400 dark:text-emerald-400 dark:hover:bg-emerald-950/30"
+              >
+                Cetak
+              </Button>
+            )}
           </div>
         );
       },
