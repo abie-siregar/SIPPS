@@ -46,6 +46,7 @@ import DetailPembinaan from "./pages/ManajemenData/PelanggaranSiswa/ManajemenPel
 import IdentitasSiswaRedirect from "./pages/ManajemenData/ManajemenDataSiswa/IdentitasSiswaRedirect";
 import RiwayatPelanggaranRedirect from "./pages/ManajemenData/ManajemenDataSiswa/RiwayatPelanggaranRedirect";
 import ImportFile from "./pages/ManajemenData/Import/Import";
+import PrintLaporan from "./pages/ManajemenData/ManajemenDataSiswa/PrintLaporan";
 
 export default function App() {
   return (
@@ -60,6 +61,14 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<SignUp />} />
           <Route path="/admin-login" element={<AdminLogin />} />
+          <Route
+            path="/print-laporan/:id"
+            element={
+              <ProtectedRoute>
+                <PrintLaporan />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Routes yang memakai AppLayout */}
           <Route element={<AppLayout />}>

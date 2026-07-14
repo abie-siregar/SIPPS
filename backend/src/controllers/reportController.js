@@ -75,6 +75,12 @@ module.exports = {
         queryParams.push(id_rombel);
       }
 
+      // Filter tambahan untuk single siswa
+      if (req.query.id_siswa) {
+        whereClauses.push(`siswa.id_siswa = $${queryParams.length + 1}`);
+        queryParams.push(req.query.id_siswa);
+      }
+
       if (whereClauses.length > 0) {
         querySiswaText += ` WHERE ` + whereClauses.join(" AND ");
       }
@@ -95,8 +101,12 @@ module.exports = {
       `;
       let pelanggaranParams = [];
       if (id_semester) {
-        queryPelanggaranText += ` AND pelanggaran.id_semester = $1`;
         pelanggaranParams.push(id_semester);
+        queryPelanggaranText += ` AND pelanggaran.id_semester = $${pelanggaranParams.length}`;
+      }
+      if (req.query.id_siswa) {
+        pelanggaranParams.push(req.query.id_siswa);
+        queryPelanggaranText += ` AND pelanggaran.id_siswa = $${pelanggaranParams.length}`;
       }
       queryPelanggaranText += ` ORDER BY pelanggaran.tanggal DESC`;
 
@@ -118,8 +128,12 @@ module.exports = {
       `;
       let pembinaanParams = [];
       if (id_semester) {
-        queryPembinaanText += ` AND ss.id_semester = $1`;
         pembinaanParams.push(id_semester);
+        queryPembinaanText += ` AND ss.id_semester = $${pembinaanParams.length}`;
+      }
+      if (req.query.id_siswa) {
+        pembinaanParams.push(req.query.id_siswa);
+        queryPembinaanText += ` AND ss.id_siswa = $${pembinaanParams.length}`;
       }
       queryPembinaanText += ` ORDER BY ss.tanggal DESC`;
 

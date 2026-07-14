@@ -126,20 +126,31 @@ const ManajemenDataSiswa = () => {
     {
       header: "Aksi",
       accessor: "nama",
-      className: "w-28 text-center",
-      render: (row) => (
-        <div className="flex justify-center gap-2">
-          {/* Tombol Navigasi Halaman Penuh */}
-          <Button
-            size="sm"
-            variant="primary"
-            onClick={() => handleNavigateToDetail(row)}
-            className="border-blue-500 text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-950/30"
-          >
-            Detail
-          </Button>
-        </div>
-      ),
+      className: "w-36 text-center",
+      render: (row) => {
+        const targetId = row.id_siswa || row.id;
+        return (
+          <div className="flex justify-center gap-2">
+            {/* Tombol Navigasi Halaman Penuh */}
+            <Button
+              size="sm"
+              variant="primary"
+              onClick={() => handleNavigateToDetail(row)}
+              className="border-blue-500 text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-950/30"
+            >
+              Detail
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => navigate(`/print-laporan/${targetId}`)}
+              className="border-emerald-500 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-400 dark:text-emerald-400 dark:hover:bg-emerald-950/30"
+            >
+              Cetak
+            </Button>
+          </div>
+        );
+      },
     },
   ];
 

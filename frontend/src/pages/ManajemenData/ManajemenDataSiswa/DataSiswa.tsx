@@ -282,13 +282,23 @@ const DataSiswa = () => {
                   </Button>
                 </>
               ) : (
-                <Button
-                  size="sm"
-                  variant="primary"
-                  onClick={() => setIsEditMode(true)}
-                >
-                  Perbarui Data
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="primary"
+                    onClick={() => setIsEditMode(true)}
+                  >
+                    Perbarui Data
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => navigate(`/print-laporan/${id}`)}
+                    className="border-emerald-500 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-400 dark:text-emerald-400 dark:hover:bg-emerald-950/30"
+                  >
+                    Cetak
+                  </Button>
+                </div>
               )}
             </div>
           </div>
