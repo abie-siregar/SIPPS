@@ -36,7 +36,7 @@ router.use(
   rombelRoutes,
 );
 router.use("/siswa", authenticate, siswaRoutes);
-router.use("/ptk", authenticate, isRoles(["Admin"]), ptkRoutes);
+router.use("/ptk", authenticate, isRoles(["Admin", "BK"]), ptkRoutes);
 router.use("/user", authenticate, isRoles(["Admin"]), userRoutes);
 router.use("/pelanggaran-siswa", authenticate, pelanggaranRoutes);
 router.use("/pembinaan", authenticate, pembinaanRoutes);
