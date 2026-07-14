@@ -47,6 +47,7 @@ import IdentitasSiswaRedirect from "./pages/ManajemenData/ManajemenDataSiswa/Ide
 import RiwayatPelanggaranRedirect from "./pages/ManajemenData/ManajemenDataSiswa/RiwayatPelanggaranRedirect";
 import ImportFile from "./pages/ManajemenData/Import/Import";
 import PrintLaporan from "./pages/ManajemenData/ManajemenDataSiswa/PrintLaporan";
+import PrintRombel from "./pages/ManajemenData/ManajemenDataSiswa/PrintRombel";
 
 export default function App() {
   return (
@@ -66,6 +67,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <PrintLaporan />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/print-rombel/:id"
+            element={
+              <ProtectedRoute>
+                <PrintRombel />
               </ProtectedRoute>
             }
           />

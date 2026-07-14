@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "../../api/axios";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import ComponentCard from "../../components/common/ComponentCard";
@@ -40,6 +41,7 @@ export interface PlottingBK {
 type TabType = "rombel" | "plotting";
 
 const ManajemenRombelPlotting = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const isAdmin = user?.role === "Admin";
 
@@ -122,6 +124,26 @@ const ManajemenRombelPlotting = () => {
       header: "Jumlah Siswa",
       accessor: "jumlah_siswa",
       className: "w-32",
+    },
+    {
+      header: "Cetak",
+      accessor: "rombel",
+      className: "w-28 text-center",
+      render: (row) => {
+        const targetId = row.id_rombel || (row as any).id;
+        return (
+          <div className="flex justify-center">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => navigate(`/print-rombel/${targetId}`)}
+              className="border-emerald-500 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-400 dark:text-emerald-400 dark:hover:bg-emerald-950/30"
+            >
+              Cetak
+            </Button>
+          </div>
+        );
+      },
     },
   ];
 
