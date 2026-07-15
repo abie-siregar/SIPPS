@@ -40,7 +40,6 @@ const navItems: NavItem[] = [
       "Wali Kelas",
       "Tenaga Kependidikan",
       "Siswa",
-      "Orang Tua",
     ],
   },
   {
@@ -53,7 +52,6 @@ const navItems: NavItem[] = [
       "Guru",
       "Wali Kelas",
       "Siswa",
-      "Orang Tua",
       "Tenaga Kependidikan",
     ],
   },
@@ -133,7 +131,7 @@ const navItems: NavItem[] = [
   },
   {
     name: "Aturan Data Poin dan Sanksi",
-    path: "/PoinSanksi",
+    path: "/data-poin-pelanggaran",
     icon: <TableIcon />,
     roles: ["Siswa", "Orang Tua"],
   },

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import PageMeta from "../../components/common/PageMeta";
 import { useAuth } from "../../context/AuthContext";
 import SiswaRiwayatPelanggaran from "../../components/siswa/SiswaRiwayatPelanggaran";
@@ -105,6 +106,13 @@ const FALLBACK_ROLE: RoleConfig = {
 
 export default function Home() {
   const { user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user?.role === "Orang Tua") {
+      navigate("/IdentitasAnak", { replace: true });
+    }
+  }, [user, navigate]);
 
   const roleConfig =
     (user?.role ? ROLE_CONFIG[user.role] : null) ?? FALLBACK_ROLE;

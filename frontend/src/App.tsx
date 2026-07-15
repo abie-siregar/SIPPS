@@ -164,6 +164,7 @@ export default function App() {
                     "Wali Kelas",
                     "Tenaga Kependidikan",
                     "Siswa",
+                    "Orang Tua",
                   ]}
                 >
                   <DataSanksi />
