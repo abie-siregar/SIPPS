@@ -284,13 +284,17 @@ const DataSiswa = () => {
                   </>
                 ) : (
                   <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="primary"
-                      onClick={() => setIsEditMode(true)}
-                    >
-                      Perbarui Data
-                    </Button>
+                    {(user?.role === "Admin" ||
+                      user?.role === "BK" ||
+                      user?.role === "Wali Kelas") && (
+                      <Button
+                        size="sm"
+                        variant="primary"
+                        onClick={() => setIsEditMode(true)}
+                      >
+                        Perbarui Data
+                      </Button>
+                    )}
                     {(user?.role === "Admin" ||
                       user?.role === "BK" ||
                       user?.role === "Wali Kelas") && (

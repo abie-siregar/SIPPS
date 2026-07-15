@@ -574,14 +574,14 @@ module.exports = {
       const { id_role, id_ptk, id_orangtua } = userDb.rows[0];
 
       // Definisikan mapping ID Role sistem Anda
-      const role = { admin: 1, BK: 102, wali_kelas: 103, orang_tua: 104 };
+      const role = { admin: 1, BK: 102, wali_kelas: 103, orang_tua: 7 };
 
       // 2. VALIDASI KEPEMILIKAN DATA (SECURITY GATEKEEPER)
 
       // JIKA ORANG TUA: Pastikan targetSiswaId adalah benar anaknya
       if (id_role === role.orang_tua) {
         const checkAnak = await pool.query(
-          `SELECT id_orangtua FROM orang_tua_wali WHERE id_orangtua = $1 AND id_siswa = $2`,
+          `SELECT id_orangtua FROM siswa WHERE id_orangtua = $1 AND id_siswa = $2`,
           [id_orangtua, targetSiswaId],
         );
 
