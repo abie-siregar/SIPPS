@@ -45,6 +45,7 @@ import ManajemenPembinaan from "./pages/ManajemenData/PelanggaranSiswa/Manajemen
 import DetailPembinaan from "./pages/ManajemenData/PelanggaranSiswa/ManajemenPelanggaranPembinaan/Pembinaan/DetailPembinaan";
 import IdentitasSiswaRedirect from "./pages/ManajemenData/ManajemenDataSiswa/IdentitasSiswaRedirect";
 import RiwayatPelanggaranRedirect from "./pages/ManajemenData/ManajemenDataSiswa/RiwayatPelanggaranRedirect";
+import AnakRedirect from "./pages/ManajemenData/ManajemenDataSiswa/AnakRedirect";
 import ImportFile from "./pages/ManajemenData/Import/Import";
 import PrintLaporan from "./pages/ManajemenData/ManajemenDataSiswa/PrintLaporan";
 import PrintRombel from "./pages/ManajemenData/ManajemenDataSiswa/PrintRombel";
@@ -250,6 +251,22 @@ export default function App() {
               element={
                 <ProtectedRoute roles={["Siswa"]}>
                   <RiwayatPelanggaranRedirect />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/IdentitasAnak"
+              element={
+                <ProtectedRoute roles={["Orang Tua"]}>
+                  <AnakRedirect type="identitas" />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/RiwayatPelanggaranAnak"
+              element={
+                <ProtectedRoute roles={["Orang Tua"]}>
+                  <AnakRedirect type="riwayat" />
                 </ProtectedRoute>
               }
             />

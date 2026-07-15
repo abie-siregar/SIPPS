@@ -255,9 +255,7 @@ module.exports = {
           r.nama_rombel as kelas,
           j.nama_jurusan as jurusan
         FROM 
-          orang_tua_wali otw
-        INNER JOIN 
-          siswa s ON s.id_siswa = otw.id_siswa
+          siswa s
         LEFT JOIN 
           anggota_rombel ar ON ar.id_siswa = s.id_siswa
         LEFT JOIN 
@@ -265,7 +263,7 @@ module.exports = {
         LEFT JOIN
           jurusan j ON j.id_jurusan = r.id_jurusan
         WHERE 
-          otw.id_orangtua = $1
+          s.id_orangtua = $1
         ORDER BY 
           s.nama ASC
       `;

@@ -149,6 +149,18 @@ const navItems: NavItem[] = [
     icon: <TaskIcon />,
     roles: ["Siswa"],
   },
+  {
+    name: "Identitas Anak",
+    path: "/IdentitasAnak",
+    icon: <UserIcon />,
+    roles: ["Orang Tua"],
+  },
+  {
+    name: "Riwayat Pelanggaran Anak",
+    path: "/RiwayatPelanggaranAnak",
+    icon: <TaskIcon />,
+    roles: ["Orang Tua"],
+  },
 ];
 
 const AppSidebar: React.FC = () => {
