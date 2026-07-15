@@ -406,7 +406,7 @@ module.exports = {
       // Get updated points
       const updatedRombel = await client.query(
         `SELECT saldo_poin FROM anggota_rombel WHERE id_siswa = $1`,
-        [id_siswa]
+        [id_siswa],
       );
       const newPoints = updatedRombel.rows[0]?.saldo_poin || 0;
 
@@ -416,7 +416,7 @@ module.exports = {
          FROM sanksi_siswa ss
          INNER JOIN master_sanksi ms ON ms.id_master_sanksi = ss.id_master_sanksi
          WHERE ss.id_siswa = $1 AND ms.batas_poin > $2`,
-        [id_siswa, newPoints]
+        [id_siswa, newPoints],
       );
 
       const sanksiIds = sanksiToDelete.rows.map((row) => row.id_sanksi_siswa);
@@ -425,13 +425,13 @@ module.exports = {
         // Delete related progres_pembinaan
         await client.query(
           `DELETE FROM progres_pembinaan WHERE id_sanksi_siswa = ANY($1)`,
-          [sanksiIds]
+          [sanksiIds],
         );
 
         // Delete from sanksi_siswa
         await client.query(
           `DELETE FROM sanksi_siswa WHERE id_sanksi_siswa = ANY($1)`,
-          [sanksiIds]
+          [sanksiIds],
         );
       }
 
@@ -470,11 +470,6 @@ module.exports = {
       const id_role = userDb.rows[0].id_role;
       const id_ptk = userDb.rows[0].id_ptk;
       const role = { admin: 1, wali_kelas: 103, BK: 102 };
-
-      // PAGINATION: Ambil dari query string, default page 1, limit 10 data
-      const page = parseInt(req.query.page) || 1;
-      const limit = parseInt(req.query.limit) || 10;
-      const offset = (page - 1) * limit;
 
       let queryParams = [];
       let paramIndex = 1;
@@ -544,20 +539,12 @@ module.exports = {
         pelanggaran.tanggal DESC, 
         siswa.id_siswa,
         pelanggaran.keterangan
-      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
     `;
-
-      queryParams.push(limit, offset);
 
       const result = await pool.query(queryText, queryParams);
 
-      // Kembalikan metadata pagination beserta datanya biar frontend lu tau cara mappingnya
-      res.json({
-        page,
-        limit,
-        total_rows: result.rows.length,
-        data: result.rows,
-      });
+      // Kembalikan langsung array data secara utuh
+      res.json(result.rows);
     } catch (error) {
       console.error("Error fetching ptk:", error.message);
       res.status(500).json({ error: "Internal Server Error " + error.message });
