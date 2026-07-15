@@ -32,15 +32,13 @@ const BiodataDiriSiswa: React.FC<BiodataProps> = ({ targetId, viewerRole }) => {
 
       setLoading(true);
       try {
-        // 🔄 Menentukan URL endpoint berdasarkan siapa yang melihat profil
         const endpointUrl =
           viewerRole === "Orang Tua"
-            ? `/orangtua/${targetId}` // Jika ortu yang akses, backend mencarikan profil anak dari ID ortu
-            : `/siswa/${targetId}`; // Jika siswa, langsung panggil profil miliknya
+            ? `/orangtua/${targetId}`
+            : `/siswa/${targetId}`;
 
         const res = await axios.post(endpointUrl);
 
-        // Menampung objek respon data dari backend (mendukung format bungkus .data)
         const profileData = res.data?.data || res.data || null;
         setProfile(profileData);
       } catch (err) {

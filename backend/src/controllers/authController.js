@@ -6,9 +6,8 @@ module.exports = {
   // Login
   async login(req, res) {
     try {
-      const { username, password } = req.body; // bisa username atau email
+      const { username, password } = req.body;
 
-      // cari user berdasarkan username/email
       const result = await pool.query(
         `SELECT
           u.id_user, 
@@ -102,7 +101,7 @@ module.exports = {
           u.id_user, 
           u.username,
           r.nama_role AS role,
-          COALESCE(siswa.nama, ptk.nama) AS nama,
+          COALESCE(siswa.nama, ptk.nama, ow.nama_ayah) AS nama,
           COALESCE(siswa.email, ptk.email) AS email,
           COALESCE(siswa.no_telp, ptk.no_telp) AS no_hp
         FROM 
@@ -113,6 +112,8 @@ module.exports = {
           ptk ptk ON ptk.id_ptk = u.id_ptk
         LEFT JOIN
           siswa siswa ON siswa.id_siswa = u.id_siswa
+        LEFT JOIN
+          orangtua_wali ow ON ow.id_orangtua = u.id_orangtua
         WHERE 
           u.username = $1`,
         [username],

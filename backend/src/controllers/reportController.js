@@ -5,7 +5,6 @@ module.exports = {
     try {
       const id = req.user?.id;
 
-      // 1. Ambil data user pembuka report
       const userDb = await pool.query(
         `SELECT id_role, id_ptk, id_siswa, id_orangtua FROM users WHERE id_user = $1`,
         [id],
@@ -29,8 +28,8 @@ module.exports = {
       let queryParams = [];
       let whereClauses = [];
 
-      // --- QUERY 1: JANGKAR DATA SISWA & ROMBEL (Urut Nama A-Z) ---
-      // 🌟 'LEFT JOIN plotting_bk' & 'ptk gurubk' sudah stand-by di query utama
+      queryParams.push(id_semester || null);
+
       let querySiswaText = `
         SELECT 
             siswa.id_siswa,
@@ -39,7 +38,7 @@ module.exports = {
             rombel.nama_rombel,
             jurusan.nama_jurusan,
             walikelas.nama as walikelas,
-            semester.nama_semester,
+            semester.nama_semester as semester,
             gurubk.nama as nama_bk 
         FROM siswa
         INNER JOIN anggota_rombel ON anggota_rombel.id_siswa = siswa.id_siswa
@@ -48,14 +47,17 @@ module.exports = {
         LEFT JOIN ptk gurubk ON gurubk.id_ptk = pbk.id_ptk_bk
         LEFT JOIN jurusan ON jurusan.id_jurusan = rombel.id_jurusan
         LEFT JOIN ptk walikelas ON walikelas.id_ptk = rombel.id_ptk_wali
-        LEFT JOIN semester ON semester.id_semester = $1
+        LEFT JOIN semester ON semester.id_semester = anggota_rombel.id_semester
       `;
 
-      queryParams.push(id_semester || null);
+      whereClauses.push(`
+  (
+    ($1::int IS NOT NULL AND anggota_rombel.id_semester = $1) OR 
+    ($1::int IS NULL AND semester.is_active = true)
+  )
+`);
 
-      // --- FILTER ACCESS CONTROL ---
       if (id_role === role.BK) {
-        // 🌟 Bersih: Tidak perlu menambahkan string INNER JOIN lagi agar tidak bentrok alias tabelnya
         whereClauses.push(`pbk.id_ptk_bk = $${queryParams.length + 1}`);
         queryParams.push(id_ptk);
       } else if (id_role === role.wali_kelas) {
@@ -69,13 +71,11 @@ module.exports = {
         queryParams.push(id_orangtua);
       }
 
-      // Filter tambahan dari request query params (jika admin/BK memfilter kelas tertentu)
       if (id_rombel) {
         whereClauses.push(`rombel.id_rombel = $${queryParams.length + 1}`);
         queryParams.push(id_rombel);
       }
 
-      // Filter tambahan untuk single siswa
       if (req.query.id_siswa) {
         whereClauses.push(`siswa.id_siswa = $${queryParams.length + 1}`);
         queryParams.push(req.query.id_siswa);
@@ -87,7 +87,6 @@ module.exports = {
 
       querySiswaText += ` ORDER BY siswa.nama ASC`;
 
-      // --- QUERY 2: DATA PELANGGARAN ---
       let queryPelanggaranText = `
         SELECT 
             pelanggaran.id_siswa,
@@ -110,7 +109,6 @@ module.exports = {
       }
       queryPelanggaranText += ` ORDER BY pelanggaran.tanggal DESC`;
 
-      // --- QUERY 3: DATA PEMBINAAN & SANKSI ---
       let queryPembinaanText = `
         SELECT 
             ss.id_siswa, 
@@ -137,7 +135,6 @@ module.exports = {
       }
       queryPembinaanText += ` ORDER BY ss.tanggal DESC`;
 
-      // Eksekusi semua query secara paralel
       const [resSiswa, resPelanggaran, resPembinaan] = await Promise.all([
         pool.query(querySiswaText, queryParams),
         pool.query(queryPelanggaranText, pelanggaranParams),
@@ -148,7 +145,6 @@ module.exports = {
       const semuaPelanggaran = resPelanggaran.rows;
       const semuaPembinaan = resPembinaan.rows;
 
-      // --- PROSES MAP MASTER BERDASARKAN BASE DATA SISWA ---
       const laporanMap = {};
 
       daftarSiswa.forEach((siswa) => {
@@ -157,7 +153,7 @@ module.exports = {
           nama_siswa: siswa.nama_siswa,
           nisn: siswa.nisn,
           rombel: siswa.nama_rombel,
-          semester: siswa.nama_semester || "Semua Semester",
+          semester: siswa.semester,
           jurusan: siswa.nama_jurusan,
           walikelas: siswa.walikelas,
           bk: siswa.nama_bk || "Belum diplot",
@@ -183,7 +179,6 @@ module.exports = {
         }
       });
 
-      // Masukkan data pembinaan ke siswa yang cocok
       semuaPembinaan.forEach((pem) => {
         if (laporanMap[pem.id_siswa]) {
           const namaBkDariRombel = laporanMap[pem.id_siswa].bk;
@@ -198,7 +193,6 @@ module.exports = {
         }
       });
 
-      // Mengubah objek map kembali menjadi array
       const hasilAkhir = Object.values(laporanMap);
 
       res.json(hasilAkhir);

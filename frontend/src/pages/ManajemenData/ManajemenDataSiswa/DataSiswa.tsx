@@ -59,17 +59,15 @@ export interface RiwayatPelanggaran {
 
 const DataSiswa = () => {
   const { user } = useAuth();
-  const { id } = useParams<{ id: string }>(); // Mengambil ID siswa dinamis dari URL router
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const tab = searchParams.get("tab");
 
-  // Loading states
   const [loading, setLoading] = useState(true);
   const [loadingOrtu, setLoadingOrtu] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Data states dengan inisialisasi lengkap mematuhi aturan tipe data kontrak TypeScript
   const [siswaForm, setSiswaForm] = useState<DetailSiswa>({
     nama: "",
     nisn: "",
@@ -183,7 +181,6 @@ const DataSiswa = () => {
     setOrtuForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  // Handle Update Action (Simpan Sekaligus)
   const handleSaveData = async () => {
     if (!siswaForm.nama?.trim() || !siswaForm.nisn?.trim()) {
       setToast({
@@ -203,7 +200,7 @@ const DataSiswa = () => {
       if (ortuForm.id_orangtua) {
         await axios.put(`/orangtua/${ortuForm.id_siswa}`, ortuForm);
       } else {
-        await axios.post(`/orangtua`, ortuForm);
+        await axios.put(`/orangtua`, ortuForm);
       }
 
       setToast({
@@ -226,8 +223,6 @@ const DataSiswa = () => {
       setSubmitting(false);
     }
   };
-
-
 
   if (loading) {
     return (
@@ -256,377 +251,383 @@ const DataSiswa = () => {
       <div className="space-y-6">
         {tab !== "riwayat" && (
           <ComponentCard title="">
-          <div className="flex justify-between items-center w-full pb-4 mb-4 border-b border-gray-200 dark:border-gray-800">
-            <h4 className="text-sm font-medium text-gray-400 uppercase tracking-wider">
-              Manajemen Profil
-            </h4>
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline" onClick={() => navigate(-1)}>
-                Kembali
-              </Button>
-              {isEditMode ? (
-                <>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setIsEditMode(false)}
-                    disabled={submitting}
-                  >
-                    Batal
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="primary"
-                    onClick={handleSaveData}
-                    disabled={submitting}
-                  >
-                    {submitting ? "Menyimpan..." : "Simpan"}
-                  </Button>
-                </>
-              ) : (
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="primary"
-                    onClick={() => setIsEditMode(true)}
-                  >
-                    Perbarui Data
-                  </Button>
-                  {(user?.role === "Admin" || user?.role === "BK" || user?.role === "Wali Kelas") && (
+            <div className="flex justify-between items-center w-full pb-4 mb-4 border-b border-gray-200 dark:border-gray-800">
+              <h4 className="text-sm font-medium text-gray-400 uppercase tracking-wider">
+                Manajemen Profil
+              </h4>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => navigate(-1)}
+                >
+                  Kembali
+                </Button>
+                {isEditMode ? (
+                  <>
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => navigate(`/print-laporan/${id}`)}
-                      className="border-emerald-500 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-400 dark:text-emerald-400 dark:hover:bg-emerald-950/30"
+                      onClick={() => setIsEditMode(false)}
+                      disabled={submitting}
                     >
-                      Cetak
+                      Batal
                     </Button>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="p-2 space-y-6 text-left">
-            <div>
-              <h4 className="text-sm font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-3 border-b pb-1 dark:border-gray-800">
-                A. Data Diri Siswa
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">
-                    Nama Lengkap
-                  </label>
-                  {isEditMode ? (
-                    <input
-                      type="text"
-                      name="nama"
-                      value={siswaForm.nama || ""}
-                      disabled
-                      className="w-full px-3 py-1.5 text-sm border rounded border-gray-300 bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600 cursor-not-allowed"
-                    />
-                  ) : (
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                      {siswaForm.nama || "-"}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">
-                    NISN
-                  </label>
-                  {isEditMode ? (
-                    <input
-                      type="text"
-                      name="nisn"
-                      value={siswaForm.nisn || ""}
-                      disabled
-                      className="w-full px-3 py-1.5 text-sm border rounded border-gray-300 bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600 cursor-not-allowed"
-                    />
-                  ) : (
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                      {siswaForm.nisn || "-"}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">
-                    Agama
-                  </label>
-                  {isEditMode ? (
-                    <input
-                      type="text"
-                      name="agama"
-                      value={siswaForm.agama || ""}
-                      onChange={handleSiswaChange}
-                      className="w-full px-3 py-1.5 text-sm border rounded bg-white dark:bg-gray-800 dark:text-white border-gray-300 dark:border-gray-700"
-                    />
-                  ) : (
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                      {siswaForm.agama || "-"}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">
-                    Nomor Telepon
-                  </label>
-                  {isEditMode ? (
-                    <input
-                      type="text"
-                      name="no_telp"
-                      value={siswaForm.no_telp || ""}
-                      onChange={handleSiswaChange}
-                      className="w-full px-3 py-1.5 text-sm border rounded bg-white dark:bg-gray-800 dark:text-white border-gray-300 dark:border-gray-700"
-                    />
-                  ) : (
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                      {siswaForm.no_telp || "-"}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">
-                    Email
-                  </label>
-                  {isEditMode ? (
-                    <input
-                      type="email"
-                      name="email"
-                      value={siswaForm.email || ""}
-                      onChange={handleSiswaChange}
-                      className="w-full px-3 py-1.5 text-sm border rounded bg-white dark:bg-gray-800 dark:text-white border-gray-300 dark:border-gray-700"
-                    />
-                  ) : (
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white break-all">
-                      {siswaForm.email || "-"}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">
-                    Alamat Tempat Tinggal
-                  </label>
-                  {isEditMode ? (
-                    <input
-                      type="text"
-                      name="alamat"
-                      value={siswaForm.alamat || ""}
-                      onChange={handleSiswaChange}
-                      className="w-full px-3 py-1.5 text-sm border rounded bg-white dark:bg-gray-800 dark:text-white border-gray-300 dark:border-gray-700"
-                    />
-                  ) : (
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                      {siswaForm.alamat || "-"}
-                    </p>
-                  )}
-                </div>
+                    <Button
+                      size="sm"
+                      variant="primary"
+                      onClick={handleSaveData}
+                      disabled={submitting}
+                    >
+                      {submitting ? "Menyimpan..." : "Simpan"}
+                    </Button>
+                  </>
+                ) : (
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="primary"
+                      onClick={() => setIsEditMode(true)}
+                    >
+                      Perbarui Data
+                    </Button>
+                    {(user?.role === "Admin" ||
+                      user?.role === "BK" ||
+                      user?.role === "Wali Kelas") && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => navigate(`/print-laporan/${id}`)}
+                        className="border-emerald-500 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-400 dark:text-emerald-400 dark:hover:bg-emerald-950/30"
+                      >
+                        Cetak
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
-            <div>
-              <h4 className="text-sm font-bold text-green-600 dark:text-green-400 uppercase tracking-wider mb-3 border-b pb-1 dark:border-gray-800">
-                B. Data Akademik
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">
-                    Tingkat
-                  </label>
-                  {isEditMode ? (
-                    <input
-                      type="text"
-                      name="tingkat"
-                      value={siswaForm.tingkat || ""}
-                      disabled
-                      className="w-full px-3 py-1.5 text-sm border rounded border-gray-300 bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600 cursor-not-allowed"
-                    />
-                  ) : (
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                      {siswaForm.tingkat || "-"}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">
-                    Rombongan Belajar
-                  </label>
-                  {isEditMode ? (
-                    <input
-                      type="text"
-                      name="rombel"
-                      value={siswaForm.rombel || ""}
-                      disabled
-                      className="w-full px-3 py-1.5 text-sm border rounded border-gray-300 bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600 cursor-not-allowed"
-                    />
-                  ) : (
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                      {siswaForm.rombel || "-"}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">
-                    Jurusan
-                  </label>
-                  {isEditMode ? (
-                    <input
-                      type="text"
-                      name="jurusan"
-                      value={siswaForm.jurusan || ""}
-                      disabled
-                      className="w-full px-3 py-1.5 text-sm border rounded border-gray-300 bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600 cursor-not-allowed"
-                    />
-                  ) : (
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                      {siswaForm.jurusan || "-"}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">
-                    Wali Kelas
-                  </label>
-                  {isEditMode ? (
-                    <input
-                      type="text"
-                      name="walikelas"
-                      value={siswaForm.walikelas || ""}
-                      disabled
-                      className="w-full px-3 py-1.5 text-sm border rounded border-gray-300 bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600 cursor-not-allowed"
-                    />
-                  ) : (
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                      {siswaForm.walikelas || "-"}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <h4 className="text-sm font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-3 border-b pb-1 dark:border-gray-800">
-                C. Data Orang Tua / Wali
-              </h4>
-              {loadingOrtu ? (
-                <p className="text-xs text-gray-400 animate-pulse">
-                  Memuat data orang tua...
-                </p>
-              ) : (
+            <div className="p-2 space-y-6 text-left">
+              <div>
+                <h4 className="text-sm font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-3 border-b pb-1 dark:border-gray-800">
+                  A. Data Diri Siswa
+                </h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs text-gray-500 mb-1">
-                      No. Kartu Keluarga (KK)
+                      Nama Lengkap
                     </label>
                     {isEditMode ? (
                       <input
                         type="text"
-                        name="no_kk"
-                        value={ortuForm.no_kk || ""}
-                        onChange={handleOrtuChange}
-                        className="w-full px-3 py-1.5 text-sm border rounded bg-white dark:bg-gray-800 dark:text-white border-gray-300 dark:border-gray-700"
+                        name="nama"
+                        value={siswaForm.nama || ""}
+                        disabled
+                        className="w-full px-3 py-1.5 text-sm border rounded border-gray-300 bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600 cursor-not-allowed"
                       />
                     ) : (
                       <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                        {ortuForm.no_kk || "-"}
+                        {siswaForm.nama || "-"}
                       </p>
                     )}
                   </div>
                   <div>
                     <label className="block text-xs text-gray-500 mb-1">
-                      Nama Ayah
+                      NISN
                     </label>
                     {isEditMode ? (
                       <input
                         type="text"
-                        name="ayah"
-                        value={ortuForm.ayah || ""}
-                        onChange={handleOrtuChange}
-                        className="w-full px-3 py-1.5 text-sm border rounded bg-white dark:bg-gray-800 dark:text-white border-gray-300 dark:border-gray-700"
+                        name="nisn"
+                        value={siswaForm.nisn || ""}
+                        disabled
+                        className="w-full px-3 py-1.5 text-sm border rounded border-gray-300 bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600 cursor-not-allowed"
                       />
                     ) : (
                       <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                        {ortuForm.ayah || "-"}
+                        {siswaForm.nisn || "-"}
                       </p>
                     )}
                   </div>
                   <div>
                     <label className="block text-xs text-gray-500 mb-1">
-                      Nama Ibu
+                      Agama
                     </label>
                     {isEditMode ? (
                       <input
                         type="text"
-                        name="ibu"
-                        value={ortuForm.ibu || ""}
-                        onChange={handleOrtuChange}
+                        name="agama"
+                        value={siswaForm.agama || ""}
+                        onChange={handleSiswaChange}
                         className="w-full px-3 py-1.5 text-sm border rounded bg-white dark:bg-gray-800 dark:text-white border-gray-300 dark:border-gray-700"
                       />
                     ) : (
                       <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                        {ortuForm.ibu || "-"}
+                        {siswaForm.agama || "-"}
                       </p>
                     )}
                   </div>
                   <div>
                     <label className="block text-xs text-gray-500 mb-1">
-                      Nama Wali (Opsional)
-                    </label>
-                    {isEditMode ? (
-                      <input
-                        type="text"
-                        name="wali"
-                        value={ortuForm.wali || ""}
-                        onChange={handleOrtuChange}
-                        className="w-full px-3 py-1.5 text-sm border rounded bg-white dark:bg-gray-800 dark:text-white border-gray-300 dark:border-gray-700"
-                      />
-                    ) : (
-                      <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                        {ortuForm.wali || "-"}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">
-                      Nomor Telepon Seluler
+                      Nomor Telepon
                     </label>
                     {isEditMode ? (
                       <input
                         type="text"
                         name="no_telp"
-                        value={ortuForm.no_telp || ""}
-                        onChange={handleOrtuChange}
+                        value={siswaForm.no_telp || ""}
+                        onChange={handleSiswaChange}
                         className="w-full px-3 py-1.5 text-sm border rounded bg-white dark:bg-gray-800 dark:text-white border-gray-300 dark:border-gray-700"
                       />
                     ) : (
                       <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                        {ortuForm.no_telp || "-"}
+                        {siswaForm.no_telp || "-"}
                       </p>
                     )}
                   </div>
                   <div>
                     <label className="block text-xs text-gray-500 mb-1">
-                      Telepon Rumah
+                      Email
+                    </label>
+                    {isEditMode ? (
+                      <input
+                        type="email"
+                        name="email"
+                        value={siswaForm.email || ""}
+                        onChange={handleSiswaChange}
+                        className="w-full px-3 py-1.5 text-sm border rounded bg-white dark:bg-gray-800 dark:text-white border-gray-300 dark:border-gray-700"
+                      />
+                    ) : (
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white break-all">
+                        {siswaForm.email || "-"}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">
+                      Alamat Tempat Tinggal
                     </label>
                     {isEditMode ? (
                       <input
                         type="text"
-                        name="no_telp_rumah"
-                        value={ortuForm.no_telp_rumah || ""}
-                        onChange={handleOrtuChange}
+                        name="alamat"
+                        value={siswaForm.alamat || ""}
+                        onChange={handleSiswaChange}
                         className="w-full px-3 py-1.5 text-sm border rounded bg-white dark:bg-gray-800 dark:text-white border-gray-300 dark:border-gray-700"
                       />
                     ) : (
                       <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                        {ortuForm.no_telp_rumah || "-"}
+                        {siswaForm.alamat || "-"}
                       </p>
                     )}
                   </div>
                 </div>
-              )}
+              </div>
+
+              <div>
+                <h4 className="text-sm font-bold text-green-600 dark:text-green-400 uppercase tracking-wider mb-3 border-b pb-1 dark:border-gray-800">
+                  B. Data Akademik
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">
+                      Tingkat
+                    </label>
+                    {isEditMode ? (
+                      <input
+                        type="text"
+                        name="tingkat"
+                        value={siswaForm.tingkat || ""}
+                        disabled
+                        className="w-full px-3 py-1.5 text-sm border rounded border-gray-300 bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600 cursor-not-allowed"
+                      />
+                    ) : (
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                        {siswaForm.tingkat || "-"}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">
+                      Rombongan Belajar
+                    </label>
+                    {isEditMode ? (
+                      <input
+                        type="text"
+                        name="rombel"
+                        value={siswaForm.rombel || ""}
+                        disabled
+                        className="w-full px-3 py-1.5 text-sm border rounded border-gray-300 bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600 cursor-not-allowed"
+                      />
+                    ) : (
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                        {siswaForm.rombel || "-"}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">
+                      Jurusan
+                    </label>
+                    {isEditMode ? (
+                      <input
+                        type="text"
+                        name="jurusan"
+                        value={siswaForm.jurusan || ""}
+                        disabled
+                        className="w-full px-3 py-1.5 text-sm border rounded border-gray-300 bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600 cursor-not-allowed"
+                      />
+                    ) : (
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                        {siswaForm.jurusan || "-"}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">
+                      Wali Kelas
+                    </label>
+                    {isEditMode ? (
+                      <input
+                        type="text"
+                        name="walikelas"
+                        value={siswaForm.walikelas || ""}
+                        disabled
+                        className="w-full px-3 py-1.5 text-sm border rounded border-gray-300 bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600 cursor-not-allowed"
+                      />
+                    ) : (
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                        {siswaForm.walikelas || "-"}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-3 border-b pb-1 dark:border-gray-800">
+                  C. Data Orang Tua / Wali
+                </h4>
+                {loadingOrtu ? (
+                  <p className="text-xs text-gray-400 animate-pulse">
+                    Memuat data orang tua...
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">
+                        No. Kartu Keluarga (KK)
+                      </label>
+                      {isEditMode ? (
+                        <input
+                          type="text"
+                          name="no_kk"
+                          value={ortuForm.no_kk || ""}
+                          onChange={handleOrtuChange}
+                          className="w-full px-3 py-1.5 text-sm border rounded bg-white dark:bg-gray-800 dark:text-white border-gray-300 dark:border-gray-700"
+                        />
+                      ) : (
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                          {ortuForm.no_kk || "-"}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">
+                        Nama Ayah
+                      </label>
+                      {isEditMode ? (
+                        <input
+                          type="text"
+                          name="ayah"
+                          value={ortuForm.ayah || ""}
+                          onChange={handleOrtuChange}
+                          className="w-full px-3 py-1.5 text-sm border rounded bg-white dark:bg-gray-800 dark:text-white border-gray-300 dark:border-gray-700"
+                        />
+                      ) : (
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                          {ortuForm.ayah || "-"}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">
+                        Nama Ibu
+                      </label>
+                      {isEditMode ? (
+                        <input
+                          type="text"
+                          name="ibu"
+                          value={ortuForm.ibu || ""}
+                          onChange={handleOrtuChange}
+                          className="w-full px-3 py-1.5 text-sm border rounded bg-white dark:bg-gray-800 dark:text-white border-gray-300 dark:border-gray-700"
+                        />
+                      ) : (
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                          {ortuForm.ibu || "-"}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">
+                        Nama Wali (Opsional)
+                      </label>
+                      {isEditMode ? (
+                        <input
+                          type="text"
+                          name="wali"
+                          value={ortuForm.wali || ""}
+                          onChange={handleOrtuChange}
+                          className="w-full px-3 py-1.5 text-sm border rounded bg-white dark:bg-gray-800 dark:text-white border-gray-300 dark:border-gray-700"
+                        />
+                      ) : (
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                          {ortuForm.wali || "-"}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">
+                        Nomor Telepon Seluler
+                      </label>
+                      {isEditMode ? (
+                        <input
+                          type="text"
+                          name="no_telp"
+                          value={ortuForm.no_telp || ""}
+                          onChange={handleOrtuChange}
+                          className="w-full px-3 py-1.5 text-sm border rounded bg-white dark:bg-gray-800 dark:text-white border-gray-300 dark:border-gray-700"
+                        />
+                      ) : (
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                          {ortuForm.no_telp || "-"}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">
+                        Telepon Rumah
+                      </label>
+                      {isEditMode ? (
+                        <input
+                          type="text"
+                          name="no_telp_rumah"
+                          value={ortuForm.no_telp_rumah || ""}
+                          onChange={handleOrtuChange}
+                          className="w-full px-3 py-1.5 text-sm border rounded bg-white dark:bg-gray-800 dark:text-white border-gray-300 dark:border-gray-700"
+                        />
+                      ) : (
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                          {ortuForm.no_telp_rumah || "-"}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        </ComponentCard>
+          </ComponentCard>
         )}
 
         {tab !== "identitas" && (

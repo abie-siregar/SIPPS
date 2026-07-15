@@ -1,4 +1,5 @@
 const pool = require("../../config/database");
+const bcrypt = require("bcrypt");
 
 module.exports = {
   // Mengambil Data Orang Tua
@@ -41,6 +42,7 @@ module.exports = {
           ow.nama_wali as wali,
           ow.no_telp,
           ow.no_telp_rumah,
+          ow.no_kk,
           s.id_siswa, 
           s.nama,
           u.id_siswa
@@ -84,8 +86,8 @@ module.exports = {
       await client.query("BEGIN");
 
       const siswaDb = await client.query(
-        `SELECT s.id_siswa, s.id_orangtua FROM users u 
-       INNER JOIN siswa s ON s.id_siswa = u.id_siswa WHERE u.id_user = $1`,
+        `SELECT id_siswa, id_orangtua FROM siswa 
+       WHERE id_siswa = $1`,
         [id],
       );
       if (siswaDb.rows.length === 0) {
@@ -97,6 +99,7 @@ module.exports = {
 
       let idOrangtuaFinal = id_orangtua;
       let messageResult = "";
+      const roleOrangtua = 7;
 
       if (!id_orangtua) {
         const ortuEksisDb = await client.query(
@@ -117,7 +120,7 @@ module.exports = {
         } else {
           const newOrangtua = await client.query(
             `INSERT INTO orangtua_wali (nama_ayah, nama_ibu, nama_wali, no_telp, no_telp_rumah, no_kk, created_at)
-           VALUES ($1, $2, $3, $4, $5, $6, NOW()) RETURNING id_orangtua`,
+            VALUES ($1, $2, $3, $4, $5, $6, NOW()) RETURNING id_orangtua`,
             [nama_ayah, nama_ibu, nama_wali, no_telp, no_telp_rumah, no_kk],
           );
           idOrangtuaFinal = newOrangtua.rows[0].id_orangtua;
@@ -127,12 +130,11 @@ module.exports = {
             [idOrangtuaFinal, id_siswa],
           );
 
-          const roleOrangtua = 6;
           const password = no_kk;
-          const hashedPassword = await bcrypt.hash(password, salt);
+          const hashedPassword = await bcrypt.hash(password, 10);
           await client.query(
             `INSERT INTO users (username, password, id_role, id_orangtua, created_at)
-           VALUES ($1, $2, $3 , $4, NOW())`,
+            VALUES ($1, $2, $3 , $4, NOW())`,
             [no_kk, hashedPassword, roleOrangtua, idOrangtuaFinal],
           );
 
@@ -160,6 +162,10 @@ module.exports = {
           fields.push(`no_telp = $${index++}`);
           values.push(no_telp);
         }
+        if (no_telp_rumah) {
+          fields.push(`no_telp_rumah = $${index++}`);
+          values.push(no_telp_rumah);
+        }
         if (no_kk) {
           fields.push(`no_kk = $${index++}`);
           values.push(no_kk);
@@ -173,6 +179,32 @@ module.exports = {
             values,
           );
         }
+
+        // 🌟 LOGIKA BARU: Jika no_kk diisi/diperbaharui
+        if (no_kk) {
+          const checkUserDb = await client.query(
+            `SELECT id_user FROM users WHERE id_orangtua = $1 LIMIT 1`,
+            [idOrangtuaFinal],
+          );
+
+          const hashedPassword = await bcrypt.hash(no_kk, 10);
+
+          if (checkUserDb.rows.length > 0) {
+            // Jika user dengan id_orangtua tersebut sudah ada, lakukan UPDATE username & password
+            await client.query(
+              `UPDATE users SET username = $1, password = $2, updated_at = NOW() WHERE id_orangtua = $3`,
+              [no_kk, hashedPassword, idOrangtuaFinal],
+            );
+          } else {
+            // Jika belum terdaftar di tabel users, lakukan INSERT baru
+            await client.query(
+              `INSERT INTO users (username, password, id_role, id_orangtua, created_at)
+              VALUES ($1, $2, $3, $4, NOW())`,
+              [no_kk, hashedPassword, roleOrangtua, idOrangtuaFinal],
+            );
+          }
+        }
+
         messageResult = "Data keluarga berhasil diperbaharui.";
       }
 
