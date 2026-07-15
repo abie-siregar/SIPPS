@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import PageMeta from "../../components/common/PageMeta";
 import { useAuth } from "../../context/AuthContext";
 import SiswaRiwayatPelanggaran from "../../components/siswa/SiswaRiwayatPelanggaran";
@@ -55,8 +55,8 @@ const ROLE_CONFIG: Record<string, RoleConfig> = {
     description: "Lihat catatan poin pelanggaran Anda secara real-time.",
     icon: "📋",
   },
-  "Orangtua/wali": {
-    label: "Orangtua/wali",
+  "Orang Tua": {
+    label: "Orang Tua",
     emoji: "👨‍👩‍👧",
     gradient: "linear-gradient(135deg, #ec4899 0%, #db2777 100%)",
     border: "#ec4899",
@@ -106,18 +106,25 @@ const FALLBACK_ROLE: RoleConfig = {
 export default function Home() {
   const { user } = useAuth();
 
-  const roleConfig = (user?.role ? ROLE_CONFIG[user.role] : null) ?? FALLBACK_ROLE;
+  const roleConfig =
+    (user?.role ? ROLE_CONFIG[user.role] : null) ?? FALLBACK_ROLE;
 
   const displayName = user?.nama || user?.username || "Pengguna";
 
-  const [analyticsData, setAnalyticsData] = useState<{ nama: string; total_poin: number }[]>([]);
+  const [analyticsData, setAnalyticsData] = useState<
+    { nama: string; total_poin: number }[]
+  >([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [rombelName, setRombelName] = useState<string | null>(null);
   const [rombelNames, setRombelNames] = useState<string[]>([]);
-  const [violationsData, setViolationsData] = useState<{ jenis_pelanggaran: string; count: number }[]>([]);
-  const [trendsData, setTrendsData] = useState<{ tanggal_pelanggaran: string; count: number }[]>([]);
+  const [violationsData, setViolationsData] = useState<
+    { jenis_pelanggaran: string; count: number }[]
+  >([]);
+  const [trendsData, setTrendsData] = useState<
+    { tanggal_pelanggaran: string; count: number }[]
+  >([]);
 
   useEffect(() => {
     if (["Admin", "Guru", "BK", "Wali Kelas"].includes(user?.role || "")) {
@@ -218,7 +225,16 @@ export default function Home() {
   const isDarkMode = document.documentElement.classList.contains("dark");
 
   const pieChartOptions: any = {
-    colors: ["#6366f1", "#0ea5e9", "#14b8a6", "#f59e0b", "#ec4899", "#8b5cf6", "#10b981", "#ef4444"],
+    colors: [
+      "#6366f1",
+      "#0ea5e9",
+      "#14b8a6",
+      "#f59e0b",
+      "#ec4899",
+      "#8b5cf6",
+      "#10b981",
+      "#ef4444",
+    ],
     chart: {
       fontFamily: "Outfit, sans-serif",
       type: "pie",
@@ -289,7 +305,9 @@ export default function Home() {
       categories: trendsData.map((t) => t.tanggal_pelanggaran),
       labels: {
         formatter: (val: string) => {
-          const index = trendsData.findIndex((t) => t.tanggal_pelanggaran === val);
+          const index = trendsData.findIndex(
+            (t) => t.tanggal_pelanggaran === val,
+          );
           if (index === -1) return val;
           try {
             const parts = val.split("-");
@@ -298,7 +316,9 @@ export default function Home() {
               const m = parseInt(parts[1], 10) - 1;
               const d = parseInt(parts[2], 10);
               const date = new Date(y, m, d);
-              const month = date.toLocaleDateString("id-ID", { month: "short" });
+              const month = date.toLocaleDateString("id-ID", {
+                month: "short",
+              });
               if (index === 0) {
                 return `1 ${month}`;
               }
@@ -355,10 +375,18 @@ export default function Home() {
               const m = parseInt(parts[1], 10) - 1;
               const d = parseInt(parts[2], 10);
               const date = new Date(y, m, d);
-              return date.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+              return date.toLocaleDateString("id-ID", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              });
             }
             const date = new Date(dateStr);
-            return date.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+            return date.toLocaleDateString("id-ID", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            });
           } catch {
             return val;
           }
@@ -482,8 +510,6 @@ export default function Home() {
             </div>
           </div>
         </div>
-
-
 
         {/* ── Role Info Card ───────────────────────────── */}
         <div className="col-span-12 md:col-span-4">
@@ -615,20 +641,20 @@ export default function Home() {
                       fontSize: "0.95rem",
                       fontWeight: 600,
                       color: "#1f2937",
-                        }}
-                        className="dark:text-white"
-                      >
-                        {value || (
-                          <span style={{ color: "#d1d5db", fontWeight: 400 }}>
-                            —
-                          </span>
-                        )}
-                      </p>
-                    </div>
-                  ))}
+                    }}
+                    className="dark:text-white"
+                  >
+                    {value || (
+                      <span style={{ color: "#d1d5db", fontWeight: 400 }}>
+                        —
+                      </span>
+                    )}
+                  </p>
                 </div>
-              </div>
+              ))}
             </div>
+          </div>
+        </div>
 
         {["Admin", "Guru", "BK", "Wali Kelas"].includes(user?.role || "") && (
           <div className="col-span-12 mt-4">
@@ -653,8 +679,8 @@ export default function Home() {
                       {user?.role === "Admin"
                         ? "Peringkat 10 siswa dengan akumulasi poin pelanggaran tertinggi sekolah."
                         : user?.role === "Guru" || user?.role === "Wali Kelas"
-                        ? `Peringkat 10 siswa dengan akumulasi poin pelanggaran tertinggi di rombel Anda (${rombelName || "-"}).`
-                        : `Peringkat 10 siswa dengan akumulasi poin pelanggaran tertinggi di rombel dampingan Anda (${rombelNames.join(", ") || "-"}).`}
+                          ? `Peringkat 10 siswa dengan akumulasi poin pelanggaran tertinggi di rombel Anda (${rombelName || "-"}).`
+                          : `Peringkat 10 siswa dengan akumulasi poin pelanggaran tertinggi di rombel dampingan Anda (${rombelNames.join(", ") || "-"}).`}
                     </p>
                   </div>
 
@@ -680,7 +706,9 @@ export default function Home() {
                 </div>
 
                 {loading ? (
-                  <p className="text-center dark:text-gray-400 py-8">Memuat data analitik...</p>
+                  <p className="text-center dark:text-gray-400 py-8">
+                    Memuat data analitik...
+                  </p>
                 ) : analyticsData.length === 0 ? (
                   <p className="text-center dark:text-gray-400 py-8">
                     Tidak ada data pelanggaran siswa yang tercatat.
@@ -688,7 +716,12 @@ export default function Home() {
                 ) : (
                   <div className="max-w-full overflow-x-auto custom-scrollbar">
                     <div className="min-w-[600px] h-[350px]">
-                      <Chart options={chartOptions} series={chartSeries} type="bar" height={320} />
+                      <Chart
+                        options={chartOptions}
+                        series={chartSeries}
+                        type="bar"
+                        height={320}
+                      />
                     </div>
                   </div>
                 )}
@@ -715,14 +748,22 @@ export default function Home() {
                 </div>
 
                 {loading ? (
-                  <p className="text-center dark:text-gray-400 py-8">Memuat data analitik...</p>
+                  <p className="text-center dark:text-gray-400 py-8">
+                    Memuat data analitik...
+                  </p>
                 ) : violationsData.length === 0 ? (
                   <p className="text-center dark:text-gray-400 py-8">
                     Tidak ada data pelanggaran yang tercatat.
                   </p>
                 ) : (
                   <div className="flex items-center justify-center h-[400px]">
-                    <Chart options={pieChartOptions} series={pieChartSeries} type="pie" width="100%" height={360} />
+                    <Chart
+                      options={pieChartOptions}
+                      series={pieChartSeries}
+                      type="pie"
+                      width="100%"
+                      height={360}
+                    />
                   </div>
                 )}
               </div>
@@ -743,12 +784,15 @@ export default function Home() {
                     Tren Pelanggaran Siswa
                   </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Perkembangan frekuensi pelanggaran siswa berdasarkan tanggal.
+                    Perkembangan frekuensi pelanggaran siswa berdasarkan
+                    tanggal.
                   </p>
                 </div>
 
                 {loading ? (
-                  <p className="text-center dark:text-gray-400 py-8">Memuat data analitik...</p>
+                  <p className="text-center dark:text-gray-400 py-8">
+                    Memuat data analitik...
+                  </p>
                 ) : trendsData.length === 0 ? (
                   <p className="text-center dark:text-gray-400 py-8">
                     Tidak ada data tren pelanggaran siswa.
@@ -756,7 +800,12 @@ export default function Home() {
                 ) : (
                   <div className="max-w-full overflow-x-auto custom-scrollbar">
                     <div className="min-w-[400px] h-[400px]">
-                      <Chart options={lineChartOptions} series={lineChartSeries} type="line" height={360} />
+                      <Chart
+                        options={lineChartOptions}
+                        series={lineChartSeries}
+                        type="line"
+                        height={360}
+                      />
                     </div>
                   </div>
                 )}

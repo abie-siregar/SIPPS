@@ -48,7 +48,10 @@ const DataPTK = () => {
       ...row,
       nama: row.nama ?? "-",
       jabatan: row.jabatan ?? "-",
-      nuptk: row.nuptk !== null && row.nuptk !== undefined ? row.nuptk.toString() : "-",
+      nuptk:
+        row.nuptk !== null && row.nuptk !== undefined
+          ? row.nuptk.toString()
+          : "-",
       email: row.email ?? "-",
     }));
   }, [data]);
@@ -95,7 +98,7 @@ const DataPTK = () => {
       nuptk: nuptkFilter,
       email: emailFilter,
     }),
-    [selectedJabatan, nuptkFilter, emailFilter]
+    [selectedJabatan, nuptkFilter, emailFilter],
   );
 
   const handleApplyFilters = (filters: typeof filterValues) => {
@@ -112,7 +115,11 @@ const DataPTK = () => {
       className: "w-16 !text-center ",
     },
     { header: "Nama", accessor: "nama", className: " w-40 " },
-    { header: "Jabatan PTK", accessor: "jabatan", className: "w-48 !text-center" },
+    {
+      header: "Jabatan PTK",
+      accessor: "jabatan",
+      className: "w-48 !text-center",
+    },
     { header: "NUPTK", accessor: "nuptk", className: "w-40 !text-center " },
     { header: "E-Mail", accessor: "email", className: "w-64 truncate" },
   ];

@@ -40,6 +40,7 @@ const navItems: NavItem[] = [
       "Wali Kelas",
       "Tenaga Kependidikan",
       "Siswa",
+      "Orang Tua",
     ],
   },
   {
@@ -52,31 +53,20 @@ const navItems: NavItem[] = [
       "Guru",
       "Wali Kelas",
       "Siswa",
+      "Orang Tua",
       "Tenaga Kependidikan",
     ],
   },
   {
     name: "Manajemen Data",
     icon: <TableIcon />,
-    roles: [
-      "Admin",
-      "BK",
-      "Guru",
-      "Wali Kelas",
-      "Tenaga Kependidikan",
-    ],
+    roles: ["Admin", "BK", "Guru", "Wali Kelas", "Tenaga Kependidikan"],
     subItems: [
       {
         name: "Manajemen Data Poin dan Sanksi",
         path: "/PoinSanksi",
         pro: false,
-        roles: [
-          "Admin",
-          "BK",
-          "Guru",
-          "Wali Kelas",
-          "Tenaga Kependidikan",
-        ],
+        roles: ["Admin", "BK", "Guru", "Wali Kelas", "Tenaga Kependidikan"],
       },
       {
         name: "Data Pendidik dan Tenaga Kependidikan",
@@ -145,7 +135,7 @@ const navItems: NavItem[] = [
     name: "Aturan Data Poin dan Sanksi",
     path: "/PoinSanksi",
     icon: <TableIcon />,
-    roles: ["Siswa"],
+    roles: ["Siswa", "Orang Tua"],
   },
   {
     name: "Identitas Siswa",
@@ -312,10 +302,10 @@ const AppSidebar: React.FC = () => {
                                   ? "Manajemen Data Poin dan Sanksi"
                                   : "Aturan Data Poin dan Sanksi"
                                 : subItem.path === "/ManajemenRombelPlotting"
-                                ? user?.role === "Admin"
-                                  ? "Manajemen Rombel dan Plotting BK"
-                                  : "Manajemen Rombel"
-                                : subItem.name}
+                                  ? user?.role === "Admin"
+                                    ? "Manajemen Rombel dan Plotting BK"
+                                    : "Manajemen Rombel"
+                                  : subItem.name}
                               <span className="flex items-center gap-1 ml-auto">
                                 {subItem.new && (
                                   <span

@@ -52,17 +52,6 @@ const BiodataDiriSiswa: React.FC<BiodataProps> = ({ targetId, viewerRole }) => {
     fetchProfileData();
   }, [targetId, viewerRole]);
 
-  const formatTanggal = (tanggalMentah?: string) => {
-    if (!tanggalMentah) return "-";
-    try {
-      const cleanDate = tanggalMentah.split("T")[0];
-      const [year, month, day] = cleanDate.split("-");
-      return `${day}-${month}-${year}`;
-    } catch (e) {
-      return tanggalMentah;
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12 text-center">

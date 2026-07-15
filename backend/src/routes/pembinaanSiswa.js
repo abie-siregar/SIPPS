@@ -4,6 +4,7 @@ const pembinaanSiswa = require("../controllers/pembinaanController");
 const isRoles = require("../middlewares/isRoles");
 
 router.get("/", pembinaanSiswa.getAll);
+router.get("/:id", pembinaanSiswa.getById);
 router.get(
   "/stepper/:id",
   isRoles(["BK", "Admin", "Wali Kelas"]),

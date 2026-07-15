@@ -35,7 +35,7 @@ const SiswaRiwayatPelanggaran: React.FC<SiswaRiwayatPelanggaranProps> = ({
       setLoading(true);
       try {
         let targetId = studentIdFromProp || "";
-        
+
         // 1. Resolve student UUID if not provided
         if (!targetId && user) {
           const resSiswa = await axios.get("/siswa");
@@ -43,7 +43,7 @@ const SiswaRiwayatPelanggaran: React.FC<SiswaRiwayatPelanggaranProps> = ({
           const match = students.find(
             (s: any) =>
               s.nama?.toLowerCase() === user.nama?.toLowerCase() ||
-              s.nisn === user.username
+              s.nisn === user.username,
           );
           if (match) {
             targetId = match.id_siswa;
@@ -61,7 +61,8 @@ const SiswaRiwayatPelanggaran: React.FC<SiswaRiwayatPelanggaranProps> = ({
         if (targetId) {
           // 2. Fetch violation history
           const resViolations = await axios.get("/pelanggaran-siswa");
-          const allViolations = resViolations.data?.data || resViolations.data || [];
+          const allViolations =
+            resViolations.data?.data || resViolations.data || [];
           const filtered = allViolations
             .filter((v: any) => v.id_siswa === targetId)
             .map((v: any) => ({
@@ -76,10 +77,11 @@ const SiswaRiwayatPelanggaran: React.FC<SiswaRiwayatPelanggaranProps> = ({
           setViolations(filtered);
 
           // 3. Fetch active sanksi / pembinaan status
-          const resPembinaan = await axios.get("/pembinaan");
-          const allPembinaan = resPembinaan.data?.data || resPembinaan.data || [];
+          const resPembinaan = await axios.get(`/pembinaan/${targetId}`);
+          const allPembinaan =
+            resPembinaan.data?.data || resPembinaan.data || [];
           const activeMatch = allPembinaan.find(
-            (p: any) => p.id_siswa === targetId && p.status_sanksi === "DIBINA"
+            (p: any) => p.id_siswa === targetId && p.status_sanksi === "DIBINA",
           );
           if (activeMatch) {
             setActiveSanksi(activeMatch.nama_sanksi);
@@ -124,7 +126,11 @@ const SiswaRiwayatPelanggaran: React.FC<SiswaRiwayatPelanggaranProps> = ({
     {
       header: "Poin",
       accessor: "bobot",
-      render: (row) => <span className="font-bold text-red-600 dark:text-red-400">{row.bobot}</span>,
+      render: (row) => (
+        <span className="font-bold text-red-600 dark:text-red-400">
+          {row.bobot}
+        </span>
+      ),
       className: "w-20 text-center",
     },
     { header: "Keterangan", accessor: "keterangan" },
@@ -155,7 +161,9 @@ const SiswaRiwayatPelanggaran: React.FC<SiswaRiwayatPelanggaranProps> = ({
         {/* Accumulation Points Card */}
         <div className="rounded-2xl border border-[#FFE0E0] bg-[#FFF0F0] dark:border-[#5C2E2E]/40 dark:bg-[#3C1E1E]/20 p-6 flex flex-col justify-between shadow-sm">
           <span className="text-[#A92A2A] dark:text-[#E95A5A] uppercase text-xs font-bold tracking-wider mb-2">
-            {isSelf ? "AKUMULASI POIN PELANGGARAN SAYA" : "AKUMULASI POIN PELANGGARAN SISWA"}
+            {isSelf
+              ? "AKUMULASI POIN PELANGGARAN SAYA"
+              : "AKUMULASI POIN PELANGGARAN SISWA"}
           </span>
           <div className="flex items-baseline mt-1">
             <span className="text-4xl md:text-5xl font-extrabold text-[#A92A2A] dark:text-[#E95A5A]">
@@ -196,7 +204,8 @@ const SiswaRiwayatPelanggaran: React.FC<SiswaRiwayatPelanggaranProps> = ({
           {totalPoints === 0 || violations.length === 0 ? (
             <div className="bg-white dark:bg-gray-900 border border-dashed border-gray-200 dark:border-gray-800 rounded-2xl p-8 flex items-center justify-center">
               <p className="text-gray-500 dark:text-gray-400 font-medium text-center">
-                🎉 Bagus sekali! Kamu belum memiliki catatan pelanggaran. Pertahankan prestasimu!
+                🎉 Bagus sekali! Kamu belum memiliki catatan pelanggaran.
+                Pertahankan prestasimu!
               </p>
             </div>
           ) : (

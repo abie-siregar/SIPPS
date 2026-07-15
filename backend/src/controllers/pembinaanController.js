@@ -98,6 +98,118 @@ const pembinaanController = {
     }
   },
 
+  async getById(req, res) {
+    const { id: sanksiId } = req.params; // ID Sanksi Siswa dari parameter URL
+    const userId = req.user?.id; // ID User dari token/session
+
+    const client = await pool.connect();
+
+    try {
+      // 1. Ambil informasi role dan relasi user yang sedang login
+      const userDb = await client.query(
+        `SELECT id_role, id_ptk, id_siswa, id_orangtua FROM users WHERE id_user = $1`,
+        [userId],
+      );
+
+      if (userDb.rows.length === 0) {
+        return res.status(404).json({ error: "User tidak ditemukan." });
+      }
+
+      const { id_role, id_ptk, id_siswa, id_orangtua } = userDb.rows[0];
+
+      const role = {
+        admin: 1,
+        BK: 102,
+        wali_kelas: 103,
+        siswa: 6,
+        orang_tua: 7, // Diubah menjadi 7 sesuai dengan definisi role di fungsi getAll Anda
+      };
+
+      // Buat filter dasar pencarian berdasarkan id_sanksi_siswa
+      let queryParams = [sanksiId];
+      let whereClauses = ["ss.id_sanksi_siswa = $1"];
+
+      // 2. Terapkan batasan keamanan data berdasarkan Role pengguna
+      if (id_role === role.BK) {
+        whereClauses.push(
+          `r.id_rombel IN (SELECT id_rombel FROM plotting_bk WHERE id_ptk_bk = $2)`,
+        );
+        queryParams.push(id_ptk);
+      } else if (id_role === role.wali_kelas) {
+        whereClauses.push(`r.id_ptk_wali = $2`);
+        queryParams.push(id_ptk);
+      } else if (id_role === role.siswa) {
+        whereClauses.push(`ss.id_siswa = $2`);
+        queryParams.push(id_siswa);
+      } else if (id_role === role.orang_tua) {
+        whereClauses.push(`s.id_orangtua = $2`);
+        queryParams.push(id_orangtua);
+      }
+      // Jika Admin (id_role === 1), tidak ditambahkan filter tambahan (bebas akses)
+
+      const whereStatement = `WHERE ${whereClauses.join(" AND ")}`;
+
+      const queryText = `
+        SELECT 
+          ss.id_sanksi_siswa,
+          ss.id_siswa,
+          s.nama AS nama_siswa,
+          s.nisn,
+          r.nama_rombel,
+          ms.nama_sanksi,
+          ms.batas_poin,
+          ss.tanggal AS tanggal_sanksi,
+          ss.status AS status_sanksi,
+          CASE 
+            WHEN ms.batas_poin >= 901 THEN 'TAHAP_5'
+            WHEN ms.batas_poin >= 701 THEN 'TAHAP_4'
+            WHEN ms.batas_poin >= 201 THEN 'TAHAP_3'
+            WHEN ms.batas_poin >= 101 THEN 'TAHAP_2'
+            ELSE 'TAHAP_1'
+          END AS tahap_akhir,
+          pp.id_progres AS id_progres,
+          pp.tahap_pembinaan
+        FROM 
+          sanksi_siswa ss
+        INNER JOIN 
+          siswa s ON s.id_siswa = ss.id_siswa
+        INNER JOIN 
+          anggota_rombel ar ON ar.id_siswa = s.id_siswa
+        INNER JOIN 
+          rombel r ON r.id_rombel = ar.id_rombel
+        INNER JOIN 
+          master_sanksi ms ON ms.id_master_sanksi = ss.id_master_sanksi
+        LEFT JOIN (
+          SELECT DISTINCT ON (id_sanksi_siswa) id_sanksi_siswa, id_progres, tahap_pembinaan
+          FROM progres_pembinaan
+          ORDER BY id_sanksi_siswa, tanggal DESC, id_progres DESC
+        ) pp ON pp.id_sanksi_siswa = ss.id_sanksi_siswa
+        ${whereStatement}
+        LIMIT 1;
+      `;
+
+      const result = await client.query(queryText, queryParams);
+
+      // Jika data tidak ditemukan ATAU user mencoba mengakses ID sanksi milik siswa lain
+      if (result.rows.length === 0) {
+        return res.status(403).json({
+          success: false,
+          message: "Akses ditolak atau data sanksi tidak ditemukan.",
+        });
+      }
+
+      res.status(200).json({ success: true, data: result.rows[0] });
+    } catch (error) {
+      console.error("Error fetching sanksi by ID:", error.message);
+      res.status(500).json({
+        success: false,
+        error: "Internal Server Error: " + error.message,
+      });
+    } finally {
+      client.release();
+    }
+  },
+
   async getDetailStepper(req, res) {
     const { id } = req.params;
 

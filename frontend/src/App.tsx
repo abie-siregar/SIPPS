@@ -102,6 +102,7 @@ export default function App() {
                     "Guru",
                     "Wali Kelas",
                     "Tenaga Kependidikan",
+                    "Orang Tua",
                     "Siswa",
                   ]}
                 >
@@ -239,7 +240,7 @@ export default function App() {
             <Route
               path="/IdentitasSiswa"
               element={
-                <ProtectedRoute roles={["Siswa"]}>
+                <ProtectedRoute roles={["Siswa", "Orang Tua"]}>
                   <IdentitasSiswaRedirect />
                 </ProtectedRoute>
               }

@@ -1,6 +1,6 @@
 // File: src/pages/PelanggaranPembinaan/pelanggaran/RiwayatSiswa.tsx
 import { useEffect, useState } from "react";
-import axios from "../../../../api/axios";
+import axios from "../../../../../api/axios";
 
 interface RiwayatPersonal {
   id_pelanggaran: number;
@@ -8,7 +8,7 @@ interface RiwayatPersonal {
   poin: number;
   tanggal: string;
   keterangan: string;
-  status_sanksi?: string; // Menampung hasil merge
+  status_sanksi?: string;
 }
 
 interface StatusPembinaan {
@@ -38,7 +38,6 @@ const RiwayatSiswa: React.FC<SiswaProps> = ({ siswaId }) => {
 
       setLoading(true);
       try {
-        // 🔄 Ambil ketiga data secara paralel
         const [resPelanggaran, resProfilSiswa, resRiwayatSanksi] =
           await Promise.all([
             axios.post(`/pelanggaran-siswa/${siswaId}`),
@@ -46,7 +45,6 @@ const RiwayatSiswa: React.FC<SiswaProps> = ({ siswaId }) => {
             axios.post(`/pembinaan/${siswaId}`),
           ]);
 
-        // 1. Ambil & Validasi Array Pelanggaran
         let pelanggaranArray: RiwayatPersonal[] = [];
         if (resPelanggaran.data) {
           if (Array.isArray(resPelanggaran.data)) {
@@ -75,20 +73,22 @@ const RiwayatSiswa: React.FC<SiswaProps> = ({ siswaId }) => {
           );
         }
 
-        // 3. LOGIKA MERGING: Menggabungkan data berdasarkan tanggal atau index terdekat
-        // Karena data pembinaan dipicu oleh total akumulasi poin, kita cocokkan
-        // status sanksi ke pelanggaran pada tanggal yang sama atau urutan kronologisnya.
         const mergedRiwayat = pelanggaranArray.map((pelanggaran) => {
-          const tglPelanggaran = pelanggaran.tanggal?.split("T")[0];
+          const tglPelanggaran =
+            pelanggaran.tanggal && typeof pelanggaran.tanggal === "string"
+              ? pelanggaran.tanggal.split("T")[0]
+              : "";
 
-          // Cari sanksi yang keluar pada tanggal yang sama dengan pelanggaran ini
-          const sanksiTerkait = sanksiArray.find(
-            (s) => s.tanggal?.split("T")[0] === tglPelanggaran,
-          );
+          const sanksiTerkait = sanksiArray.find((s) => {
+            const tglSanksi =
+              s.tanggal && typeof s.tanggal === "string"
+                ? s.tanggal.split("T")[0]
+                : "";
+            return tglPelanggaran && tglSanksi && tglSanksi === tglPelanggaran;
+          });
 
           return {
             ...pelanggaran,
-            // Jika ada sanksi di tanggal tersebut pakai itu, jika tidak ada kosongkan
             status_sanksi: sanksiTerkait
               ? sanksiTerkait.status_sanksi
               : undefined,
@@ -97,10 +97,10 @@ const RiwayatSiswa: React.FC<SiswaProps> = ({ siswaId }) => {
 
         setRiwayat(mergedRiwayat);
 
-        // 4. Set Total Poin
         const poinSiswa =
           resProfilSiswa.data?.total_poin ??
           resProfilSiswa.data?.data?.total_poin ??
+          resProfilSiswa.data?.saldo_poin ??
           0;
         setTotalPoin(poinSiswa);
       } catch (err) {
@@ -171,7 +171,7 @@ const RiwayatSiswa: React.FC<SiswaProps> = ({ siswaId }) => {
       {/* Kronologi Riwayat */}
       <div>
         <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-          Kronologi Riwayat Pelanggaran
+          Detail Riwayat Pelanggaran
         </h2>
 
         {!Array.isArray(riwayat) || riwayat.length === 0 ? (
