@@ -32,7 +32,8 @@ const navItems: NavItem[] = [
   {
     icon: <GridIcon />,
     name: "Dashboard",
-    subItems: [{ name: "Data Sekolah", path: "/", pro: false }],
+    path: "/",
+    // subItems: [{ name: "Data Sekolah", path: "/", pro: false }],
     roles: [
       "Admin",
       "BK",
@@ -40,6 +41,7 @@ const navItems: NavItem[] = [
       "Wali Kelas",
       "Tenaga Kependidikan",
       "Siswa",
+      "Orang Tua",
     ],
   },
   {

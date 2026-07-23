@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import PageMeta from "../../components/common/PageMeta";
 import { useAuth } from "../../context/AuthContext";
 import SiswaRiwayatPelanggaran from "../../components/siswa/SiswaRiwayatPelanggaran";
+import AturanSekolah from "../../components/sekolah/aturanSekolah/tataTertibSekolah";
 import Chart from "react-apexcharts";
 import axios from "../../api/axios";
 
@@ -106,13 +107,13 @@ const FALLBACK_ROLE: RoleConfig = {
 
 export default function Home() {
   const { user } = useAuth();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
-  useEffect(() => {
-    if (user?.role === "Orang Tua") {
-      navigate("/IdentitasAnak", { replace: true });
-    }
-  }, [user, navigate]);
+  // useEffect(() => {
+  //   if (user?.role === "Orang Tua") {
+  //     navigate("/IdentitasAnak", { replace: true });
+  //   }
+  // }, [user, navigate]);
 
   const roleConfig =
     (user?.role ? ROLE_CONFIG[user.role] : null) ?? FALLBACK_ROLE;
@@ -661,6 +662,21 @@ export default function Home() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+
+        <div className="col-span-12">
+          <div
+            style={{
+              background: "var(--color-white, #fff)",
+              borderRadius: "0.875rem",
+              padding: "1.5rem",
+              border: `2px solid ${roleConfig.border}44`,
+              boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+            }}
+            className="dark:bg-gray-800 dark:border-white/10"
+          >
+            <AturanSekolah />
           </div>
         </div>
 
