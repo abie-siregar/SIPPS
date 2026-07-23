@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import axios from "../../../../api/axios";
 import DataTable, { Column } from "../../../../components/ui/table/DataTable";
 import Button from "../../../../components/ui/button/Button";
@@ -7,6 +7,7 @@ import { useAuth } from "../../../../context/AuthContext";
 import TambahPoinModal from "./TambahPoinModal";
 import EditPoinModal from "./EditPoinModal";
 import HapusPoinModal from "./HapusPoinModal";
+import FilterPoinPelanggaranModal from "../../PoinPelanggaran/FilterPoinPelanggaranModal";
 
 export interface PoinPelanggaran {
   id_poin: number;
@@ -26,6 +27,12 @@ const DataPoin = () => {
 
   const [data, setData] = useState<PoinPelanggaran[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // 🟢 Filter State Management
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [selectedJenisPenilaian, setSelectedJenisPenilaian] = useState<string[]>([]);
+  const [minBobot, setMinBobot] = useState<number | "">("");
+  const [maxBobot, setMaxBobot] = useState<number | "">("");
 
   // 🟢 State Management Modals
   const [showTambahModal, setShowTambahModal] = useState(false);
@@ -55,6 +62,48 @@ const DataPoin = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Filter Local Data
+  const filteredData = useMemo(() => {
+    return data.filter((item) => {
+      if (
+        selectedJenisPenilaian.length > 0 &&
+        !selectedJenisPenilaian.includes(item.jenis_penilaian)
+      ) {
+        return false;
+      }
+      if (minBobot !== "" && item.bobot < Number(minBobot)) {
+        return false;
+      }
+      if (maxBobot !== "" && item.bobot > Number(maxBobot)) {
+        return false;
+      }
+      return true;
+    });
+  }, [data, selectedJenisPenilaian, minBobot, maxBobot]);
+
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (selectedJenisPenilaian.length > 0) count++;
+    if (minBobot !== "") count++;
+    if (maxBobot !== "") count++;
+    return count;
+  }, [selectedJenisPenilaian, minBobot, maxBobot]);
+
+  const filterValues = useMemo(
+    () => ({
+      selectedJenisPenilaian,
+      minBobot,
+      maxBobot,
+    }),
+    [selectedJenisPenilaian, minBobot, maxBobot]
+  );
+
+  const handleApplyFilters = (filters: typeof filterValues) => {
+    setSelectedJenisPenilaian(filters.selectedJenisPenilaian);
+    setMinBobot(filters.minBobot);
+    setMaxBobot(filters.maxBobot);
+  };
 
   // 🟢 Fungsi Pemicu Modal Edit
   const handleOpenEdit = (row: PoinPelanggaran) => {
@@ -120,24 +169,47 @@ const DataPoin = () => {
       ) : (
         <DataTable
           columns={columns}
-          data={data}
+          data={filteredData}
           searchable
           paginated
           itemsPerPageOptions={[5, 10, 20, 50]}
           defaultItemsPerPage={10}
           extraActions={
-            canModify ? (
+            <div className="flex items-center gap-2">
               <Button
                 size="sm"
-                variant="primary"
-                onClick={() => setShowTambahModal(true)}
+                variant={activeFiltersCount > 0 ? "primary" : "outline"}
+                onClick={() => setShowFilterModal(true)}
               >
-                + Tambah Poin
+                🔍 Filter
+                {activeFiltersCount > 0 && (
+                  <span className="ml-1 px-1.5 py-0.5 text-xs bg-white text-blue-600 rounded-full font-bold">
+                    {activeFiltersCount}
+                  </span>
+                )}
               </Button>
-            ) : undefined
+
+              {canModify && (
+                <Button
+                  size="sm"
+                  variant="primary"
+                  onClick={() => setShowTambahModal(true)}
+                >
+                  + Tambah Poin
+                </Button>
+              )}
+            </div>
           }
         />
       )}
+
+      {/* Filter Modal */}
+      <FilterPoinPelanggaranModal
+        show={showFilterModal}
+        onClose={() => setShowFilterModal(false)}
+        onApply={handleApplyFilters}
+        initialValues={filterValues}
+      />
 
       {/* 1. Modal Tambah */}
       <TambahPoinModal

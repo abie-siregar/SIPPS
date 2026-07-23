@@ -90,10 +90,10 @@ const FilterForm: React.FC<FilterFormProps> = ({
     <div
       className={`fixed inset-0 flex items-center justify-center z-50 transition-opacity duration-300 ${
         isVisible ? "opacity-100" : "opacity-0"
-      } bg-black/40`}
+      } bg-black/40 p-4`}
     >
       <div
-        className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-96 transform transition-all duration-300 ${
+        className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-lg transform transition-all duration-300 ${
           isVisible ? "scale-100" : "scale-95"
         }`}
       >

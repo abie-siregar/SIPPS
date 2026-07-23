@@ -26,12 +26,24 @@ const FilterPlottingBKModal: React.FC<FilterPlottingBKModalProps> = ({
 }) => {
   const [tempGuru, setTempGuru] = useState<string[]>([]);
   const [tempSemester, setTempSemester] = useState<string[]>([]);
+  const [searchGuru, setSearchGuru] = useState("");
+  const [searchSemester, setSearchSemester] = useState("");
   const [isVisible, setIsVisible] = useState(false);
+
+  const filteredAvailableGuru = availableGuru.filter((g) =>
+    g.toLowerCase().includes(searchGuru.toLowerCase().trim())
+  );
+
+  const filteredAvailableSemester = availableSemester.filter((s) =>
+    s.toLowerCase().includes(searchSemester.toLowerCase().trim())
+  );
 
   useEffect(() => {
     if (show) {
       setTempGuru(initialValues.selectedGuru);
       setTempSemester(initialValues.selectedSemester);
+      setSearchGuru("");
+      setSearchSemester("");
       setTimeout(() => setIsVisible(true), 10);
     } else {
       setIsVisible(false);
@@ -55,6 +67,8 @@ const FilterPlottingBKModal: React.FC<FilterPlottingBKModalProps> = ({
   const handleReset = () => {
     setTempGuru([]);
     setTempSemester([]);
+    setSearchGuru("");
+    setSearchSemester("");
   };
 
   if (!show) return null;
@@ -66,7 +80,7 @@ const FilterPlottingBKModal: React.FC<FilterPlottingBKModalProps> = ({
       } bg-black/40 p-4`}
     >
       <div
-        className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-sm transform transition-all duration-300 ${
+        className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-lg transform transition-all duration-300 ${
           isVisible ? "scale-100 translate-y-0" : "scale-95 -translate-y-4"
         }`}
       >
@@ -86,15 +100,29 @@ const FilterPlottingBKModal: React.FC<FilterPlottingBKModalProps> = ({
         <form onSubmit={handleApply} className="space-y-4">
           {/* 1. Guru BK */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-white/90 mb-1">
-              Guru BK
-            </label>
-            <div className="flex flex-col gap-2 max-h-36 overflow-y-auto border p-2 rounded dark:bg-gray-700 dark:border-gray-600 bg-gray-50/50">
-              {availableGuru.length > 0 ? (
-                availableGuru.map((guru) => (
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-semibold text-gray-700 dark:text-white/90">
+                Guru BK
+              </label>
+              {tempGuru.length > 0 && (
+                <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
+                  {tempGuru.length} dipilih
+                </span>
+              )}
+            </div>
+            <input
+              type="text"
+              placeholder="🔍 Cari Guru BK..."
+              value={searchGuru}
+              onChange={(e) => setSearchGuru(e.target.value)}
+              className="w-full mb-2 border px-3 py-1.5 rounded text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:border-blue-500"
+            />
+            <div className="flex flex-col gap-2 max-h-52 overflow-y-auto border p-3 rounded dark:bg-gray-700 dark:border-gray-600 bg-gray-50/50">
+              {filteredAvailableGuru.length > 0 ? (
+                filteredAvailableGuru.map((guru) => (
                   <label
                     key={guru}
-                    className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300"
+                    className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
                   >
                     <input
                       type="checkbox"
@@ -112,22 +140,36 @@ const FilterPlottingBKModal: React.FC<FilterPlottingBKModalProps> = ({
                   </label>
                 ))
               ) : (
-                <span className="text-xs text-gray-400">Tidak ada data Guru BK</span>
+                <span className="text-xs text-gray-400">Guru BK tidak ditemukan</span>
               )}
             </div>
           </div>
 
           {/* 2. Semester */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-white/90 mb-1">
-              Semester
-            </label>
-            <div className="flex flex-col gap-2 max-h-36 overflow-y-auto border p-2 rounded dark:bg-gray-700 dark:border-gray-600 bg-gray-50/50">
-              {availableSemester.length > 0 ? (
-                availableSemester.map((sem) => (
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-semibold text-gray-700 dark:text-white/90">
+                Semester
+              </label>
+              {tempSemester.length > 0 && (
+                <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
+                  {tempSemester.length} dipilih
+                </span>
+              )}
+            </div>
+            <input
+              type="text"
+              placeholder="🔍 Cari Semester..."
+              value={searchSemester}
+              onChange={(e) => setSearchSemester(e.target.value)}
+              className="w-full mb-2 border px-3 py-1.5 rounded text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:border-blue-500"
+            />
+            <div className="flex flex-col gap-2 max-h-52 overflow-y-auto border p-3 rounded dark:bg-gray-700 dark:border-gray-600 bg-gray-50/50">
+              {filteredAvailableSemester.length > 0 ? (
+                filteredAvailableSemester.map((sem) => (
                   <label
                     key={sem}
-                    className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300"
+                    className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
                   >
                     <input
                       type="checkbox"
@@ -145,7 +187,7 @@ const FilterPlottingBKModal: React.FC<FilterPlottingBKModalProps> = ({
                   </label>
                 ))
               ) : (
-                <span className="text-xs text-gray-400">Tidak ada data Semester</span>
+                <span className="text-xs text-gray-400">Semester tidak ditemukan</span>
               )}
             </div>
           </div>

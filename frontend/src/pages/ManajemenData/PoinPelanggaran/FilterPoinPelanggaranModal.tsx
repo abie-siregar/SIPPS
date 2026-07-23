@@ -68,7 +68,7 @@ const FilterPoinPelanggaranModal: React.FC<FilterPoinPelanggaranModalProps> = ({
       } bg-black/40 p-4`}
     >
       <div
-        className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-sm transform transition-all duration-300 ${
+        className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-lg transform transition-all duration-300 ${
           isVisible ? "scale-100 translate-y-0" : "scale-95 -translate-y-4"
         }`}
       >

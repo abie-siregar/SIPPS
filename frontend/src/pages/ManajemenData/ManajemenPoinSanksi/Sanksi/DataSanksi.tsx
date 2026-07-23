@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import axios from "../../../../api/axios";
 import DataTable, { Column } from "../../../../components/ui/table/DataTable";
 import Button from "../../../../components/ui/button/Button";
@@ -7,6 +7,7 @@ import { useAuth } from "../../../../context/AuthContext";
 import TambahSanksiModal from "./TambahSanksiModal";
 import EditSanksiModal from "./EditSanksiModal";
 import HapusSanksiModal from "./HapusSanksiModal";
+import FilterSanksiModal from "../../Sanksi/FilterSanksiModal";
 
 export interface Sanksi {
   id_master_sanksi: number;
@@ -21,6 +22,11 @@ const DataSanksi = () => {
 
   const [data, setData] = useState<Sanksi[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // 🟢 Filter State Management
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [minPoin, setMinPoin] = useState<number | "">("");
+  const [maxPoin, setMaxPoin] = useState<number | "">("");
 
   // 🟢 State Management Modals
   const [showTambahModal, setShowTambahModal] = useState(false);
@@ -46,6 +52,39 @@ const DataSanksi = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Filter Local Data
+  const filteredData = useMemo(() => {
+    return data.filter((item) => {
+      if (minPoin !== "" && item.batas_poin < Number(minPoin)) {
+        return false;
+      }
+      if (maxPoin !== "" && item.batas_poin > Number(maxPoin)) {
+        return false;
+      }
+      return true;
+    });
+  }, [data, minPoin, maxPoin]);
+
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (minPoin !== "") count++;
+    if (maxPoin !== "") count++;
+    return count;
+  }, [minPoin, maxPoin]);
+
+  const filterValues = useMemo(
+    () => ({
+      minPoin,
+      maxPoin,
+    }),
+    [minPoin, maxPoin]
+  );
+
+  const handleApplyFilters = (filters: typeof filterValues) => {
+    setMinPoin(filters.minPoin);
+    setMaxPoin(filters.maxPoin);
+  };
 
   // 🟢 Fungsi Pemicu Modal Edit
   const handleOpenEdit = (row: Sanksi) => {
@@ -110,24 +149,47 @@ const DataSanksi = () => {
       ) : (
         <DataTable
           columns={columns}
-          data={data}
+          data={filteredData}
           searchable
           paginated
           itemsPerPageOptions={[5, 10, 20, 50]}
           defaultItemsPerPage={10}
           extraActions={
-            canModify ? (
+            <div className="flex items-center gap-2">
               <Button
                 size="sm"
-                variant="primary"
-                onClick={() => setShowTambahModal(true)}
+                variant={activeFiltersCount > 0 ? "primary" : "outline"}
+                onClick={() => setShowFilterModal(true)}
               >
-                + Tambah Poin
+                🔍 Filter
+                {activeFiltersCount > 0 && (
+                  <span className="ml-1 px-1.5 py-0.5 text-xs bg-white text-blue-600 rounded-full font-bold">
+                    {activeFiltersCount}
+                  </span>
+                )}
               </Button>
-            ) : undefined
+
+              {canModify && (
+                <Button
+                  size="sm"
+                  variant="primary"
+                  onClick={() => setShowTambahModal(true)}
+                >
+                  + Tambah Sanksi
+                </Button>
+              )}
+            </div>
           }
         />
       )}
+
+      {/* Filter Modal */}
+      <FilterSanksiModal
+        show={showFilterModal}
+        onClose={() => setShowFilterModal(false)}
+        onApply={handleApplyFilters}
+        initialValues={filterValues}
+      />
 
       {/* 1. Modal Tambah */}
       <TambahSanksiModal

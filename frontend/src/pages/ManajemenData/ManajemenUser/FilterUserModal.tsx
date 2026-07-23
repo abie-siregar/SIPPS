@@ -19,11 +19,17 @@ const FilterUserModal: React.FC<FilterUserModalProps> = ({
   availableRole,
 }) => {
   const [tempRole, setTempRole] = useState<string[]>([]);
+  const [searchRole, setSearchRole] = useState("");
   const [isVisible, setIsVisible] = useState(false);
+
+  const filteredAvailableRole = availableRole.filter((r) =>
+    r.toLowerCase().includes(searchRole.toLowerCase().trim())
+  );
 
   useEffect(() => {
     if (show) {
       setTempRole(initialValues.selectedRole);
+      setSearchRole("");
       setTimeout(() => setIsVisible(true), 10);
     } else {
       setIsVisible(false);
@@ -45,6 +51,7 @@ const FilterUserModal: React.FC<FilterUserModalProps> = ({
 
   const handleReset = () => {
     setTempRole([]);
+    setSearchRole("");
   };
 
   if (!show) return null;
@@ -56,7 +63,7 @@ const FilterUserModal: React.FC<FilterUserModalProps> = ({
       } bg-black/40 p-4`}
     >
       <div
-        className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-sm transform transition-all duration-300 ${
+        className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-lg transform transition-all duration-300 ${
           isVisible ? "scale-100 translate-y-0" : "scale-95 -translate-y-4"
         }`}
       >
@@ -76,15 +83,29 @@ const FilterUserModal: React.FC<FilterUserModalProps> = ({
         <form onSubmit={handleApply} className="space-y-4 font-sans">
           {/* 1. Role */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-white/90 mb-1">
-              Role
-            </label>
-            <div className="flex flex-col gap-2 max-h-36 overflow-y-auto border p-2 rounded dark:bg-gray-700 dark:border-gray-600 bg-gray-50/50">
-              {availableRole.length > 0 ? (
-                availableRole.map((rl) => (
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-semibold text-gray-700 dark:text-white/90">
+                Role
+              </label>
+              {tempRole.length > 0 && (
+                <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
+                  {tempRole.length} dipilih
+                </span>
+              )}
+            </div>
+            <input
+              type="text"
+              placeholder="🔍 Cari Role..."
+              value={searchRole}
+              onChange={(e) => setSearchRole(e.target.value)}
+              className="w-full mb-2 border px-3 py-1.5 rounded text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:border-blue-500"
+            />
+            <div className="flex flex-col gap-2 max-h-52 overflow-y-auto border p-3 rounded dark:bg-gray-700 dark:border-gray-600 bg-gray-50/50">
+              {filteredAvailableRole.length > 0 ? (
+                filteredAvailableRole.map((rl) => (
                   <label
                     key={rl}
-                    className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300"
+                    className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
                   >
                     <input
                       type="checkbox"
@@ -103,7 +124,7 @@ const FilterUserModal: React.FC<FilterUserModalProps> = ({
                 ))
               ) : (
                 <span className="text-xs text-gray-400">
-                  Tidak ada data role
+                  Role tidak ditemukan
                 </span>
               )}
             </div>

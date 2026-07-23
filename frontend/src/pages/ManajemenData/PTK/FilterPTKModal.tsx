@@ -27,13 +27,19 @@ const FilterPTKModal: React.FC<FilterPTKModalProps> = ({
   const [tempJabatan, setTempJabatan] = useState<string[]>([]);
   const [tempNuptk, setTempNuptk] = useState<string>("");
   const [tempEmail, setTempEmail] = useState<string>("");
+  const [searchJabatan, setSearchJabatan] = useState("");
   const [isVisible, setIsVisible] = useState(false);
+
+  const filteredAvailableJabatan = availableJabatan.filter((jb) =>
+    jb.toLowerCase().includes(searchJabatan.toLowerCase().trim())
+  );
 
   useEffect(() => {
     if (show) {
       setTempJabatan(initialValues.selectedJabatan);
       setTempNuptk(initialValues.nuptk);
       setTempEmail(initialValues.email);
+      setSearchJabatan("");
       setTimeout(() => setIsVisible(true), 10);
     } else {
       setIsVisible(false);
@@ -59,6 +65,7 @@ const FilterPTKModal: React.FC<FilterPTKModalProps> = ({
     setTempJabatan([]);
     setTempNuptk("");
     setTempEmail("");
+    setSearchJabatan("");
   };
 
   if (!show) return null;
@@ -70,7 +77,7 @@ const FilterPTKModal: React.FC<FilterPTKModalProps> = ({
       } bg-black/40 p-4`}
     >
       <div
-        className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-sm transform transition-all duration-300 ${
+        className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-lg transform transition-all duration-300 ${
           isVisible ? "scale-100 translate-y-0" : "scale-95 -translate-y-4"
         }`}
       >
@@ -88,17 +95,31 @@ const FilterPTKModal: React.FC<FilterPTKModalProps> = ({
         </div>
 
         <form onSubmit={handleApply} className="space-y-4">
-          {/* 1. Jabatan (Multiple Select Checkboxes) */}
+          {/* 1. Jabatan (Multiple Select Checkboxes with Search) */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-white/90 mb-1">
-              Jabatan
-            </label>
-            <div className="flex flex-col gap-2 max-h-36 overflow-y-auto border p-2 rounded dark:bg-gray-700 dark:border-gray-600 bg-gray-50/50">
-              {availableJabatan.length > 0 ? (
-                availableJabatan.map((jb) => (
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-semibold text-gray-700 dark:text-white/90">
+                Jabatan
+              </label>
+              {tempJabatan.length > 0 && (
+                <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
+                  {tempJabatan.length} dipilih
+                </span>
+              )}
+            </div>
+            <input
+              type="text"
+              placeholder="🔍 Cari Jabatan..."
+              value={searchJabatan}
+              onChange={(e) => setSearchJabatan(e.target.value)}
+              className="w-full mb-2 border px-3 py-1.5 rounded text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:border-blue-500"
+            />
+            <div className="flex flex-col gap-2 max-h-52 overflow-y-auto border p-3 rounded dark:bg-gray-700 dark:border-gray-600 bg-gray-50/50">
+              {filteredAvailableJabatan.length > 0 ? (
+                filteredAvailableJabatan.map((jb) => (
                   <label
                     key={jb}
-                    className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300"
+                    className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
                   >
                     <input
                       type="checkbox"
@@ -116,7 +137,7 @@ const FilterPTKModal: React.FC<FilterPTKModalProps> = ({
                   </label>
                 ))
               ) : (
-                <span className="text-xs text-gray-400">Tidak ada jabatan</span>
+                <span className="text-xs text-gray-400">Jabatan tidak ditemukan</span>
               )}
             </div>
           </div>

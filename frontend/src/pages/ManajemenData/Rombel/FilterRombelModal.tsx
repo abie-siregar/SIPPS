@@ -26,12 +26,18 @@ const FilterRombelModal: React.FC<FilterRombelModalProps> = ({
 }) => {
   const [tempTingkat, setTempTingkat] = useState<string[]>([]);
   const [tempJurusan, setTempJurusan] = useState<string[]>([]);
+  const [searchJurusan, setSearchJurusan] = useState("");
   const [isVisible, setIsVisible] = useState(false);
+
+  const filteredAvailableJurusan = availableJurusan.filter((j) =>
+    j.toLowerCase().includes(searchJurusan.toLowerCase().trim())
+  );
 
   useEffect(() => {
     if (show) {
       setTempTingkat(initialValues.selectedTingkat);
       setTempJurusan(initialValues.selectedJurusan);
+      setSearchJurusan("");
       setTimeout(() => setIsVisible(true), 10);
     } else {
       setIsVisible(false);
@@ -55,6 +61,7 @@ const FilterRombelModal: React.FC<FilterRombelModalProps> = ({
   const handleReset = () => {
     setTempTingkat([]);
     setTempJurusan([]);
+    setSearchJurusan("");
   };
 
   if (!show) return null;
@@ -66,7 +73,7 @@ const FilterRombelModal: React.FC<FilterRombelModalProps> = ({
       } bg-black/40 p-4`}
     >
       <div
-        className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-sm transform transition-all duration-300 ${
+        className={`bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-lg transform transition-all duration-300 ${
           isVisible ? "scale-100 translate-y-0" : "scale-95 -translate-y-4"
         }`}
       >
@@ -89,7 +96,7 @@ const FilterRombelModal: React.FC<FilterRombelModalProps> = ({
             <label className="block text-sm font-semibold text-gray-700 dark:text-white/90 mb-1">
               Tingkat
             </label>
-            <div className="flex flex-wrap gap-4 border p-2 rounded dark:bg-gray-700 dark:border-gray-600 bg-gray-50/50">
+            <div className="flex flex-wrap gap-4 border p-3 rounded dark:bg-gray-700 dark:border-gray-600 bg-gray-50/50">
               {availableTingkat.length > 0 ? (
                 availableTingkat.map((tk) => (
                   <label
@@ -119,15 +126,29 @@ const FilterRombelModal: React.FC<FilterRombelModalProps> = ({
 
           {/* 2. Jurusan */}
           <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-white/90 mb-1">
-              Jurusan
-            </label>
-            <div className="flex flex-col gap-2 max-h-36 overflow-y-auto border p-2 rounded dark:bg-gray-700 dark:border-gray-600 bg-gray-50/50">
-              {availableJurusan.length > 0 ? (
-                availableJurusan.map((jr) => (
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-semibold text-gray-700 dark:text-white/90">
+                Jurusan
+              </label>
+              {tempJurusan.length > 0 && (
+                <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
+                  {tempJurusan.length} dipilih
+                </span>
+              )}
+            </div>
+            <input
+              type="text"
+              placeholder="🔍 Cari Jurusan..."
+              value={searchJurusan}
+              onChange={(e) => setSearchJurusan(e.target.value)}
+              className="w-full mb-2 border px-3 py-1.5 rounded text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:border-blue-500"
+            />
+            <div className="flex flex-col gap-2 max-h-52 overflow-y-auto border p-3 rounded dark:bg-gray-700 dark:border-gray-600 bg-gray-50/50">
+              {filteredAvailableJurusan.length > 0 ? (
+                filteredAvailableJurusan.map((jr) => (
                   <label
                     key={jr}
-                    className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300"
+                    className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
                   >
                     <input
                       type="checkbox"
@@ -145,7 +166,7 @@ const FilterRombelModal: React.FC<FilterRombelModalProps> = ({
                   </label>
                 ))
               ) : (
-                <span className="text-xs text-gray-400">Tidak ada data jurusan</span>
+                <span className="text-xs text-gray-400">Jurusan tidak ditemukan</span>
               )}
             </div>
           </div>
