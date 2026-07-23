@@ -73,9 +73,33 @@ const EditDataPlottingBK: React.FC<EditPopupProps> = ({ show, onClose, row }) =>
           }));
           setRombelList(mappedRombel);
 
-          setIdPtkBk((row.id_ptk_bk || "").toString());
-          setIdRombel((row.id_rombel || "").toString());
-          setIdSemester((row.id_semester || "").toString());
+          let ptkId = row.id_ptk_bk ? row.id_ptk_bk.toString() : "";
+          if (!ptkId && row.nama) {
+            const foundPtk = filteredBK.find(
+              (p) => p.nama?.trim().toLowerCase() === row.nama?.trim().toLowerCase()
+            );
+            if (foundPtk) ptkId = foundPtk.id_ptk.toString();
+          }
+
+          let rombelId = row.id_rombel ? row.id_rombel.toString() : "";
+          if (!rombelId && row.rombel) {
+            const foundRombel = mappedRombel.find(
+              (r) => r.rombel?.trim().toLowerCase() === row.rombel?.trim().toLowerCase()
+            );
+            if (foundRombel) rombelId = foundRombel.id_rombel.toString();
+          }
+
+          let semesterId = row.id_semester ? row.id_semester.toString() : "";
+          if (!semesterId && row.semester) {
+            const foundSemester = semesterData.find(
+              (s) => s.nama_semester?.trim().toLowerCase() === row.semester?.trim().toLowerCase()
+            );
+            if (foundSemester) semesterId = foundSemester.id_semester.toString();
+          }
+
+          setIdPtkBk(ptkId);
+          setIdRombel(rombelId);
+          setIdSemester(semesterId);
         } catch (err) {
           console.error("Gagal memuat data pendukung:", err);
           showError("Gagal memuat data pendukung form.");

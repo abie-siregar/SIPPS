@@ -80,7 +80,10 @@ module.exports = {
     try {
       const result = await pool.query(
         `SELECT
-            id_plotting,
+            plotting_bk.id_plotting,
+            plotting_bk.id_ptk_bk,
+            plotting_bk.id_rombel,
+            plotting_bk.id_semester,
             ptk.nama as nama,
             rombel.nama_rombel as rombel,
             semester.nama_semester as semester
@@ -93,9 +96,8 @@ module.exports = {
         LEFT JOIN 
             semester on semester.id_semester = plotting_bk.id_semester
         WHERE 
-            ptk.id_jabatan = $1
+            ptk.id_jabatan::text = '21904'
         ORDER BY rombel.nama_rombel DESC`,
-        [21904],
       );
       res.json(result.rows);
     } catch (error) {
