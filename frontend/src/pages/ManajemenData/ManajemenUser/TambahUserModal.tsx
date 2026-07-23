@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useMemo } from "react";
 import axios from "../../../api/axios";
 import Button from "../../../components/ui/button/Button";
-import Toast from "../../../components/ui/alert/Toast";
 import SearchableSelect from "../../../components/form/SearchableSelect";
+import { useToast } from "../../../context/ToastContext";
 
 interface TambahPopupProps {
   show: boolean;
@@ -15,6 +15,7 @@ interface Role {
 }
 
 const TambahUserModal: React.FC<TambahPopupProps> = ({ show, onClose }) => {
+  const { showSuccess, showError } = useToast();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
@@ -23,19 +24,9 @@ const TambahUserModal: React.FC<TambahPopupProps> = ({ show, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
-  const [toast, setToast] = useState<{
-    show: boolean;
-    variant: "success" | "error";
-    message: string;
-  }>({ show: false, variant: "success", message: "" });
-
-  const showToast = (variant: "success" | "error", message: string) =>
-    setToast({ show: true, variant, message });
-
   // 🔄 Sinkronisasi state animasi buka/tutup dan fetching data
   useEffect(() => {
     if (show) {
-      // Aktifkan transisi fade-in
       setIsVisible(true);
 
       const loadRoles = async () => {
@@ -52,14 +43,13 @@ const TambahUserModal: React.FC<TambahPopupProps> = ({ show, onClose }) => {
           }
         } catch (err) {
           console.error("Gagal memuat dropdown data:", err);
-          showToast("error", "Gagal memuat data pendukung role.");
+          showError("Gagal memuat data pendukung role.");
         }
       };
 
       loadRoles();
     } else {
       setIsVisible(false);
-      // Reset form input ketika modal ditutup
       setUsername("");
       setPassword("");
       setEmail("");
@@ -71,7 +61,7 @@ const TambahUserModal: React.FC<TambahPopupProps> = ({ show, onClose }) => {
     e.preventDefault();
 
     if (!username.trim() || !password.trim() || !email.trim() || !idRole) {
-      showToast("error", "Semua field form wajib diisi.");
+      showError("Semua field form wajib diisi.");
       return;
     }
 
@@ -84,12 +74,13 @@ const TambahUserModal: React.FC<TambahPopupProps> = ({ show, onClose }) => {
         id_role: idRole,
       });
 
+      showSuccess("Pengguna baru berhasil ditambahkan!");
       setIsVisible(false);
       setTimeout(() => onClose(true), 300);
     } catch (err: any) {
       const msg =
         err?.response?.data?.error || "Gagal menambahkan data user baru.";
-      showToast("error", msg);
+      showError(msg);
       console.error(err);
     } finally {
       setLoading(false);
@@ -120,13 +111,6 @@ const TambahUserModal: React.FC<TambahPopupProps> = ({ show, onClose }) => {
 
   return (
     <>
-      <Toast
-        show={toast.show}
-        variant={toast.variant}
-        message={toast.message}
-        onClose={() => setToast((t) => ({ ...t, show: false }))}
-      />
-
       {/* Backdrop overlay */}
       <div
         className={`fixed inset-0 bg-black/40 z-40 transition-opacity duration-300 ${

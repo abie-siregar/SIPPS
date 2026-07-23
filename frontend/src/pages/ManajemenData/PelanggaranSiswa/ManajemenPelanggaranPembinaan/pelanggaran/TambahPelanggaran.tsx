@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "../../../../../api/axios";
 import Button from "../../../../../components/ui/button/Button";
-import Toast from "../../../../../components/ui/alert/Toast";
 import SearchableSelect from "../../../../../components/form/SearchableSelect";
+import { useToast } from "../../../../../context/ToastContext";
 
 interface TambahPopupProps {
   show: boolean;
@@ -35,6 +35,7 @@ const TambahPelanggaranSiswa: React.FC<TambahPopupProps> = ({
   show,
   onClose,
 }) => {
+  const { showSuccess, showError } = useToast();
   const [siswaList, setSiswaList] = useState<Siswa[]>([]);
   const [poinList, setPoinList] = useState<PoinPelanggaran[]>([]);
   const [ptkList, setPtkList] = useState<PTK[]>([]);
@@ -54,14 +55,6 @@ const TambahPelanggaranSiswa: React.FC<TambahPopupProps> = ({
 
   const [loading, setLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-  const [toast, setToast] = useState<{
-    show: boolean;
-    variant: "success" | "error";
-    message: string;
-  }>({ show: false, variant: "success", message: "" });
-
-  const showToast = (variant: "success" | "error", message: string) =>
-    setToast({ show: true, variant, message });
 
   // Fetch dropdown data
   useEffect(() => {
@@ -93,7 +86,7 @@ const TambahPelanggaranSiswa: React.FC<TambahPopupProps> = ({
             setIdSemester(semesterData[0].id_semester.toString());
         } catch (err) {
           console.error("Gagal memuat dropdown data:", err);
-          showToast("error", "Gagal memuat data pendukung form.");
+          showError("Gagal memuat data pendukung form.");
         }
       };
 
@@ -103,7 +96,6 @@ const TambahPelanggaranSiswa: React.FC<TambahPopupProps> = ({
       const offset = today.getTimezoneOffset();
       const localToday = new Date(today.getTime() - offset * 60 * 1000);
       setTanggal(localToday.toISOString().split("T")[0]);
-      setToast({ show: false, variant: "success", message: "" });
       setTimeout(() => setIsVisible(true), 10);
     } else {
       setIsVisible(false);
@@ -121,7 +113,7 @@ const TambahPelanggaranSiswa: React.FC<TambahPopupProps> = ({
       !tanggal ||
       !keterangan
     ) {
-      showToast("error", "Semua field form wajib diisi.");
+      showError("Semua field form wajib diisi.");
       return;
     }
 
@@ -136,12 +128,13 @@ const TambahPelanggaranSiswa: React.FC<TambahPopupProps> = ({
         keterangan,
       });
 
+      showSuccess("Data pelanggaran siswa berhasil ditambahkan!");
       setIsVisible(false);
       setTimeout(() => onClose(true), 300);
     } catch (err: any) {
       const msg =
         err?.response?.data?.error || "Gagal menambahkan data pelanggaran.";
-      showToast("error", msg);
+      showError(msg);
       console.error(err);
     } finally {
       setLoading(false);
@@ -191,13 +184,6 @@ const TambahPelanggaranSiswa: React.FC<TambahPopupProps> = ({
 
   return (
     <>
-      <Toast
-        show={toast.show}
-        variant={toast.variant}
-        message={toast.message}
-        onClose={() => setToast((t) => ({ ...t, show: false }))}
-      />
-
       <div
         className={`fixed inset-0 bg-black/40 z-40 transition-opacity duration-300 ${
           isVisible ? "opacity-100" : "opacity-0"

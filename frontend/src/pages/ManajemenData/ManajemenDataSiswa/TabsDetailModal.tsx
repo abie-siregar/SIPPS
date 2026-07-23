@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "../../../api/axios";
 import Button from "../../../components/ui/button/Button";
-import Toast from "../../../components/ui/alert/Toast";
 import { Siswa } from "./SiswaDetailModal";
 import { OrangTuaWali } from "./OrtuDetailModal";
+import { useToast } from "../../../context/ToastContext";
 
 interface SiswaTabsDetailModalProps {
   show: boolean;
@@ -16,6 +16,7 @@ const SiswaTabsDetailModal: React.FC<SiswaTabsDetailModalProps> = ({
   onClose,
   siswa,
 }) => {
+  const { showSuccess, showError } = useToast();
   const [activeTab, setActiveTab] = useState<"siswa" | "ortu">("siswa");
   const [isEditMode, setIsEditMode] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -26,13 +27,6 @@ const SiswaTabsDetailModal: React.FC<SiswaTabsDetailModalProps> = ({
   const [siswaForm, setSiswaForm] = useState<Siswa>({} as Siswa);
   const [ortuForm, setOrtuForm] = useState<OrangTuaWali>({} as OrangTuaWali);
 
-  const [toast, setToast] = useState({
-    show: false,
-    variant: "success" as "success" | "error",
-    message: "",
-  });
-
-  // Ambil data orang tua ketika modal terbuka atau tab orang tua diklik
   const fetchOrtuData = async (siswaId: string | number) => {
     setLoadingOrtu(true);
     try {
@@ -61,7 +55,6 @@ const SiswaTabsDetailModal: React.FC<SiswaTabsDetailModalProps> = ({
       setSiswaForm({ ...siswa });
       setActiveTab("siswa");
       setIsEditMode(false);
-      setToast({ show: false, variant: "success", message: "" });
       fetchOrtuData(siswa.id_siswa ?? siswa.id ?? "");
       setTimeout(() => setIsVisible(true), 50);
     } else {
@@ -96,11 +89,7 @@ const SiswaTabsDetailModal: React.FC<SiswaTabsDetailModalProps> = ({
     try {
       if (activeTab === "siswa") {
         if (!siswaForm.nama.trim() || !siswaForm.nisn.trim()) {
-          setToast({
-            show: true,
-            variant: "error",
-            message: "Nama dan NISN wajib diisi!",
-          });
+          showError("Nama dan NISN wajib diisi!");
           setSubmitting(false);
           return;
         }
@@ -112,28 +101,20 @@ const SiswaTabsDetailModal: React.FC<SiswaTabsDetailModalProps> = ({
           !ortuForm.ibu.trim() ||
           !ortuForm.no_telp.trim()
         ) {
-          setToast({
-            show: true,
-            variant: "error",
-            message: "KK, Telepon, Nama Ayah & Ibu wajib diisi!",
-          });
+          showError("KK, Telepon, Nama Ayah & Ibu wajib diisi!");
           setSubmitting(false);
           return;
         }
         await axios.put(`/orangtua/${ortuForm.id_orangtua}`, ortuForm);
       }
 
-      setToast({
-        show: true,
-        variant: "success",
-        message: "Data berhasil diperbarui!",
-      });
+      showSuccess("Data berhasil diperbarui!");
       setIsEditMode(false);
-      setTimeout(() => handleClose(true), 800);
+      setTimeout(() => handleClose(true), 400);
     } catch (error: any) {
       const errorMsg =
         error?.response?.data?.error || "Gagal menyimpan perubahan.";
-      setToast({ show: true, variant: "error", message: errorMsg });
+      showError(errorMsg);
     } finally {
       setSubmitting(false);
     }
@@ -143,12 +124,6 @@ const SiswaTabsDetailModal: React.FC<SiswaTabsDetailModalProps> = ({
     <div
       className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-300 ${show ? "visible" : "invisible"}`}
     >
-      <Toast
-        show={toast.show}
-        variant={toast.variant}
-        message={toast.message}
-        onClose={() => setToast((t) => ({ ...t, show: false }))}
-      />
       <div
         className={`absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ${isVisible ? "opacity-100" : "opacity-0"}`}
         onClick={() => !submitting && handleClose(false)}

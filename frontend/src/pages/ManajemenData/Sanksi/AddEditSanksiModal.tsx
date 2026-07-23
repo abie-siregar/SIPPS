@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "../../../api/axios";
 import Button from "../../../components/ui/button/Button";
+import { useToast } from "../../../context/ToastContext";
 
 interface Sanksi {
   id_master_sanksi: number;
@@ -19,6 +20,7 @@ const AddEditSanksiModal: React.FC<AddEditSanksiModalProps> = ({
   onClose,
   row,
 }) => {
+  const { showSuccess, showError } = useToast();
   const [namaSanksi, setNamaSanksi] = useState("");
   const [batasPoin, setBatasPoin] = useState<number | "">("");
   const [error, setError] = useState("");
@@ -50,10 +52,12 @@ const AddEditSanksiModal: React.FC<AddEditSanksiModalProps> = ({
     e.preventDefault();
     if (!namaSanksi.trim()) {
       setError("Nama sanksi harus diisi");
+      showError("Nama sanksi harus diisi");
       return;
     }
     if (batasPoin === "" || batasPoin < 0) {
       setError("Batas poin harus diisi dengan angka positif");
+      showError("Batas poin harus diisi dengan angka positif");
       return;
     }
 
@@ -67,17 +71,21 @@ const AddEditSanksiModal: React.FC<AddEditSanksiModalProps> = ({
           nama_sanksi: namaSanksi,
           batas_poin: Number(batasPoin),
         });
+        showSuccess("Data sanksi berhasil diperbarui!");
       } else {
         // Add Mode
         await axios.post("/sanksi", {
           nama_sanksi: namaSanksi,
           batas_poin: Number(batasPoin),
         });
+        showSuccess("Data sanksi berhasil ditambahkan!");
       }
       handleClose(true);
     } catch (err: any) {
       console.error("Gagal menyimpan data sanksi:", err);
-      setError(err?.response?.data?.error || "Gagal menyimpan data sanksi.");
+      const msg = err?.response?.data?.error || "Gagal menyimpan data sanksi.";
+      setError(msg);
+      showError(msg);
     } finally {
       setLoading(false);
     }

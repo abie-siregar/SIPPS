@@ -9,6 +9,7 @@ interface ToastProps {
   message: string;
   duration?: number; // ms before auto-dismiss (default 3000)
   onClose: () => void;
+  isPortal?: boolean;
 }
 
 const ICONS: Record<ToastVariant, React.ReactNode> = {
@@ -67,6 +68,7 @@ const Toast: React.FC<ToastProps> = ({
   message,
   duration = 3000,
   onClose,
+  isPortal = false,
 }) => {
   const [visible, setVisible] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -74,7 +76,6 @@ const Toast: React.FC<ToastProps> = ({
   useEffect(() => {
     if (show) {
       setMounted(true);
-      // small delay so the enter transition fires after mount
       const enterTimer = setTimeout(() => setVisible(true), 10);
       const exitTimer = setTimeout(() => {
         setVisible(false);
@@ -104,13 +105,11 @@ const Toast: React.FC<ToastProps> = ({
     }, 300);
   };
 
-  // Render via portal so it always mounts on document.body,
-  // escaping any stacking-context or transform parent (e.g. AppLayout)
-  return createPortal(
+  const content = (
     <div
-      style={{ position: "fixed", top: "1.25rem", right: "1.25rem", zIndex: 99999 }}
+      style={isPortal ? { position: "fixed", top: "1.25rem", right: "1.25rem", zIndex: 99999 } : undefined}
       className={`flex items-center gap-3 px-4 py-3 rounded-lg border shadow-xl
-        max-w-sm w-full transition-all duration-300
+        max-w-sm w-full transition-all duration-300 pointer-events-auto
         ${STYLES[variant]}
         ${visible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-3"}
       `}
@@ -136,9 +135,10 @@ const Toast: React.FC<ToastProps> = ({
           />
         </svg>
       </button>
-    </div>,
-    document.body
+    </div>
   );
+
+  return isPortal ? createPortal(content, document.body) : content;
 };
 
 export default Toast;

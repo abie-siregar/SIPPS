@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from "../../../api/axios";
 import Button from "../../../components/ui/button/Button";
-import Toast from "../../../components/ui/alert/Toast";
 import SearchableSelect from "../../../components/form/SearchableSelect";
 import { PlottingBK } from "./DataPlottingBK";
+import { useToast } from "../../../context/ToastContext";
 
 interface EditPopupProps {
   show: boolean;
@@ -29,6 +29,7 @@ interface Semester {
 }
 
 const EditDataPlottingBK: React.FC<EditPopupProps> = ({ show, onClose, row }) => {
+  const { showSuccess, showError } = useToast();
   const [bkList, setBkList] = useState<PTK[]>([]);
   const [rombelList, setRombelList] = useState<Rombel[]>([]);
   const [semesterList, setSemesterList] = useState<Semester[]>([]);
@@ -39,14 +40,6 @@ const EditDataPlottingBK: React.FC<EditPopupProps> = ({ show, onClose, row }) =>
 
   const [loading, setLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-  const [toast, setToast] = useState<{
-    show: boolean;
-    variant: "success" | "error";
-    message: string;
-  }>({ show: false, variant: "success", message: "" });
-
-  const showToast = (variant: "success" | "error", message: string) =>
-    setToast({ show: true, variant, message });
 
   useEffect(() => {
     if (show) {
@@ -62,7 +55,6 @@ const EditDataPlottingBK: React.FC<EditPopupProps> = ({ show, onClose, row }) =>
           const rombelData: any[] = resRombel.data?.data || resRombel.data || [];
           const semesterData: Semester[] = resSemester.data?.data || resSemester.data || [];
 
-          // Filter only BK teachers (id_jabatan === 21904)
           const filteredBK = ptkData.filter(
             (p) =>
               p &&
@@ -81,18 +73,16 @@ const EditDataPlottingBK: React.FC<EditPopupProps> = ({ show, onClose, row }) =>
           }));
           setRombelList(mappedRombel);
 
-          // Populate with initial row values
           setIdPtkBk((row.id_ptk_bk || "").toString());
           setIdRombel((row.id_rombel || "").toString());
           setIdSemester((row.id_semester || "").toString());
         } catch (err) {
           console.error("Gagal memuat data pendukung:", err);
-          showToast("error", "Gagal memuat data pendukung form.");
+          showError("Gagal memuat data pendukung form.");
         }
       };
 
       loadData();
-      setToast({ show: false, variant: "success", message: "" });
       setTimeout(() => setIsVisible(true), 10);
     } else {
       setIsVisible(false);
@@ -103,7 +93,7 @@ const EditDataPlottingBK: React.FC<EditPopupProps> = ({ show, onClose, row }) =>
     e.preventDefault();
 
     if (!idPtkBk || !idRombel || !idSemester) {
-      showToast("error", "Semua field form wajib diisi.");
+      showError("Semua field form wajib diisi.");
       return;
     }
 
@@ -115,12 +105,13 @@ const EditDataPlottingBK: React.FC<EditPopupProps> = ({ show, onClose, row }) =>
         id_semester: idSemester,
       });
 
+      showSuccess("Plotting Guru BK berhasil diperbarui!");
       setIsVisible(false);
       setTimeout(() => onClose(true), 300);
     } catch (err: any) {
       const msg =
         err?.response?.data?.error || "Gagal mengupdate data Plotting BK.";
-      showToast("error", msg);
+      showError(msg);
       console.error(err);
     } finally {
       setLoading(false);
@@ -151,13 +142,6 @@ const EditDataPlottingBK: React.FC<EditPopupProps> = ({ show, onClose, row }) =>
 
   return (
     <>
-      <Toast
-        show={toast.show}
-        variant={toast.variant}
-        message={toast.message}
-        onClose={() => setToast((t) => ({ ...t, show: false }))}
-      />
-
       <div
         className={`fixed inset-0 bg-black/40 z-40 transition-opacity duration-300 ${
           isVisible ? "opacity-100" : "opacity-0"

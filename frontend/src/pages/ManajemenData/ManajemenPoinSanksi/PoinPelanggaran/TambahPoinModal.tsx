@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "../../../../api/axios";
 import Button from "../../../../components/ui/button/Button";
-import Toast from "../../../../components/ui/alert/Toast";
+import { useToast } from "../../../../context/ToastContext";
 
 interface TambahModalProps {
   show: boolean;
@@ -9,31 +9,18 @@ interface TambahModalProps {
 }
 
 const TambahPoinModal: React.FC<TambahModalProps> = ({ show, onClose }) => {
+  const { showSuccess, showError } = useToast();
   const [jenisPenilaian, setJenisPenilaian] = useState("Kelakuan");
   const [jenisPelanggaran, setJenisPelanggaran] = useState("");
   const [bobot, setBobot] = useState<number | "">("");
   const [loading, setLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
-  // Toast state lokal modal
-  const [toast, setToast] = useState<{
-    show: boolean;
-    variant: "success" | "error";
-    message: string;
-  }>({ show: false, variant: "success", message: "" });
-
-  const showToast = (variant: "success" | "error", message: string) => {
-    setToast({ show: true, variant, message });
-  };
-
-  // 🔄 Sinkronisasi animasi transisi masuk/keluar modal
   useEffect(() => {
     if (show) {
       setTimeout(() => setIsVisible(true), 10);
-      setToast({ show: false, variant: "success", message: "" });
     } else {
       setIsVisible(false);
-      // Reset form input ketika modal ditutup
       setJenisPenilaian("Kelakuan");
       setJenisPelanggaran("");
       setBobot("");
@@ -42,7 +29,7 @@ const TambahPoinModal: React.FC<TambahModalProps> = ({ show, onClose }) => {
 
   const handleClose = () => {
     setIsVisible(false);
-    setTimeout(() => onClose(false), 300); // Sinkron dengan durasi CSS transition 300ms
+    setTimeout(() => onClose(false), 300);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,10 +41,7 @@ const TambahPoinModal: React.FC<TambahModalProps> = ({ show, onClose }) => {
       isNaN(Number(bobot)) ||
       !jenisPenilaian
     ) {
-      showToast(
-        "error",
-        "Semua field wajib diisi dan bobot harus berupa angka.",
-      );
+      showError("Semua field wajib diisi dan bobot harus berupa angka.");
       return;
     }
 
@@ -69,12 +53,13 @@ const TambahPoinModal: React.FC<TambahModalProps> = ({ show, onClose }) => {
         bobot: Number(bobot),
       });
 
+      showSuccess("Data poin pelanggaran berhasil ditambahkan!");
       setIsVisible(false);
-      setTimeout(() => onClose(true), 300); // Kirim flag `true` untuk refresh data table utama
+      setTimeout(() => onClose(true), 300);
     } catch (err: any) {
       const msg =
         err?.response?.data?.error || "Gagal menambahkan data master poin.";
-      showToast("error", msg);
+      showError(msg);
       console.error(err);
     } finally {
       setLoading(false);
@@ -85,15 +70,7 @@ const TambahPoinModal: React.FC<TambahModalProps> = ({ show, onClose }) => {
 
   return (
     <>
-      {/* Toast Notification */}
-      <Toast
-        show={toast.show}
-        variant={toast.variant}
-        message={toast.message}
-        onClose={() => setToast((t) => ({ ...t, show: false }))}
-      />
-
-      {/* Backdrop Latar Belakang Gelap (z-[999] agar AppSidebar aman) */}
+      {/* Backdrop Latar Belakang Gelap */}
       <div
         className={`fixed inset-0 bg-black/40 z-[999] transition-opacity duration-300 ${
           isVisible ? "opacity-100" : "opacity-0"

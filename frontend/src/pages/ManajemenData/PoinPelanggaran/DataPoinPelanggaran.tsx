@@ -9,10 +9,10 @@ import Button from "../../../components/ui/button/Button";
 import { PencilIcon, TrashBinIcon } from "../../../icons";
 import DataTable, { Column } from "../../../components/ui/table/DataTable";
 import EditDataPoinPelanggaran from "./EditDataPoinPelanggaran";
-import Toast from "../../../components/ui/alert/Toast";
 import ConfirmDialog from "../../../components/ui/modal/ConfirmDialog";
 import { useAuth } from "../../../context/AuthContext";
 import FilterPoinPelanggaranModal from "./FilterPoinPelanggaranModal";
+import { useToast } from "../../../context/ToastContext";
 
 export interface Pelanggaran {
   id_poin: number;
@@ -25,6 +25,7 @@ export interface Pelanggaran {
 const PoinPelanggaran = () => {
   const { user } = useAuth();
   const isAdmin = user?.role === "Admin";
+  const { showSuccess, showError } = useToast();
 
   const [data, setData] = useState<Pelanggaran[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,12 +38,6 @@ const PoinPelanggaran = () => {
   const [selectedJenisPenilaian, setSelectedJenisPenilaian] = useState<string[]>([]);
   const [minBobot, setMinBobot] = useState<number | "">("");
   const [maxBobot, setMaxBobot] = useState<number | "">("");
-
-  const [toast, setToast] = useState<{
-    show: boolean;
-    variant: "success" | "error";
-    message: string;
-  }>({ show: false, variant: "success", message: "" });
 
   const [confirmDelete, setConfirmDelete] = useState<{
     show: boolean;
@@ -82,14 +77,10 @@ const PoinPelanggaran = () => {
     try {
       await axios.delete(`/poin-pelanggaran/${row.id_poin}`);
       fetchData();
-      setToast({
-        show: true,
-        variant: "success",
-        message: `Data "${row.jenis_pelanggaran}" berhasil dihapus.`,
-      });
+      showSuccess(`Data "${row.jenis_pelanggaran}" berhasil dihapus.`);
     } catch (err: any) {
       const msg = err?.response?.data?.error || "Gagal menghapus data.";
-      setToast({ show: true, variant: "error", message: msg });
+      showError(msg);
     }
   };
 
@@ -197,14 +188,6 @@ const PoinPelanggaran = () => {
       />
       <PageBreadcrumb pageTitle="Data Poin Pelanggaran" />
 
-      {/* Toast notification */}
-      <Toast
-        show={toast.show}
-        variant={toast.variant}
-        message={toast.message}
-        onClose={() => setToast((t) => ({ ...t, show: false }))}
-      />
-
       {/* Confirm delete dialog */}
       <ConfirmDialog
         show={confirmDelete.show}
@@ -277,11 +260,7 @@ const PoinPelanggaran = () => {
             setSelectedRow(null);
             fetchData();
             if (didSave) {
-              setToast({
-                show: true,
-                variant: "success",
-                message: "Data poin pelanggaran berhasil diperbarui!",
-              });
+              showSuccess("Data poin pelanggaran berhasil diperbarui!");
             }
           }}
           row={selectedRow}

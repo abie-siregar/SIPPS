@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "../../../../../api/axios";
 import Button from "../../../../../components/ui/button/Button";
-import Toast from "../../../../../components/ui/alert/Toast";
 import SearchableSelect from "../../../../../components/form/SearchableSelect";
+import { useToast } from "../../../../../context/ToastContext";
 
 interface TambahModalProps {
   show: boolean;
@@ -33,6 +33,7 @@ interface Semester {
 }
 
 const TambahPembinaanModal: React.FC<TambahModalProps> = ({ show, onClose }) => {
+  const { showSuccess, showError } = useToast();
   const [siswaList, setSiswaList] = useState<Siswa[]>([]);
   const [poinList, setPoinList] = useState<Poin[]>([]);
   const [ptkList, setPtkList] = useState<PTK[]>([]);
@@ -46,11 +47,6 @@ const TambahPembinaanModal: React.FC<TambahModalProps> = ({ show, onClose }) => 
   const [keterangan, setKeterangan] = useState("");
 
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState<{
-    show: boolean;
-    variant: "success" | "error";
-    message: string;
-  }>({ show: false, variant: "success", message: "" });
 
   const fetchDropdownData = async () => {
     try {
@@ -62,7 +58,6 @@ const TambahPembinaanModal: React.FC<TambahModalProps> = ({ show, onClose }) => 
       ]);
 
       const rawSiswa: Siswa[] = resSiswa.data?.data || resSiswa.data || [];
-      // Filter only students with points >= 100
       const filteredSiswa = rawSiswa.filter((s) => s.total_poin >= 100);
       setSiswaList(filteredSiswa);
 
@@ -75,7 +70,6 @@ const TambahPembinaanModal: React.FC<TambahModalProps> = ({ show, onClose }) => 
       const rawSemester: Semester[] = resSemester.data?.data || resSemester.data || [];
       setSemesterList(rawSemester);
 
-      // Pre-select defaults
       if (filteredSiswa.length > 0) setIdSiswa(filteredSiswa[0].id_siswa.toString());
       if (rawPoin.length > 0) setIdPoin(rawPoin[0].id_poin.toString());
       if (rawPtk.length > 0) setIdPtk(rawPtk[0].id_ptk.toString());
@@ -97,11 +91,7 @@ const TambahPembinaanModal: React.FC<TambahModalProps> = ({ show, onClose }) => 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!idSiswa || !idPoin || !idPtk || !idSemester || !tanggal || !keterangan) {
-      setToast({
-        show: true,
-        variant: "error",
-        message: "Semua form wajib diisi.",
-      });
+      showError("Semua form wajib diisi.");
       return;
     }
 
@@ -116,21 +106,12 @@ const TambahPembinaanModal: React.FC<TambahModalProps> = ({ show, onClose }) => 
         keterangan,
       });
 
-      setToast({
-        show: true,
-        variant: "success",
-        message: "Progres pembinaan berhasil diinisiasi.",
-      });
-
-      setTimeout(() => onClose(true), 1000);
+      showSuccess("Progres pembinaan berhasil diinisiasi.");
+      setTimeout(() => onClose(true), 400);
     } catch (err: any) {
       console.error(err);
       const errMsg = err?.response?.data?.error || "Gagal menginisiasi pembinaan.";
-      setToast({
-        show: true,
-        variant: "error",
-        message: errMsg,
-      });
+      showError(errMsg);
     } finally {
       setLoading(false);
     }
@@ -140,13 +121,6 @@ const TambahPembinaanModal: React.FC<TambahModalProps> = ({ show, onClose }) => 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <Toast
-        show={toast.show}
-        variant={toast.variant}
-        message={toast.message}
-        onClose={() => setToast((t) => ({ ...t, show: false }))}
-      />
-
       <div className="w-full max-w-lg bg-white dark:bg-gray-900 rounded-2xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-800">
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-800/50">

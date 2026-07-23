@@ -9,13 +9,14 @@ import { PencilIcon, TrashBinIcon } from "../../../icons";
 import DataTable, { Column } from "../../../components/ui/table/DataTable";
 import AddEditSanksiModal, { Sanksi } from "./AddEditSanksiModal";
 import FilterSanksiModal from "./FilterSanksiModal";
-import Toast from "../../../components/ui/alert/Toast";
 import ConfirmDialog from "../../../components/ui/modal/ConfirmDialog";
 import { useAuth } from "../../../context/AuthContext";
+import { useToast } from "../../../context/ToastContext";
 
 const DataSanksi = () => {
   const { user } = useAuth();
   const isAdmin = user?.role === "Admin";
+  const { showSuccess, showError } = useToast();
 
   const [data, setData] = useState<Sanksi[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,13 +29,6 @@ const DataSanksi = () => {
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [minPoin, setMinPoin] = useState<number | "">("");
   const [maxPoin, setMaxPoin] = useState<number | "">("");
-
-  // Toast and Confirm states
-  const [toast, setToast] = useState<{
-    show: boolean;
-    variant: "success" | "error";
-    message: string;
-  }>({ show: false, variant: "success", message: "" });
 
   const [confirmDelete, setConfirmDelete] = useState<{
     show: boolean;
@@ -80,14 +74,10 @@ const DataSanksi = () => {
     try {
       await axios.delete(`/sanksi/${row.id_master_sanksi}`);
       fetchData();
-      setToast({
-        show: true,
-        variant: "success",
-        message: `Data sanksi "${row.nama_sanksi}" berhasil dihapus.`,
-      });
+      showSuccess(`Data sanksi "${row.nama_sanksi}" berhasil dihapus.`);
     } catch (err: any) {
       const msg = err?.response?.data?.error || "Gagal menghapus data sanksi.";
-      setToast({ show: true, variant: "error", message: msg });
+      showError(msg);
     }
   };
 
@@ -176,14 +166,6 @@ const DataSanksi = () => {
       />
       <PageBreadcrumb pageTitle="Data Sanksi" />
 
-      {/* Toast notification */}
-      <Toast
-        show={toast.show}
-        variant={toast.variant}
-        message={toast.message}
-        onClose={() => setToast((t) => ({ ...t, show: false }))}
-      />
-
       {/* Confirm delete dialog */}
       <ConfirmDialog
         show={confirmDelete.show}
@@ -212,11 +194,6 @@ const DataSanksi = () => {
           setSelectedRow(null);
           if (didSave) {
             fetchData();
-            setToast({
-              show: true,
-              variant: "success",
-              message: "Data sanksi berhasil disimpan!",
-            });
           }
         }}
         row={selectedRow}

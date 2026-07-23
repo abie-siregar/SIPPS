@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "../../../api/axios";
 import Button from "../../../components/ui/button/Button";
 import { Users } from "./DataUsers";
+import { useToast } from "../../../context/ToastContext";
 
 interface HapusProps {
   show: boolean;
@@ -10,6 +11,7 @@ interface HapusProps {
 }
 
 const HapusUserModal: React.FC<HapusProps> = ({ show, row, onClose }) => {
+  const { showSuccess, showError } = useToast();
   const [loading, setLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -35,11 +37,13 @@ const HapusUserModal: React.FC<HapusProps> = ({ show, row, onClose }) => {
     setLoading(true);
     try {
       await axios.delete(`/user/${userId}`);
+      showSuccess(`Pengguna "${row.nama}" berhasil dihapus.`);
       setIsVisible(false);
       setTimeout(() => onClose(true), 300);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Gagal menghapus user:", error);
-      alert("Gagal menghapus pengguna.");
+      const msg = error?.response?.data?.error || "Gagal menghapus pengguna.";
+      showError(msg);
     } finally {
       setLoading(false);
     }

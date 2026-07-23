@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "../../../../api/axios";
 import Button from "../../../../components/ui/button/Button";
 import { Sanksi } from "./DataSanksi";
+import { useToast } from "../../../../context/ToastContext";
 
 interface HapusProps {
   show: boolean;
@@ -10,6 +11,7 @@ interface HapusProps {
 }
 
 const HapusSanksiModal: React.FC<HapusProps> = ({ show, row, onClose }) => {
+  const { showSuccess, showError } = useToast();
   const [loading, setLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -32,10 +34,12 @@ const HapusSanksiModal: React.FC<HapusProps> = ({ show, row, onClose }) => {
     try {
       setLoading(true);
       await axios.delete(`/sanksi/${row.id_master_sanksi}`);
+      showSuccess(`Data sanksi "${row.nama_sanksi}" berhasil dihapus!`);
       handleClose(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Gagal menghapus kriteria sanksi:", error);
-      alert("Gagal menghapus data kriteria sanksi.");
+      const msg = error?.response?.data?.error || "Gagal menghapus data kriteria sanksi.";
+      showError(msg);
     } finally {
       setLoading(false);
     }

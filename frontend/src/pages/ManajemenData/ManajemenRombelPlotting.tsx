@@ -15,12 +15,12 @@ import EditDataPlottingBK from "../ManajemenData/PlottingBK/EditDataPlottingBK";
 
 // Data Rombel
 import FilterRombelModal from "../ManajemenData/Rombel/FilterRombelModal";
-
-import Toast from "../../components/ui/alert/Toast";
 import ConfirmDialog from "../../components/ui/modal/ConfirmDialog";
 import { useAuth } from "../../context/AuthContext";
+import { useToast } from "../../context/ToastContext";
 
 export interface Rombel {
+  id_rombel?: number;
   rombel: string;
   tingkat: string;
   jurusan: string;
@@ -44,17 +44,11 @@ const ManajemenRombelPlotting = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const isAdmin = user?.role === "Admin";
+  const { showSuccess, showError } = useToast();
 
   // 🔄 State Navigasi Tab Utama (Hanya Rombel dan Plotting BK)
   const [activeTab, setActiveTab] = useState<TabType>("rombel");
   const [loading, setLoading] = useState(true);
-
-  // Global Toast
-  const [toast, setToast] = useState<{
-    show: boolean;
-    variant: "success" | "error";
-    message: string;
-  }>({ show: false, variant: "success", message: "" });
 
   // ----------------------------------------------------
   // 📑 STATE & LOGIKA: DATA ROMBEL
@@ -188,15 +182,11 @@ const ManajemenRombelPlotting = () => {
     try {
       await axios.delete(`/plotting/${row.id_plotting}`);
       fetchAllData();
-      setToast({
-        show: true,
-        variant: "success",
-        message: `Plotting BK untuk rombel "${row.rombel}" berhasil dihapus.`,
-      });
+      showSuccess(`Plotting BK untuk rombel "${row.rombel}" berhasil dihapus.`);
     } catch (err: any) {
       const msg =
         err?.response?.data?.error || "Gagal menghapus data plotting.";
-      setToast({ show: true, variant: "error", message: msg });
+      showError(msg);
     }
   };
 
@@ -350,14 +340,6 @@ const ManajemenRombelPlotting = () => {
       />
       <PageBreadcrumb pageTitle={titles.breadcrumb} />
 
-      {/* Global Toast */}
-      <Toast
-        show={toast.show}
-        variant={toast.variant}
-        message={toast.message}
-        onClose={() => setToast((t) => ({ ...t, show: false }))}
-      />
-
       {/* --- CONFIRMATION DIALOG --- */}
       <ConfirmDialog
         show={confirmDeletePlotting.show}
@@ -396,11 +378,6 @@ const ManajemenRombelPlotting = () => {
           setShowAddPlotting(false);
           if (didSave) {
             fetchAllData();
-            setToast({
-              show: true,
-              variant: "success",
-              message: "Data Plotting BK berhasil ditambahkan!",
-            });
           }
         }}
       />
@@ -413,11 +390,6 @@ const ManajemenRombelPlotting = () => {
             setSelectedPlottingRow(null);
             if (didSave) {
               fetchAllData();
-              setToast({
-                show: true,
-                variant: "success",
-                message: "Data Plotting BK berhasil diperbarui!",
-              });
             }
           }}
           row={selectedPlottingRow}

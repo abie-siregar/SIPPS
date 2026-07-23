@@ -34,6 +34,7 @@ import DataUsers from "./pages/ManajemenData/Users/DataUsers";
 import DataSanksi from "./pages/ManajemenData/Sanksi/DataSanksi";
 import SignUp from "./pages/AuthPages/SignUp";
 import { AuthProvider } from "./context/AuthContext";
+import { ToastProvider } from "./context/ToastContext";
 import DataPlottingBK from "./pages/ManajemenData/PlottingBK/DataPlottingBK";
 import ManajemenPoinSanksi from "./pages/ManajemenData/ManajemenPoinSanksi/ManajemenPoinSanksi";
 import ManajemenDataUsers from "./pages/ManajemenData/ManajemenUser/ManajemenDataUsers";
@@ -52,15 +53,16 @@ import PrintRombel from "./pages/ManajemenData/ManajemenDataSiswa/PrintRombel";
 
 export default function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <ScrollToTop />
-        <Routes>
-          {/* Default route */}
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+    <ToastProvider>
+      <AuthProvider>
+        <Router>
+          <ScrollToTop />
+          <Routes>
+            {/* Default route */}
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-          {/* Auth routes (tanpa layout) */}
-          <Route path="/login" element={<Login />} />
+            {/* Auth routes (tanpa layout) */}
+            <Route path="/login" element={<Login />} />
           <Route path="/register" element={<SignUp />} />
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route
@@ -363,5 +365,6 @@ export default function App() {
         </Routes>
       </Router>
     </AuthProvider>
+    </ToastProvider>
   );
 }

@@ -1,6 +1,6 @@
 // File: src/pages/Pelanggaran/components/OrangTuaView.tsx
 import { useEffect, useState } from "react";
-import axios from "../../../../api/axios";
+import axios from "../../../../../api/axios";
 
 interface PelanggaranAnak {
   id_pelanggaran: number;

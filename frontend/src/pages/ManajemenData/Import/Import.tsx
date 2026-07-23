@@ -1,20 +1,21 @@
 import { useState, useRef } from "react";
-import axios from "../../../api/axios"; // 💡 Sesuaikan path relative ke api/axios Anda
+import axios from "../../../api/axios";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import ComponentCard from "../../../components/common/ComponentCard";
 import PageMeta from "../../../components/common/PageMeta";
 import Button from "../../../components/ui/button/Button";
-import Toast from "../../../components/ui/alert/Toast";
 import {
   DownloadIcon,
   FileIcon,
   ArrowDownIcon,
   ArrowRightIcon,
-} from "../../../icons"; // 💡 Menggunakan ikon murni dari daftar Anda
+} from "../../../icons";
+import { useToast } from "../../../context/ToastContext";
 
 type TabType = "ptk" | "siswa" | "rombel";
 
 const ImportDataPage = () => {
+  const { showSuccess, showError } = useToast();
   const [activeTab, setActiveTab] = useState<TabType>("ptk");
   const [file, setFile] = useState<File | null>(null);
   const [isDragActive, setIsDragActive] = useState<boolean>(false);
@@ -23,13 +24,6 @@ const ImportDataPage = () => {
 
   // State untuk konfirmasi kepemilikan data sebelum unggah
   const [isDataConfirmed, setIsDataConfirmed] = useState<boolean>(false);
-
-  // Standar Toast Notification proyek Anda
-  const [toast, setToast] = useState<{
-    show: boolean;
-    variant: "success" | "error";
-    message: string;
-  }>({ show: false, variant: "success", message: "" });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -76,12 +70,9 @@ const ImportDataPage = () => {
       "application/vnd.ms-excel",
     ];
     if (!allowedExtensions.includes(selectedFile.type)) {
-      setToast({
-        show: true,
-        variant: "error",
-        message:
-          "Format file tidak valid! Harap gunakan file Excel (.xlsx atau .xls)",
-      });
+      showError(
+        "Format file tidak valid! Harap gunakan file Excel (.xlsx atau .xls)"
+      );
       return false;
     }
     return true;
@@ -142,11 +133,7 @@ const ImportDataPage = () => {
         successMsg += ` (Sukses: ${result.summary.success_count}, Gagal: ${result.summary.failed_count})`;
       }
 
-      setToast({
-        show: true,
-        variant: "success",
-        message: successMsg,
-      });
+      showSuccess(successMsg);
 
       setFile(null);
       setIsDataConfirmed(false);
@@ -157,11 +144,7 @@ const ImportDataPage = () => {
       const msg =
         error?.response?.data?.error ||
         "Gagal memproses berkas. Pastikan data prasyarat tidak kosong.";
-      setToast({
-        show: true,
-        variant: "error",
-        message: msg,
-      });
+      showError(msg);
     }
   };
 
@@ -177,13 +160,6 @@ const ImportDataPage = () => {
         description="Halaman pengelolaan unggah data master sekolah"
       />
       <PageBreadcrumb pageTitle={currentTab.title} />
-
-      <Toast
-        show={toast.show}
-        variant={toast.variant}
-        message={toast.message}
-        onClose={() => setToast((t) => ({ ...t, show: false }))}
-      />
 
       <div className="space-y-6">
         {/* Navigasi Switch Tab Berurutan */}

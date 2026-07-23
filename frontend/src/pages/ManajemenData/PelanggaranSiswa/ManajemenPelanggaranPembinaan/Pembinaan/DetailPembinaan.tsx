@@ -5,9 +5,9 @@ import PageBreadcrumb from "../../../../../components/common/PageBreadCrumb";
 import ComponentCard from "../../../../../components/common/ComponentCard";
 import PageMeta from "../../../../../components/common/PageMeta";
 import Button from "../../../../../components/ui/button/Button";
-import Toast from "../../../../../components/ui/alert/Toast";
 import DataTable, { Column } from "../../../../../components/ui/table/DataTable";
 import { Modal } from "../../../../../components/ui/modal";
+import { useToast } from "../../../../../context/ToastContext";
 
 interface ProgressStep {
   id_progres: number;
@@ -42,6 +42,7 @@ interface ViolationRecord {
 }
 
 const DetailPembinaan: React.FC = () => {
+  const { showSuccess, showError } = useToast();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -67,12 +68,6 @@ const DetailPembinaan: React.FC = () => {
   const [idPtk, setIdPtk] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-
-  const [toast, setToast] = useState<{
-    show: boolean;
-    variant: "success" | "error";
-    message: string;
-  }>({ show: false, variant: "success", message: "" });
 
   const predefinedStages =
     tahapAkhir === "TAHAP_1"
@@ -201,11 +196,7 @@ const DetailPembinaan: React.FC = () => {
       }
     } catch (err) {
       console.error("Gagal memuat detail stepper:", err);
-      setToast({
-        show: true,
-        variant: "error",
-        message: "Gagal memuat riwayat pembinaan siswa.",
-      });
+      showError("Gagal memuat riwayat pembinaan siswa.");
     } finally {
       setLoading(false);
       setHistoryLoading(false);
@@ -233,11 +224,7 @@ const DetailPembinaan: React.FC = () => {
   const handleFormSubmitClick = (e: React.FormEvent) => {
     e.preventDefault();
     if (!nextTahap || !catatan || !idPtk || !tanggalInput) {
-      setToast({
-        show: true,
-        variant: "error",
-        message: "Semua form perkembangan wajib diisi.",
-      });
+      showError("Semua form perkembangan wajib diisi.");
       return;
     }
     setShowConfirmModal(true);
@@ -271,13 +258,11 @@ const DetailPembinaan: React.FC = () => {
         });
       }
 
-      setToast({
-        show: true,
-        variant: "success",
-        message: isLastBeforeSelesai
+      showSuccess(
+        isLastBeforeSelesai
           ? "Berhasil menyelesaikan pembinaan."
-          : `Berhasil memperbarui progres ke: ${nextTahap}`,
-      });
+          : `Berhasil memperbarui progres ke: ${nextTahap}`
+      );
 
       setCatatan("");
       setIdPtk("");
@@ -287,15 +272,11 @@ const DetailPembinaan: React.FC = () => {
       // Navigate back to the list page
       setTimeout(() => {
         navigate("/ManajemenPembinaan");
-      }, 800);
+      }, 500);
     } catch (err: any) {
       console.error(err);
       const errMsg = err?.response?.data?.error || "Gagal memperbarui progres.";
-      setToast({
-        show: true,
-        variant: "error",
-        message: errMsg,
-      });
+      showError(errMsg);
     } finally {
       setSubmitting(false);
     }
@@ -443,13 +424,6 @@ const DetailPembinaan: React.FC = () => {
         description="Detail progres pembinaan siswa dengan stepper"
       />
       <PageBreadcrumb pageTitle="Detail Perkembangan Pembinaan" />
-
-      <Toast
-        show={toast.show}
-        variant={toast.variant}
-        message={toast.message}
-        onClose={() => setToast((t) => ({ ...t, show: false }))}
-      />
 
       <div className="space-y-6 max-w-4xl mx-auto">
         {/* Back Button */}

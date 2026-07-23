@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "../../../api/axios";
 import Button from "../../../components/ui/button/Button";
-import Toast from "../../../components/ui/alert/Toast";
+import { useToast } from "../../../context/ToastContext";
 
 interface UsersExtended {
   id_user?: number | string;
@@ -23,6 +23,7 @@ interface EditPopupProps {
 }
 
 const EditUserModal: React.FC<EditPopupProps> = ({ show, onClose, row }) => {
+  const { showSuccess, showError } = useToast();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -31,15 +32,6 @@ const EditUserModal: React.FC<EditPopupProps> = ({ show, onClose, row }) => {
 
   const [isVisible, setIsVisible] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-
-  const [toast, setToast] = useState<{
-    show: boolean;
-    variant: "success" | "error";
-    message: string;
-  }>({ show: false, variant: "success", message: "" });
-
-  const showToast = (variant: "success" | "error", message: string) =>
-    setToast({ show: true, variant, message });
 
   useEffect(() => {
     if (!show || !row) {
@@ -52,7 +44,6 @@ const EditUserModal: React.FC<EditPopupProps> = ({ show, onClose, row }) => {
 
     setUsername(row.username || "");
     setPassword("");
-    setToast({ show: false, variant: "success", message: "" });
 
     const initModalData = async () => {
       try {
@@ -83,12 +74,12 @@ const EditUserModal: React.FC<EditPopupProps> = ({ show, onClose, row }) => {
     e.preventDefault();
 
     if (!username.trim() || !idRole) {
-      showToast("error", "Username dan Role wajib diisi");
+      showError("Username dan Role wajib diisi");
       return;
     }
 
     if (!row || !row.id_user) {
-      showToast("error", "ID User tidak valid.");
+      showError("ID User tidak valid.");
       return;
     }
 
@@ -106,11 +97,12 @@ const EditUserModal: React.FC<EditPopupProps> = ({ show, onClose, row }) => {
 
       await axios.put(`/user/${row.id_user}`, payload);
 
+      showSuccess("Data pengguna berhasil diperbarui!");
       setIsVisible(false);
       setTimeout(() => onClose(true), 300);
     } catch (err: any) {
       const msg = err?.response?.data?.error || "Gagal mengupdate data User.";
-      showToast("error", msg);
+      showError(msg);
       console.error(err);
     } finally {
       setSubmitting(false);
@@ -126,12 +118,6 @@ const EditUserModal: React.FC<EditPopupProps> = ({ show, onClose, row }) => {
 
   return (
     <>
-      <Toast
-        show={toast.show}
-        variant={toast.variant}
-        message={toast.message}
-        onClose={() => setToast((t) => ({ ...t, show: false }))}
-      />
       <div
         className={`fixed inset-0 bg-black/40 z-40 transition-opacity duration-300 ${isVisible ? "opacity-100" : "opacity-0"}`}
         onClick={handleClose}

@@ -4,13 +4,14 @@ import axios from "../../../api/axios";
 import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import ComponentCard from "../../../components/common/ComponentCard";
 import PageMeta from "../../../components/common/PageMeta";
-import Toast from "../../../components/ui/alert/Toast";
 import { useAuth } from "../../../context/AuthContext";
+import { useToast } from "../../../context/ToastContext";
 
 const TambahPelanggaran = () => {
   const { user } = useAuth();
   const isAdmin = user?.role === "Admin";
   const navigate = useNavigate();
+  const { showSuccess, showError } = useToast();
   const [jenisPelanggaran, setJenisPelanggaran] = useState("");
   const [bobot, setBobot] = useState<number | "">("");
   const [jenisPenilaian, setJenisPenilaian] = useState("Kelakuan");
@@ -22,22 +23,11 @@ const TambahPelanggaran = () => {
     }
   }, [isAdmin, navigate]);
 
-  // Toast state
-  const [toast, setToast] = useState<{
-    show: boolean;
-    variant: "success" | "error";
-    message: string;
-  }>({ show: false, variant: "success", message: "" });
-
-  const showToast = (variant: "success" | "error", message: string) => {
-    setToast({ show: true, variant, message });
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!jenisPelanggaran || bobot === "" || isNaN(Number(bobot)) || !jenisPenilaian) {
-      showToast("error", "Semua field wajib diisi dan bobot harus berupa angka.");
+      showError("Semua field wajib diisi dan bobot harus berupa angka.");
       return;
     }
 
@@ -49,12 +39,12 @@ const TambahPelanggaran = () => {
         bobot: Number(bobot),
       });
 
-      showToast("success", "Data poin pelanggaran berhasil ditambahkan!");
-      setTimeout(() => navigate("/data-poin-pelanggaran"), 1500);
+      showSuccess("Data poin pelanggaran berhasil ditambahkan!");
+      setTimeout(() => navigate("/data-poin-pelanggaran"), 1000);
     } catch (err: any) {
       const msg =
         err?.response?.data?.error || "Gagal menambahkan data. Silakan coba lagi.";
-      showToast("error", msg);
+      showError(msg);
       console.error(err);
     } finally {
       setLoading(false);
@@ -68,14 +58,6 @@ const TambahPelanggaran = () => {
         description="Halaman untuk menambahkan data poin pelanggaran baru"
       />
       <PageBreadcrumb pageTitle="Tambah Data Poin Pelanggaran" />
-
-      {/* Toast notification */}
-      <Toast
-        show={toast.show}
-        variant={toast.variant}
-        message={toast.message}
-        onClose={() => setToast((t) => ({ ...t, show: false }))}
-      />
 
       <div className="space-y-6">
         <ComponentCard title="Form Tambah Poin Pelanggaran">

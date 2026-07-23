@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "../../../../../api/axios";
 import Button from "../../../../../components/ui/button/Button";
 import { Pelanggaran } from "./DataPelanggaran";
+import { useToast } from "../../../../../context/ToastContext";
 
 interface HapusModalProps {
   show: boolean;
@@ -14,6 +15,7 @@ const HapusPelanggaranModal: React.FC<HapusModalProps> = ({
   row,
   onClose,
 }) => {
+  const { showError } = useToast();
   const [loading, setLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   useEffect(() => {
@@ -30,9 +32,10 @@ const HapusPelanggaranModal: React.FC<HapusModalProps> = ({
     try {
       await axios.delete(`/pelanggaran-siswa/${row.id_pelanggaran}`);
       onClose(true);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Gagal menghapus rekam pelanggaran:", err);
-      alert("Gagal menghapus data pelanggaran.");
+      const msg = err?.response?.data?.error || "Gagal menghapus data pelanggaran.";
+      showError(msg);
     } finally {
       setLoading(false);
     }

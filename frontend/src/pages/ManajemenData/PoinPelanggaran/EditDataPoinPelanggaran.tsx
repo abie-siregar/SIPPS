@@ -2,7 +2,7 @@ import axios from "../../../api/axios";
 import { useEffect, useState } from "react";
 import { Pelanggaran } from "./DataPoinPelanggaran";
 import Button from "../../../components/ui/button/Button";
-import Toast from "../../../components/ui/alert/Toast";
+import { useToast } from "../../../context/ToastContext";
 
 interface EditPopupProps {
   show: boolean;
@@ -15,22 +15,13 @@ const EditDataPoinPelanggaran: React.FC<EditPopupProps> = ({
   onClose,
   row,
 }) => {
+  const { showSuccess, showError } = useToast();
   const [jenisPenilaian, setJenisPenilaian] = useState(row.jenis_penilaian);
   const [bobot, setBobot] = useState<number | "">(row.bobot);
   const [jenisPelanggaran, setJenisPelanggaran] = useState(row.jenis_pelanggaran);
   const [isActive, setIsActive] = useState<boolean>(row.is_active);
   const [isVisible, setIsVisible] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-
-  // Local toast for errors inside the popup
-  const [toast, setToast] = useState<{
-    show: boolean;
-    variant: "success" | "error";
-    message: string;
-  }>({ show: false, variant: "success", message: "" });
-
-  const showToast = (variant: "success" | "error", message: string) =>
-    setToast({ show: true, variant, message });
 
   // Reset form when popup opens
   useEffect(() => {
@@ -39,7 +30,6 @@ const EditDataPoinPelanggaran: React.FC<EditPopupProps> = ({
       setBobot(row.bobot);
       setJenisPelanggaran(row.jenis_pelanggaran);
       setIsActive(row.is_active);
-      setToast({ show: false, variant: "success", message: "" });
       setTimeout(() => setIsVisible(true), 10);
     } else {
       setIsVisible(false);
@@ -50,7 +40,7 @@ const EditDataPoinPelanggaran: React.FC<EditPopupProps> = ({
     e.preventDefault();
 
     if (!jenisPenilaian || bobot === "" || isNaN(Number(bobot)) || !jenisPelanggaran) {
-      showToast("error", "Semua field wajib diisi dan bobot harus berupa angka.");
+      showError("Semua field wajib diisi dan bobot harus berupa angka.");
       return;
     }
 
@@ -63,13 +53,13 @@ const EditDataPoinPelanggaran: React.FC<EditPopupProps> = ({
         is_active: isActive,
       });
 
-      // Close popup immediately; parent will show the success toast
+      showSuccess("Data poin pelanggaran berhasil diperbarui!");
       setIsVisible(false);
       setTimeout(() => onClose(true), 300);
     } catch (err: any) {
       const msg =
         err?.response?.data?.error || "Gagal mengupdate data. Silakan coba lagi.";
-      showToast("error", msg);
+      showError(msg);
       console.error(err);
     } finally {
       setSubmitting(false);
@@ -85,14 +75,6 @@ const EditDataPoinPelanggaran: React.FC<EditPopupProps> = ({
 
   return (
     <>
-      {/* Toast inside popup */}
-      <Toast
-        show={toast.show}
-        variant={toast.variant}
-        message={toast.message}
-        onClose={() => setToast((t) => ({ ...t, show: false }))}
-      />
-
       {/* Overlay */}
       <div
         className={`fixed inset-0 bg-black/40 z-40 transition-opacity duration-300 ${

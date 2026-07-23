@@ -5,7 +5,7 @@ import PageBreadcrumb from "../../../components/common/PageBreadCrumb";
 import ComponentCard from "../../../components/common/ComponentCard";
 import PageMeta from "../../../components/common/PageMeta";
 import Button from "../../../components/ui/button/Button";
-import SuccessPopup from "../../UiElements/SuccessPopup";
+import { useToast } from "../../../context/ToastContext";
 
 interface Rombel {
   id_rombel: number;
@@ -18,11 +18,11 @@ interface Rombel {
 }
 
 const EditDataRombel = () => {
+  const { showSuccess, showError } = useToast();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [formData, setFormData] = useState<Rombel | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -54,15 +54,14 @@ const EditDataRombel = () => {
     e.preventDefault();
     try {
       await axios.put(`/rombel/${id}`, formData);
-      setShowPopup(true);
-
+      showSuccess("Data rombel berhasil diperbarui!");
       setTimeout(() => {
-        setShowPopup(false);
         navigate("/data-rombel");
-      }, 1500);
-    } catch (err) {
+      }, 800);
+    } catch (err: any) {
       console.error("Gagal update data:", err);
-      alert("Gagal memperbarui data.");
+      const msg = err?.response?.data?.error || "Gagal memperbarui data.";
+      showError(msg);
     }
   };
 
@@ -155,13 +154,6 @@ const EditDataRombel = () => {
               </Button>
             </div>
           </form>
-
-          {/* Popup */}
-          <SuccessPopup
-            message="Data berhasil diperbarui!"
-            show={showPopup}
-            onClose={() => setShowPopup(false)}
-          />
         </ComponentCard>
       </div>
     </>

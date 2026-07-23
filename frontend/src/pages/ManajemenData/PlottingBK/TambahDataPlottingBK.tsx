@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "../../../api/axios";
 import Button from "../../../components/ui/button/Button";
-import Toast from "../../../components/ui/alert/Toast";
 import SearchableSelect from "../../../components/form/SearchableSelect";
+import { useToast } from "../../../context/ToastContext";
 
 interface TambahPopupProps {
   show: boolean;
@@ -27,6 +27,7 @@ interface Semester {
 }
 
 const TambahDataPlottingBK: React.FC<TambahPopupProps> = ({ show, onClose }) => {
+  const { showSuccess, showError } = useToast();
   const [bkList, setBkList] = useState<PTK[]>([]);
   const [rombelList, setRombelList] = useState<Rombel[]>([]);
   const [semesterList, setSemesterList] = useState<Semester[]>([]);
@@ -37,14 +38,6 @@ const TambahDataPlottingBK: React.FC<TambahPopupProps> = ({ show, onClose }) => 
 
   const [loading, setLoading] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
-  const [toast, setToast] = useState<{
-    show: boolean;
-    variant: "success" | "error";
-    message: string;
-  }>({ show: false, variant: "success", message: "" });
-
-  const showToast = (variant: "success" | "error", message: string) =>
-    setToast({ show: true, variant, message });
 
   useEffect(() => {
     if (show) {
@@ -60,7 +53,6 @@ const TambahDataPlottingBK: React.FC<TambahPopupProps> = ({ show, onClose }) => 
           const rombelData: any[] = resRombel.data?.data || resRombel.data || [];
           const semesterData: Semester[] = resSemester.data?.data || resSemester.data || [];
 
-          // Filter only BK teachers (id_jabatan === 21904)
           const filteredBK = ptkData.filter(
             (p) =>
               p &&
@@ -90,12 +82,11 @@ const TambahDataPlottingBK: React.FC<TambahPopupProps> = ({ show, onClose }) => 
           }
         } catch (err) {
           console.error("Gagal memuat data pendukung:", err);
-          showToast("error", "Gagal memuat data pendukung form.");
+          showError("Gagal memuat data pendukung form.");
         }
       };
 
       loadData();
-      setToast({ show: false, variant: "success", message: "" });
       setTimeout(() => setIsVisible(true), 10);
     } else {
       setIsVisible(false);
@@ -106,7 +97,7 @@ const TambahDataPlottingBK: React.FC<TambahPopupProps> = ({ show, onClose }) => 
     e.preventDefault();
 
     if (!idPtkBk || !idRombel || !idSemester) {
-      showToast("error", "Semua field form wajib diisi.");
+      showError("Semua field form wajib diisi.");
       return;
     }
 
@@ -118,12 +109,13 @@ const TambahDataPlottingBK: React.FC<TambahPopupProps> = ({ show, onClose }) => 
         id_semester: idSemester,
       });
 
+      showSuccess("Plotting Guru BK berhasil ditambahkan!");
       setIsVisible(false);
       setTimeout(() => onClose(true), 300);
     } catch (err: any) {
       const msg =
         err?.response?.data?.error || "Gagal menambahkan data Plotting BK.";
-      showToast("error", msg);
+      showError(msg);
       console.error(err);
     } finally {
       setLoading(false);
@@ -154,13 +146,6 @@ const TambahDataPlottingBK: React.FC<TambahPopupProps> = ({ show, onClose }) => 
 
   return (
     <>
-      <Toast
-        show={toast.show}
-        variant={toast.variant}
-        message={toast.message}
-        onClose={() => setToast((t) => ({ ...t, show: false }))}
-      />
-
       <div
         className={`fixed inset-0 bg-black/40 z-40 transition-opacity duration-300 ${
           isVisible ? "opacity-100" : "opacity-0"

@@ -2,7 +2,7 @@ import axios from "../../../../api/axios";
 import { useEffect, useState } from "react";
 import { Sanksi } from "./DataSanksi";
 import Button from "../../../../components/ui/button/Button";
-import Toast from "../../../../components/ui/alert/Toast";
+import { useToast } from "../../../../context/ToastContext";
 
 interface EditPopupProps {
   show: boolean;
@@ -11,7 +11,7 @@ interface EditPopupProps {
 }
 
 const EditSanksi: React.FC<EditPopupProps> = ({ show, onClose, row }) => {
-  // 🟢 Ambil data secara aman menggunakan optional chaining (?.) untuk cegah white screen
+  const { showSuccess, showError } = useToast();
   const [namaSanksi, setNamaSanksi] = useState(row?.nama_sanksi || "");
   const [batasPoin, setBatasPoin] = useState<number | "">(
     row?.batas_poin ?? "",
@@ -19,22 +19,10 @@ const EditSanksi: React.FC<EditPopupProps> = ({ show, onClose, row }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Local toast for errors inside the popup
-  const [toast, setToast] = useState<{
-    show: boolean;
-    variant: "success" | "error";
-    message: string;
-  }>({ show: false, variant: "success", message: "" });
-
-  const showToast = (variant: "success" | "error", message: string) =>
-    setToast({ show: true, variant, message });
-
-  // Reset form ketika modal terbuka dan row telah tersedia
   useEffect(() => {
     if (show && row) {
       setNamaSanksi(row.nama_sanksi || "");
       setBatasPoin(row.batas_poin ?? "");
-      setToast({ show: false, variant: "success", message: "" });
       setTimeout(() => setIsVisible(true), 10);
     } else {
       setIsVisible(false);
@@ -43,31 +31,28 @@ const EditSanksi: React.FC<EditPopupProps> = ({ show, onClose, row }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!row) return; // Guard clause keselamatan data
+    if (!row) return;
 
     if (batasPoin === "" || isNaN(Number(batasPoin)) || !namaSanksi.trim()) {
-      showToast(
-        "error",
-        "Semua field wajib diisi dan batas poin harus berupa angka.",
-      );
+      showError("Semua field wajib diisi dan batas poin harus berupa angka.");
       return;
     }
 
     try {
       setSubmitting(true);
-      // 🟢 Diubah ke endpoint sanksi yang benar, bukan poin-pelanggaran
       await axios.put(`/sanksi/${row.id_master_sanksi}`, {
         nama_sanksi: namaSanksi.trim(),
         batas_poin: Number(batasPoin),
       });
 
+      showSuccess("Data sanksi berhasil diperbarui!");
       setIsVisible(false);
       setTimeout(() => onClose(true), 300);
     } catch (err: any) {
       const msg =
         err?.response?.data?.error ||
         "Gagal mengupdate data. Silakan coba lagi.";
-      showToast("error", msg);
+      showError(msg);
       console.error(err);
     } finally {
       setSubmitting(false);
@@ -79,18 +64,10 @@ const EditSanksi: React.FC<EditPopupProps> = ({ show, onClose, row }) => {
     setTimeout(() => onClose(false), 300);
   };
 
-  // 🟢 Mencegah rendering struktur form bawah jika parameter modal mati atau data belum siap
   if (!show || !row) return null;
 
   return (
     <>
-      <Toast
-        show={toast.show}
-        variant={toast.variant}
-        message={toast.message}
-        onClose={() => setToast((t) => ({ ...t, show: false }))}
-      />
-
       {/* Overlay */}
       <div
         className={`fixed inset-0 bg-black/40 z-40 transition-opacity duration-300 ${
