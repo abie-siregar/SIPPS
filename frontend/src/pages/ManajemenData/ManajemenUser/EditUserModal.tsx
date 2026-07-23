@@ -191,12 +191,13 @@ const EditUserModal: React.FC<EditPopupProps> = ({ show, onClose, row }) => {
               />
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t mt-4">
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-2 border-t mt-4">
               <Button
                 type="button"
                 size="sm"
                 variant="outline"
                 onClick={handleClose}
+                className="w-full sm:w-auto"
               >
                 Batal
               </Button>
@@ -205,6 +206,7 @@ const EditUserModal: React.FC<EditPopupProps> = ({ show, onClose, row }) => {
                 variant="primary"
                 size="sm"
                 disabled={submitting}
+                className="w-full sm:w-auto"
               >
                 {submitting ? "Menyimpan..." : "Simpan Perubahan"}
               </Button>

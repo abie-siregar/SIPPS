@@ -71,12 +71,13 @@ const HapusUserModal: React.FC<HapusProps> = ({ show, row, onClose }) => {
             <strong>{row.nama}</strong> ({row.username})? Tindakan ini bersifat
             permanen.
           </p>
-          <div className="flex justify-end gap-2 pt-2 border-t dark:border-gray-700">
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-2 border-t dark:border-gray-700">
             <Button
               size="sm"
               variant="outline"
               onClick={handleClose}
               disabled={loading}
+              className="w-full sm:w-auto"
             >
               Batal
             </Button>
@@ -84,7 +85,7 @@ const HapusUserModal: React.FC<HapusProps> = ({ show, row, onClose }) => {
               size="sm"
               onClick={handleDelete}
               disabled={loading}
-              className="bg-red-600 hover:bg-red-700 text-white border-none focus:ring-red-500"
+              className="bg-red-600 hover:bg-red-700 text-white border-none focus:ring-red-500 w-full sm:w-auto"
             >
               {loading ? "Menghapus..." : "Ya, Hapus"}
             </Button>

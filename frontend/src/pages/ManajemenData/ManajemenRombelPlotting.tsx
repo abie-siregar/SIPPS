@@ -399,7 +399,7 @@ const ManajemenRombelPlotting = () => {
       {/* --- MAIN CARD & TABLES --- */}
       <div className="space-y-6">
         {/* Navigation Tabs */}
-        <div className="flex border-b border-gray-200 dark:border-gray-800 gap-4">
+        <div className="flex border-b border-gray-200 dark:border-gray-800 gap-4 overflow-x-auto whitespace-nowrap scrollbar-none">
           <button
             type="button"
             onClick={() => setActiveTab("rombel")}

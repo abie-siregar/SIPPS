@@ -90,7 +90,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         </p>
 
         {/* Buttons */}
-        <div className="flex gap-3">
+        <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3">
           <button
             onClick={onCancel}
             className="flex-1 px-4 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium

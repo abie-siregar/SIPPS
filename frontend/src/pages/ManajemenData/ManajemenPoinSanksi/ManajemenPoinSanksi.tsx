@@ -19,7 +19,7 @@ const ManajemenPoinSanksi = () => {
 
       <div className="space-y-6">
         {/* Navigation Tabs */}
-        <div className="flex border-b border-gray-200 dark:border-gray-800 gap-4">
+        <div className="flex border-b border-gray-200 dark:border-gray-800 gap-4 overflow-x-auto whitespace-nowrap scrollbar-none">
           <button
             onClick={() => setActiveTab("Poin")}
             className={`pb-3 text-sm font-semibold transition-all relative ${
@@ -45,11 +45,11 @@ const ManajemenPoinSanksi = () => {
         {/* 🟢 Perbaikan Conditional Rendering berdasarkan Tab Aktif */}
         <div className="mt-4">
           {activeTab === "Poin" ? (
-            <ComponentCard title="Daftar Poin Kategori Pelanggaran">
+            <ComponentCard title="Daftar Poin Pelanggaran">
               <DataPoinPelanggaran />
             </ComponentCard>
           ) : (
-            <ComponentCard title="Daftar Tingkatan Kriteria Sanksi">
+            <ComponentCard title="Daftar Master Data Sanksi">
               <DataSanksi />
             </ComponentCard>
           )}

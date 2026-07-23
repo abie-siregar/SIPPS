@@ -163,7 +163,7 @@ const navItems: NavItem[] = [
 
 const AppSidebar: React.FC = () => {
   const { user } = useAuth();
-  const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
+  const { isExpanded, isMobileOpen, isHovered, setIsHovered, toggleMobileSidebar } = useSidebar();
   const location = useLocation();
 
   const [openSubmenu, setOpenSubmenu] = useState<{
@@ -180,6 +180,12 @@ const AppSidebar: React.FC = () => {
     (path: string) => location.pathname === path,
     [location.pathname],
   );
+
+  useEffect(() => {
+    if (isMobileOpen) {
+      toggleMobileSidebar();
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
     let submenuMatched = false;

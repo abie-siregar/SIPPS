@@ -38,14 +38,14 @@ const Pagination: React.FC<PaginationProps> = ({
   const pages = generatePageNumbers();
 
   return (
-    <div className="flex justify-between items-center mx-4 my-4 px-2 flex-wrap gap-3">
+    <div className="flex flex-col sm:flex-row justify-between items-center mx-3 my-3 sm:mx-4 sm:my-4 px-2 gap-3">
       {/* Info halaman */}
       <p className="text-sm text-gray-600 dark:text-gray-400">
         Halaman {currentPage} dari {totalPages}
       </p>
 
       {/* Kontrol navigasi */}
-      <div className="flex items-center gap-3 flex-wrap">
+      <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-center">
         {/* Select per halaman */}
         <select
           value={itemsPerPage}

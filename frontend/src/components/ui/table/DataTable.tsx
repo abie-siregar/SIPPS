@@ -188,20 +188,20 @@ export default function DataTable<T extends object>({
   };
 
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
+    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03] w-full">
       {/* Kontrol */}
-      <div className="flex items-center justify-between gap-2 p-4 flex-wrap">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3 sm:p-4">
         {searchable && (
           <InputField
             type="text"
             placeholder="Cari data..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="max-w-xs"
+            className="w-full sm:max-w-xs"
           />
         )}
-        {/* Group Filter + extraActions (e.g. Tambah) side by side */}
-        <div className="flex items-center gap-2">
+        {/* Group Filter + extraActions */}
+        <div className="flex items-center justify-end gap-2 flex-wrap">
           {filterable && (
             <Button
               type="button"
@@ -217,7 +217,7 @@ export default function DataTable<T extends object>({
       </div>
 
       {/* Table */}
-      <div className="max-w-full overflow-x-auto">
+      <div className="w-full overflow-x-auto scrollbar-thin">
         <Table className="min-w-full text-sm text-left">
           <TableHeader className="bg-gray-100 text-black rounded-t-lg border-b border-gray-200">
             <TableRow>

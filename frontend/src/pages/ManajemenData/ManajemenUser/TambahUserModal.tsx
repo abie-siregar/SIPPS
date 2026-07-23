@@ -187,12 +187,13 @@ const TambahUserModal: React.FC<TambahPopupProps> = ({ show, onClose }) => {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex justify-end gap-2 pt-2 border-t mt-4">
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-2 border-t mt-4">
               <Button
                 type="button"
                 size="sm"
                 variant="outline"
                 onClick={handleClose}
+                className="w-full sm:w-auto"
               >
                 Batal
               </Button>
@@ -201,6 +202,7 @@ const TambahUserModal: React.FC<TambahPopupProps> = ({ show, onClose }) => {
                 variant="primary"
                 size="sm"
                 disabled={loading}
+                className="w-full sm:w-auto"
               >
                 {loading ? "Menyimpan..." : "Tambah User"}
               </Button>
